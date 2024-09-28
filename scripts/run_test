@@ -1,0 +1,190 @@
+#!/bin/bash
+
+# Function to display usage
+usage() {
+    echo "Usage: run_test [-w | -g | -l] [-t | -h] test_name"
+    echo "  -w    Windows environment (Modelsim)"
+    echo "  -l    Linux environment (Xcelium)"
+    echo "  -g    Linux/Windows environment (GHDL)"
+    echo "  -t    Output log to console and log.txt"
+    echo "  -h    Open GUI and log to log.txt"
+    exit 1
+}
+
+# Default values
+LOG_MODE=""
+SIM_OS=""
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+COMPILE_LIST_FILE="$SCRIPT_DIR/../sauce/compile_list.txt"
+VERIFICATION_DIR="$SCRIPT_DIR/../verification"
+LIBRARY_DIR="$SCRIPT_DIR/../library"
+TMP_DIR="$SCRIPT_DIR/tmp"
+DO_PATH="$PROJ/Diplomka/verification/"
+
+# Process command line arguments
+while getopts ":wltgh" opt; do
+    case $opt in
+        w)
+            SIM_OS="win"
+            ;;
+        l)
+            SIM_OS="linux"
+            ;;
+        g)
+            SIM_OS="ghdl"
+            ;;
+        t)
+            LOG_MODE="text"
+            ;;
+        h)
+            LOG_MODE="gui"
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+# Shift processed options to get the test_name
+shift $((OPTIND - 1))
+
+# Check if the test name was provided
+if [ -z "$1" ]; then
+    usage
+else
+    TEST_NAME=$1
+fi
+
+# Check if LOG_MODE was provided for GHDL
+if [ "$SIM_OS" == "ghdl" ] && [ -z "$LOG_MODE" ]; then
+    echo "Please specify either -t or -h for GHDL."
+    usage
+fi
+
+# Name of the VHDL file for the test
+VHDL_TEST_FILE="$VERIFICATION_DIR/${TEST_NAME}.vhd"
+
+# Check if the compile list file exists
+if [ ! -f "$COMPILE_LIST_FILE" ]; then
+    echo "Compile list file $COMPILE_LIST_FILE does not exist"
+    exit 1
+fi
+
+# Read the contents of the compile list file into a variable
+COMPILE_FILES=$(cat "$COMPILE_LIST_FILE")
+
+# Log redirection and deletion
+> verification/$TEST_NAME.log
+exec > >(tee -a verification/$TEST_NAME.log) 2>&1
+
+# Create work library or tmp directory
+if [ "$SIM_OS" == "win" ]; then
+    vlib $LIBRARY_DIR
+    if [ $? -ne 0 ]; then
+        echo "Error creating design library"
+        exit 1
+    fi
+    vmap design $LIBRARY_DIR
+    if [ $? -ne 0 ]; then
+    echo "Error mapping design library"
+    exit 1
+    fi
+elif [ "$SIM_OS" == "linux" ] || [ "$SIM_OS" == "ghdl" ]; then
+    mkdir -p design
+    mkdir -p "$TMP_DIR"
+    if [ $? -ne 0 ]; then
+        echo "Error creating work or tmp directory"
+        exit 1
+    fi
+fi
+
+# Compile VHDL files from the source directory
+echo "Compiling VHDL files from $COMPILE_LIST_FILE..."
+while IFS= read -r FILE; do
+    ABSOLUTE_PATH="$(realpath "$SCRIPT_DIR/../sauce/$FILE")"
+    echo "Compiling $ABSOLUTE_PATH..."
+    if [ "$SIM_OS" == "win" ]; then
+        vcom -2008 -work design "$ABSOLUTE_PATH"
+    elif [ "$SIM_OS" == "linux" ]; then
+        xmvhdl -v93 -work design "$ABSOLUTE_PATH"
+    elif [ "$SIM_OS" == "ghdl" ]; then
+        ghdl -a --std=08 -fsynopsys"$ABSOLUTE_PATH"
+    fi
+    if [ $? -ne 0 ]; then
+        echo "Error compiling $ABSOLUTE_PATH"
+        exit 1
+    fi
+done <<< "$COMPILE_FILES"
+
+# Compile VHDL files from the verification directory
+echo "Compiling verification files from $VERIFICATION_DIR..."
+for TEST_FILE in "$VERIFICATION_DIR"/*.vhd; do
+    ABSOLUTE_TEST_PATH="$(realpath "$TEST_FILE")"
+    echo "Compiling $ABSOLUTE_TEST_PATH..."
+    if [ "$SIM_OS" == "win" ]; then
+        vcom -2008 -work design "$ABSOLUTE_TEST_PATH"
+    elif [ "$SIM_OS" == "linux" ]; then
+        xmvhdl -v93 -work design "$ABSOLUTE_TEST_PATH"
+    elif [ "$SIM_OS" == "ghdl" ]; then
+        ghdl -a --std=08 -fsynopsys "$ABSOLUTE_TEST_PATH"
+    fi
+    if [ $? -ne 0 ]; then
+        echo "Error compiling $ABSOLUTE_TEST_PATH"
+        exit 1
+    fi
+done
+
+# Elaborate and run simulation
+echo "Elaborating design and running simulation for $TEST_NAME..."
+
+if [ "$SIM_OS" == "win" ]; then
+    if [ "$LOG_MODE" == "text" ]; then
+        vsim -c -do "run -all; quit" design."$TEST_NAME"
+    elif [ "$LOG_MODE" == "gui" ]; then
+        vsim -do "do $DO_PATH$TEST_NAME.do; run -all" design."$TEST_NAME" -assertdebug
+    fi
+elif [ "$SIM_OS" == "linux" ]; then
+    if [ "$LOG_MODE" == "text" ]; then
+        xmsim -c -do "run -all; quit" "$TEST_NAME"
+    elif [ "$LOG_MODE" == "gui" ]; then
+        xmsim -do "run -all" "$TEST_NAME"
+    fi
+elif [ "$SIM_OS" == "ghdl" ]; then
+    # Elaborate the design
+    ghdl -e --std=08 "$TEST_NAME"
+
+    # Check if elaboration was successful
+    if [ $? -ne 0 ]; then
+        echo "Error elaborating design for $TEST_NAME"
+        exit 1
+    fi
+
+    # Run simulation
+    if [ "$LOG_MODE" == "text" ]; then
+        ghdl -r --std=08 "$TEST_NAME" --stop-time=100ns --assert-level=error
+    elif [ "$LOG_MODE" == "gui" ]; then
+        WAVE_FILE="$TMP_DIR/${TEST_NAME}.ghw"
+        ghdl -r --std=08 "$TEST_NAME" --stop-time=100ns --wave="$WAVE_FILE"
+        if [ $? -eq 0 ]; then
+            gtkwave "$WAVE_FILE"
+        fi
+    fi
+fi
+
+if [ $? -ne 0 ]; then
+    echo "Error running simulation for $TEST_NAME"
+    exit 1
+fi
+
+# Getting errors and warnnings
+errors=$(grep -oP '(?<=Errors: )\d+' verification/$TEST_NAME.log | head -n 1 | tr -d '\n') # head -n
+warnings=$(grep -oP '(?<=Warnings: )\d+' verification/$TEST_NAME.log | head -n 1 | tr -d '\n')
+
+
+    if [ "$errors" -gt 0 ]; then
+        echo -e "TEST $TEST_NAME has \033[31mFAILED\033[0m with $errors errors!"
+    elif [ "$warnings" -gt 0 ]; then
+        echo -e "TEST $TEST_NAME has \033[33mWARNINGS\033[0m"  
+    else
+        echo -e "TEST $TEST_NAME has \033[32mPASSED\033[0m"
+    fi
