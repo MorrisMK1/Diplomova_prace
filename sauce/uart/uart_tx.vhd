@@ -20,7 +20,7 @@ entity uart_tx is
     i_clk         : in  std_logic;            -- clk pin
     i_rst_n       : in  std_logic;            -- negative reset pin
     i_msg         : in  std_logic_vector(MSG_W-1 downto 0); -- data input
-    i_msg_vld_strb: in std_logic;            -- message in valid strobe signal
+    i_msg_vld     : in std_logic;            -- message in valid strobe signal
 
     i_start_pol   : in  std_logic := '0';     -- polarity of start bit (negative of end bit)
     i_par_en      : in  std_logic := '0';     -- parity bit enable 
@@ -81,10 +81,10 @@ p_clk_div : process (i_clk) is
             run := false;
           end if;
         else
+          counter_done <= '0';
           if counter_start = '1' then
             run := true;
             cnt := (others => '0');
-            counter_done <= '0';
           end if;
         end if;
       end if;
@@ -110,7 +110,7 @@ begin
         when s_tx_IDLE =>
           o_tx <= not i_start_pol;
           counter_start <= '0';
-          if i_msg_vld_strb = '1' then
+          if i_msg_vld  = '1' then
             msg_buff := i_msg;
             s_tx <= s_tx_START;
           end if;

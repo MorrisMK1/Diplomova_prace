@@ -14,12 +14,13 @@ usage() {
 # Default values
 LOG_MODE=""
 SIM_OS=""
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+echo "$SCRIPT_DIR"
 COMPILE_LIST_FILE="$SCRIPT_DIR/../sauce/compile_list.txt"
-VERIFICATION_DIR="$SCRIPT_DIR/../verification"
+VERIFICATION_DIR="$SCRIPT_DIR/../tb"
 LIBRARY_DIR="$SCRIPT_DIR/../library"
 TMP_DIR="$SCRIPT_DIR/tmp"
-DO_PATH="$PROJ/Diplomka/verification/"
+DO_PATH="$(realpath "$SCRIPT_DIR/../tb/")"
 
 # Process command line arguments
 while getopts ":wltgh" opt; do
@@ -74,8 +75,8 @@ fi
 COMPILE_FILES=$(cat "$COMPILE_LIST_FILE")
 
 # Log redirection and deletion
-> verification/$TEST_NAME.log
-exec > >(tee -a verification/$TEST_NAME.log) 2>&1
+> tb/$TEST_NAME.log
+exec > >(tee -a tb/$TEST_NAME.log) 2>&1
 
 # Create work library or tmp directory
 if [ "$SIM_OS" == "win" ]; then
@@ -141,7 +142,7 @@ if [ "$SIM_OS" == "win" ]; then
     if [ "$LOG_MODE" == "text" ]; then
         vsim -c -do "run -all; quit" design."$TEST_NAME"
     elif [ "$LOG_MODE" == "gui" ]; then
-        vsim -do "do $DO_PATH$TEST_NAME.do; run -all" design."$TEST_NAME" -assertdebug
+        vsim -gui -do "do $DO_PATH$TEST_NAME.do; run -all" design."$TEST_NAME" -assertdebug
     fi
 elif [ "$SIM_OS" == "linux" ]; then
     if [ "$LOG_MODE" == "text" ]; then
@@ -177,8 +178,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Getting errors and warnnings
-errors=$(grep -oP '(?<=Errors: )\d+' verification/$TEST_NAME.log | head -n 1 | tr -d '\n') # head -n
-warnings=$(grep -oP '(?<=Warnings: )\d+' verification/$TEST_NAME.log | head -n 1 | tr -d '\n')
+errors=$(grep -oP '(?<=Errors: )\d+' tb/$TEST_NAME.log | head -n 1 | tr -d '\n') # head -n
+warnings=$(grep -oP '(?<=Warnings: )\d+' tb/$TEST_NAME.log | head -n 1 | tr -d '\n')
 
 
     if [ "$errors" -gt 0 ]; then

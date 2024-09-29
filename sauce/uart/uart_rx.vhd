@@ -114,10 +114,10 @@ begin
           run := false;
         end if;
       else
+        counter_done <= '0';
         if counter_start = '1' then
           run := true;
           cnt := (others => '0');
-          counter_done <= '0';
         end if;
       end if;
     end if;
@@ -151,6 +151,7 @@ begin
           delay_cnt := 1;
           stab_cnt  := 0;
           counter_start <= '0';
+          bit_cnt <= 0;
           parity_chck := i_par_type;
           if i_rx = i_start_pol then
             s_rx <= s_rx_DELAY;
@@ -163,6 +164,7 @@ begin
             s_rx <= s_rx_RECIEVE;
           end if;
         when s_rx_RECIEVE =>
+          parity_res := TRUE;
           if bit_cnt < MSG_W then
             if counter_done = '1' then
               msg_buffer := rx_sample_val & msg_buffer(MSG_W-1 downto 1);
@@ -188,7 +190,7 @@ begin
         when s_rx_TERMINATE =>
           counter_start <= '0';
           if counter_done = '1' then
-            if not rx_sample_val = i_start_pol then
+            if rx_sample_val = i_start_pol then
               o_err_frame_strb <= '1';
             end if;
             if stab_cnt < MSG_W - 1 then

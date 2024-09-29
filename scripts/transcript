@@ -1,0 +1,36 @@
+# Reading pref.tcl
+# vsim -gui -do "do /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_uart.do; run -all" design.tb_uart -assertdebug 
+# Start time: 17:21:33 on Sep 29,2024
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading std.env(body)
+# Loading design.tb_common(body)
+# Loading design.my_common
+# Loading design.tb_uart(sim)
+# Loading design.uart_rx(behavioral)
+# Loading design.uart_tx(behavioral)
+# do /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_uart.do
+# Cannot open macro file: /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_uart.do
+#  run -all
+# ** Note: Invalid UART data received!
+#    Time: 999677 ns  Iteration: 0  Instance: /tb_uart
+# ** Note: Invalid UART data received!
+#    Time: 3041377 ns  Iteration: 0  Instance: /tb_uart
+# ** Note: Invalid UART data received!
+#    Time: 5083077 ns  Iteration: 0  Instance: /tb_uart
+# Break in Process p_uart_tx at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd line 129
+add wave -position insertpoint sim:/tb_uart/*
+add wave -position insertpoint sim:/tb_uart/uart_tx_inst/*
+restart
+run -all
+# ** Note: Invalid UART data received!
+#    Time: 999677 ns  Iteration: 0  Instance: /tb_uart
+# ** Note: Invalid UART data received!
+#    Time: 3041377 ns  Iteration: 0  Instance: /tb_uart
+# ** Note: Invalid UART data received!
+#    Time: 5083077 ns  Iteration: 0  Instance: /tb_uart
+# Break in Process p_uart_tx at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd line 129
+# End time: 17:22:35 on Sep 29,2024, Elapsed time: 0:01:02
+# Errors: 0, Warnings: 0

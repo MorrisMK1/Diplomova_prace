@@ -1,5 +1,9 @@
 # Diplomová práce
 
+Obvod expanderu datových sběrnic
+
+Data Bus Expander circuit
+
 ## Popis
 Vytvoření designu kontroleru ovládajícího přenos dat z hlavní sběrnice na jednu z více vedlejších a zpět.  
 Komunikační protokol je popsán [ZDE](comm_protocol.md).  
@@ -20,22 +24,23 @@ The internal functionality is described [HERE](inner_protocol_en.md).
 ## Úkoly
 
 - [x] Univerzální vnitřní rozhraní sběrnic
+  - [ ] otestovnání funkčnosti
 - [ ] Uart
   - [x] vytvoření komunikační logiky sběrnice
-  - [ ] propojení s univerzálním rozhraním
   - [ ] otestovnání funkčnosti
+  - [ ] propojení s univerzálním rozhraním
 - [ ] I2C
   - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] propojení s univerzálním rozhraním
   - [ ] otestovnání funkčnosti
+  - [ ] propojení s univerzálním rozhraním
 - [?] SPI
   - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] propojení s univerzálním rozhraním
   - [ ] otestovnání funkčnosti
+  - [ ] propojení s univerzálním rozhraním
 - [?] 1-wire
   - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] propojení s univerzálním rozhraním
   - [ ] otestovnání funkčnosti
+  - [ ] propojení s univerzálním rozhraním
 - [ ] Vyrovnávací paměť
   - [ ] vytvořit fifo obvod
   - [ ] test funkčnosti
