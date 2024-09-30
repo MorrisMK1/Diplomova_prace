@@ -26,7 +26,7 @@ entity uart_rx is
     i_par_en      : in  std_logic := '0';     -- parity bit enable 
     i_par_type    : in  std_logic := '0';     -- parity type (0:ODD;1:EVEN)
 
-    i_clk_div     : in  unsigned(11 downto 0) := x"300";  -- clock divisor for baudrate (def = 7.3728 MHz => ~9600)
+    i_clk_div     : in  unsigned(15 downto 0) := x"0300";  -- clock divisor for baudrate (def = 7.3728 MHz => ~9600)
 
     o_msg         : out std_logic_vector(MSG_W-1 downto 0); -- data output
     o_msg_vld_strb: out std_logic;            -- message out valid strobe signal
@@ -97,7 +97,7 @@ end process;
 --#SECTION - DIVIDER (COUNTER)
 ----------------------------------------------------------------------------------------
 p_clk_div : process (i_clk) is
-  variable cnt  : unsigned(11 downto 0);
+  variable cnt  : unsigned(15 downto 0);
   variable run  : BOOLEAN;
 begin
   if rising_edge(i_clk) then

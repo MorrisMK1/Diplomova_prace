@@ -24,7 +24,7 @@ architecture sim of tb_uart is
   signal par_en  : std_logic := '0';
   signal par_type  : std_logic := '0';
   signal par_st  : std_logic := '0';
-  signal clk_div  : unsigned(11 downto 0):= to_unsigned(UART_BAUD_PERIOD/CLK_PERIOD,12);
+  signal clk_div  : unsigned(15 downto 0):= to_unsigned(UART_BAUD_PERIOD/CLK_PERIOD,16);
   signal flags  : std_logic_vector(7 downto 0); -- Data byte received via UART)
   signal msg_o_dat  : std_logic_vector(7 downto 0);
   signal msg_i_dat : std_logic_vector(7 downto 0);

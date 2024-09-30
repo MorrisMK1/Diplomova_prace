@@ -55,3 +55,30 @@ Následující bajty jsou datové a jejich počet je určen druhým bajtem.
 | 7-0  | Velikost dat         | Obsahuje informaci o množství dat, která mají být přenesena (čtení z registru 0)            |
 
 Následující bajty jsou datové a jejich počet je určen druhým bajtem.
+
+
+## Příklady komunikace
+
+### Ovládací zprávy
+
+Všechny ID (bity 7-6 prvního bajtu) odpovídají sloupci komunikace (0-3)
+
+| Bajt | Aktivace sběrnice 1 | Čtení registru 2 sběrnice 1 | Odeslání 2B dat přes sběrnici 1 | Pouze čtení 5B přes sběrnici 1 |
+|  0   |      00000000       |           01110001          |           10000001              |            11100001            |
+|  1   |      00000001       |                             |           00000010              |            00000000            |
+|  2   |                     |                             |           databits              |            00000101            |
+|  3   |                     |                             |           databits              |                                |
+
+
+### Odpovědi
+
+Odpovědi na příkladové ovládací zprávy
+
+| Bajt | Aktivace sběrnice 1 | Čtení registru 2 sběrnice 1 | Odeslání 2B dat přes sběrnici 1 | Pouze čtení 5B přes sběrnici 1 |
+|  0   |    bez odpovědi     |           01010001          |           bez odpovědi          |            11000001            |
+|  1   |                     |           databits          |                                 |            00000101            |
+|  2   |                     |                             |                                 |            databits            |
+|  3   |                     |                             |                                 |            databits            |
+|  4   |                     |                             |                                 |            databits            |
+|  5   |                     |                             |                                 |            databits            |
+|  6   |                     |                             |                                 |            databits            |
