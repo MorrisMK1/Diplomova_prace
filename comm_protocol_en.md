@@ -55,3 +55,30 @@ The following bytes are data, and their count is determined by the second byte.
 | 7-0  | Data Size             | Contains information about the amount of data to be transferred (read from register 0)    |
 
 The following bytes are data, and their count is determined by the second byte.
+
+## Communication Examples
+
+### Control Messages
+
+All IDs (bits 7-6 of the first byte) correspond to the communication column (0-3).
+
+| Byte | Bus 1 Activation | Read Register 2 of Bus 1 | Send 2B Data via Bus 1 | Read Only 5B via Bus 1 |
+|------|------------------|--------------------------|------------------------|------------------------|
+|  0   |      00000000     |         01110001         |        10000001         |        11100001         |
+|  1   |      00000001     |                          |        00000010         |        00000000         |
+|  2   |                  |                          |        databits         |        00000101         |
+|  3   |                  |                          |        databits         |                        |
+
+### Responses
+
+Responses to the example control messages.
+
+| Byte | Bus 1 Activation | Read Register 2 of Bus 1 | Send 2B Data via Bus 1 | Read Only 5B via Bus 1 |
+|------|------------------|--------------------------|------------------------|------------------------|
+|  0   |  no response      |         01010001         |        no response      |        11000001         |
+|  1   |                  |        databits          |                        |        00000101         |
+|  2   |                  |                          |                        |        databits         |
+|  3   |                  |                          |                        |        databits         |
+|  4   |                  |                          |                        |        databits         |
+|  5   |                  |                          |                        |        databits         |
+|  6   |                  |                          |                        |        databits         |
