@@ -4,3 +4,4 @@
 /uart/uart_rx.vhd
 /common/universal_ctrl.vhd
 /tb/tb_uart.vhd
+/tb/tb_universal_uart.vhd

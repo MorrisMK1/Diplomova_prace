@@ -1,188 +1,72 @@
 # Reading pref.tcl
-# vsim -gui -do "do /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_universal_uart.do; run -all" design.tb_universal_uart -assertdebug 
-# Start time: 10:26:03 on Sep 30,2024
+# vsim -gui -do "do D:\projekty\CVUT\VSCODE\HDL\diplomova_prace\tbtb_universal_uart.do; run -all" design.tb_universal_uart -assertdebug 
+# Start time: 21:59:06 on Nov 18,2024
 # Loading std.standard
 # Loading std.textio(body)
 # Loading ieee.std_logic_1164(body)
 # Loading ieee.numeric_std(body)
 # Loading std.env(body)
-# Loading design.tb_common(body)
 # Loading design.my_common
+# Loading design.tb_common(body)
+# Loading ieee.numeric_std_unsigned(body)
 # Loading design.tb_universal_uart(sim)
 # Loading design.universal_ctrl(behavioral)
 # Loading design.uart_rx(behavioral)
 # Loading design.uart_tx(behavioral)
-# ** Warning: (vsim-3479) Time unit 'fs' is less than the simulator resolution (1ps).
-#    Time: 0 ps  Iteration: 0  Root: /
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(7) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(6) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(5) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(4) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(3) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(2) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(1) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(0) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.data(7 downto 0) has no driver.
-# This port will contribute value (UUUUUUUU) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(15) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(14) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(13) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(12) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(11) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(10) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(9) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(8) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(7) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(6) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(5) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(4) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(3) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(2) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(1) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(0) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.data(15 downto 0) has no driver.
-# This port will contribute value (UUUUUUUUUUUUUUUU) to the signal network.
 # ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/comm_wire_0 has no driver.
 # This port will contribute value (Z) to the signal network.
-# do /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_universal_uart.do
-# Cannot open macro file: /d/projekty/CVUT/VSCODE/HDL/diplomova_prace/tbtb_universal_uart.do
+# do D:\projekty\CVUT\VSCODE\HDL\diplomova_prace\tbtb_universal_uart.do
+# Cannot open macro file: D:projektyCVUTVSCODEHDLdiplomova_prace	btb_universal_uart.do
 #  run -all
-# ** Fatal: (vsim-3734) Index value 0 is out of range 1 to 3.
-#    Time: 100 ns  Iteration: 1  Process: /tb_universal_uart/universal_ctrl_DUT/p_cfg_manager File: D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
-# Fatal error in Process p_cfg_manager at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd line 80
-# 
-# HDL call sequence:
-# Stopped at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd 80 Process p_cfg_manager
-# 
-add wave -position insertpoint sim:/tb_universal_uart/universal_ctrl_DUT/*
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 0  Region: /tb_universal_uart/universal_ctrl_DUT/g_interface
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 0  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 5 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 20 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 30 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 40 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+add wave -position insertpoint sim:/tb_universal_uart/*
 restart
 # ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(7) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(6) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(5) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(4) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(3) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(2) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(1) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_data.data(0) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_data.data(7 downto 0) has no driver.
-# This port will contribute value (UUUUUUUU) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(15) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(14) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(13) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(12) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(11) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(10) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(9) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(8) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(7) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(6) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(5) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(4) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(3) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(2) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(1) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/i_info_bus.data(0) has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.ready has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.step has no driver.
-# This port will contribute value (U) to the signal network.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/o_info_bus.data(15 downto 0) has no driver.
-# This port will contribute value (UUUUUUUUUUUUUUUU) to the signal network.
 # ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/comm_wire_0 has no driver.
 # This port will contribute value (Z) to the signal network.
-run -all
-# ** Fatal: (vsim-3734) Index value 0 is out of range 1 to 3.
-#    Time: 100 ns  Iteration: 1  Process: /tb_universal_uart/universal_ctrl_DUT/p_cfg_manager File: D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
-# Fatal error in Process p_cfg_manager at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd line 80
+run
+# GetModuleFileName: Uvedený modul nebyl nalezen.
 # 
-# HDL call sequence:
-# Stopped at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd 80 Process p_cfg_manager
 # 
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/*
-# WARNING: No extended dataflow license exists
-add dataflow sim:/tb_universal_uart/*
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/*
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/g_interface/*
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/*
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/*
-# WARNING: No extended dataflow license exists
-add dataflow sim:/tb_universal_uart/universal_ctrl_DUT/p_cfg_manager/*
-# End time: 10:39:15 on Sep 30,2024, Elapsed time: 0:13:12
-# Errors: 1, Warnings: 35
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 0  Region: /tb_universal_uart/universal_ctrl_DUT/g_interface
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 0  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 5 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 20 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 30 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
+#    Time: 40 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
+run
+run
+run
+run
+run
+# End time: 22:02:26 on Nov 18,2024, Elapsed time: 0:03:20
+# Errors: 0, Warnings: 10

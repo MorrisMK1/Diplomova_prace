@@ -10,16 +10,22 @@ package my_common is
 
   type std_logic_array is array (natural range <>) of std_logic_vector;
 
-  type fifo_bus is record
-    data      : std_logic_vector(MSG_W-1 downto 0);
-    ready     : std_logic;
-    step      : std_logic;
+--#NOTE - FIFO interface signal definitions
+  subtype data_bus  is std_logic_vector(MSG_W-1 downto 0);
+  subtype info_bus   is std_logic_vector(3*MSG_W-1 downto 0);
+  subtype out_ready is std_logic;
+  subtype in_pulse  is std_logic;
+
+  type fifo_data_interface is record
+  data      : data_bus;
+  ready     : out_ready;
+  step      : in_pulse;
   end record;
 
-  type info_bus is record
-    data      : std_logic_vector(MSG_W+MSG_W-1 downto 0);
-    ready     : std_logic;
-    step      : std_logic;
+  type fifo_info_interface is record
+  data      : info_bus;
+  ready     : out_ready;
+  step      : in_pulse;
   end record;
 
   type t_bus_type is (

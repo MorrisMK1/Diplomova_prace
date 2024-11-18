@@ -23,12 +23,13 @@ The internal functionality is described [HERE](inner_protocol_en.md).
 
 ## Úkoly
 
-- [x] Univerzální vnitřní rozhraní sběrnic
+- [ ] Univerzální vnitřní rozhraní sběrnic
+  - [x] navržení registrů a logiky
   - [ ] otestovnání funkčnosti
-- [ ] Uart
+- [x] Uart
   - [x] vytvoření komunikační logiky sběrnice
-  - [ ] otestovnání funkčnosti
-  - [ ] propojení s univerzálním rozhraním
+  - [x] otestovnání funkčnosti
+  - [x] propojení s univerzálním rozhraním
 - [ ] I2C
   - [ ] vytvoření komunikační logiky sběrnice
   - [ ] otestovnání funkčnosti

@@ -12,20 +12,20 @@ Z0 dD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/scripts
 Pmy_common
 Z1 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
 Z2 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
-!i122 215
-w1727679896
+!i122 655
+w1731947530
 R0
 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/my_common.vhd
 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/my_common.vhd
 l0
 L4 1
-VgNiTYI=`K<J`E`b?DE0D30
-!s100 kRnNbRF<73C@<GcKU`G:`0
+VjEiR;a_k;?iM6HGaF]b]l0
+!s100 =o?L<RI@L;hV5DL<TdVD>2
 Z3 OV;C;2020.1;71
 33
-Z4 !s110 1727684755
+Z4 !s110 1731963533
 !i10b 1
-Z5 !s108 1727684755.000000
+Z5 !s108 1731963533.000000
 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/my_common.vhd|
 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/my_common.vhd|
 !i113 1
@@ -54,56 +54,58 @@ R3
 R6
 R7
 Ptb_common
+Z8 DPx4 work 9 my_common 0 22 jEiR;a_k;?iM6HGaF]b]l0
 R1
 R2
-!i122 216
-Z8 w1727682756
+!i122 656
+Z9 w1731956645
 R0
-Z9 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd
-Z10 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd
+Z10 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd
+Z11 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd
 l0
-L4 1
-VaA9M:BZUZ>6_354Z[<OLc2
-!s100 j>XHj@?SIY?YNozll^7JM3
+L7 1
+VdHID4T]ZYN7_Vg1DAiEKg1
+!s100 jl5abP6TW0aS_<<B=QhY:2
 R3
 33
 b1
 R4
 !i10b 1
 R5
-Z11 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd|
-Z12 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd|
+Z12 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd|
+Z13 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/tb_common.vhd|
 !i113 1
 R6
 R7
 Bbody
-Z13 DPx4 work 9 tb_common 0 22 aA9M:BZUZ>6_354Z[<OLc2
+Z14 DPx4 work 9 tb_common 0 22 dHID4T]ZYN7_Vg1DAiEKg1
+R8
 R1
 R2
-!i122 216
+!i122 656
 l0
-L13 1
-V`?Uhck=c5QkCMYnkL9zJ10
-!s100 GK4JD7V[@RAa?>PScRdA^2
+L22 1
+VUa`GcE?PJ7`YSoQX[[WMP1
+!s100 2NMHY=0N?]`F7fA5=S8[J1
 R3
 33
 R4
 !i10b 1
 R5
-R11
 R12
+R13
 !i113 1
 R6
 R7
 Etb_uart
-Z14 w1727621431
-Z15 DPx4 work 9 my_common 0 22 gNiTYI=`K<J`E`b?DE0D30
-R13
+Z15 w1727695183
+R8
+R14
 Z16 DPx3 std 3 env 0 22 d?`1ck@NdeD@H3RZG7FgZ2
 Z17 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
 R1
 R2
-!i122 220
+!i122 660
 R0
 Z18 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd
 Z19 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd
@@ -113,29 +115,29 @@ V_YG?^JiT4=WT_ocECaM2g2
 !s100 BmkAEGh9CR5E3Cz1zbYYT3
 R3
 33
-Z20 !s110 1727684756
+Z20 !s110 1731963535
 !i10b 1
-Z21 !s108 1727684756.000000
+Z21 !s108 1731963535.000000
 Z22 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd|
 Z23 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_uart.vhd|
 !i113 1
 R6
 R7
 Asim
-Z24 DEx4 work 7 uart_tx 0 22 LNeLEJoOSOaNU4>C:5Nz=3
-Z25 DEx4 work 7 uart_rx 0 22 WoE[z=85@?mcH5LU?5eLg1
-R15
-R13
+Z24 DEx4 work 7 uart_tx 0 22 z9?U12Rj>N1IKo_<gCP3n0
+Z25 DEx4 work 7 uart_rx 0 22 gmFDSH]=H[l;`l_<2Rh6l2
+R8
+R14
 R16
 R17
 R1
 R2
 DEx4 work 7 tb_uart 0 22 _YG?^JiT4=WT_ocECaM2g2
-!i122 220
+!i122 660
 l86
 L12 183
-V=0=ALh;2QW2;fD6j32df<3
-!s100 f38[]k=Q4dlH_ObgAlPOe1
+V0VGO8;nCOoK5CPBWcL8:62
+!s100 gc_1>7;2FhNk@;`=G:A@f2
 R3
 33
 R20
@@ -172,8 +174,8 @@ R23
 R6
 R7
 Asim
-R24
-R25
+DEx4 work 7 uart_tx 0 22 LNeLEJoOSOaNU4>C:5Nz=3
+DEx4 work 7 uart_rx 0 22 WoE[z=85@?mcH5LU?5eLg1
 R27
 R28
 R17
@@ -196,14 +198,14 @@ R23
 R6
 R7
 Etb_universal_uart
-Z31 w1727684734
-R15
-R13
+Z31 w1731963519
+R8
+R14
 R16
 R17
 R1
 R2
-!i122 221
+!i122 661
 R0
 Z32 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd
 Z33 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd
@@ -213,58 +215,59 @@ V=eB5n[zoVKCYm1MPaEf?G2
 !s100 fG4]z_aN;1Eg?n94@b_1e2
 R3
 33
-R20
+Z34 !s110 1731963536
 !i10b 1
 R21
-Z34 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd|
-Z35 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd|
+Z35 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd|
+Z36 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd|
 !i113 1
 R6
 R7
 Asim
-Z36 DEx4 work 14 universal_ctrl 0 22 X6fLaSMGhbO_kOh]1J_ZY1
-R15
-R13
+Z37 DPx4 ieee 20 numeric_std_unsigned 0 22 L9z`>=>LNY9h8oAIomUKm3
+Z38 DEx4 work 14 universal_ctrl 0 22 2OKMYEW`cF0bM5[4W02jW1
+R8
+R14
 R16
 R17
 R1
 R2
-Z37 DEx4 work 17 tb_universal_uart 0 22 =eB5n[zoVKCYm1MPaEf?G2
-!i122 221
-l32
-Z38 L13 81
-V2z^^B6bPko`5<Rn9]I;O83
-!s100 0RS=^<?Gm9fPhSgL?C2SQ0
+Z39 DEx4 work 17 tb_universal_uart 0 22 =eB5n[zoVKCYm1MPaEf?G2
+!i122 661
+l42
+Z40 L13 125
+Vazd25`[N^GWc<C0c<nezn1
+!s100 >UH3QXPnQz<GX0Y5g4f:b1
 R3
 33
-R20
+R34
 !i10b 1
 R21
-R34
 R35
+R36
 !i113 1
 R6
 R7
 Euart_rx
-Z39 w1727622865
+Z41 w1727693558
 R17
 R1
 R2
-!i122 218
+!i122 658
 R0
-Z40 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd
-Z41 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd
+Z42 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd
+Z43 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd
 l0
-Z42 L14 1
-VWoE[z=85@?mcH5LU?5eLg1
-!s100 OU:D4QcAC6jB^FX[GGPgm1
+Z44 L14 1
+VgmFDSH]=H[l;`l_<2Rh6l2
+!s100 SLeJ67UVHjAfoBe=kJLfF1
 R3
 33
-R20
+Z45 !s110 1731963534
 !i10b 1
-R5
-Z43 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd|
-Z44 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd|
+Z46 !s108 1731963534.000000
+Z47 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd|
+Z48 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_rx.vhd|
 !i113 1
 R6
 R7
@@ -273,41 +276,41 @@ R17
 R1
 R2
 R25
-!i122 218
+!i122 658
 l65
 L44 171
-V:3:ZkS[`P0FRX^8=7MDTi2
-!s100 7Az=e10X^kKJhMWUgXCaL3
+V94X]hb9XYEFOWhl5PejzL3
+!s100 1m?RjR2TkHF7Q57_eWdEo0
 R3
 33
-R20
+R45
 !i10b 1
-R5
-R43
-R44
+R46
+R47
+R48
 !i113 1
 R6
 R7
 Euart_tx
-Z45 w1727623278
+Z49 w1727693592
 R17
 R1
 R2
-!i122 217
+!i122 657
 R0
-Z46 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd
-Z47 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd
+Z50 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd
+Z51 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd
 l0
-R42
-VLNeLEJoOSOaNU4>C:5Nz=3
-!s100 PjbQMlR_Y_IY:YB?=VYjV0
+R44
+Vz9?U12Rj>N1IKo_<gCP3n0
+!s100 DfgCa=ROPYKVE=?04UZ_91
 R3
 33
 R4
 !i10b 1
 R5
-Z48 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd|
-Z49 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd|
+Z52 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd|
+Z53 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/uart/uart_tx.vhd|
 !i113 1
 R6
 R7
@@ -316,65 +319,67 @@ R17
 R1
 R2
 R24
-!i122 217
+!i122 657
 l59
 L41 118
-VgDnbBU;znQ@>I[`B4Zg5?2
-!s100 _DJF@d6Cc<cmN0^X=GY5Y0
+VilcYKHES>lh[mg0>e?82]0
+!s100 [PIJ;]P5_`IQ??cgh8UC22
 R3
 33
 R4
 !i10b 1
 R5
-R48
-R49
+R52
+R53
 !i113 1
 R6
 R7
 Euniversal_ctrl
-Z50 w1727684215
-R15
+Z54 w1731963296
+R8
+R37
 R17
 R1
 R2
-!i122 219
+!i122 659
 R0
-Z51 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
-Z52 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
+Z55 8D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
+Z56 FD:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd
 l0
-L11 1
-VX6fLaSMGhbO_kOh]1J_ZY1
-!s100 Y=0TWno1n1dTzlgV6T9m^1
+L12 1
+V2OKMYEW`cF0bM5[4W02jW1
+!s100 76R6K_F_?dK2j3X5JQ>h>1
 R3
 33
-R20
+R45
 !i10b 1
-R21
-Z53 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd|
-Z54 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd|
+R46
+Z57 !s90 -2008|-work|design|D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd|
+Z58 !s107 D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/sauce/common/universal_ctrl.vhd|
 !i113 1
 R6
 R7
 Abehavioral
 R24
 R25
-R15
+R8
+R37
 R17
 R1
 R2
-R36
-!i122 219
-l57
-L42 109
-V_mUCfZmRbSU`Ze5VSSd[<3
-!s100 6QH<WiWodjM85`FbHecIX0
+R38
+!i122 659
+l111
+L50 367
+VjhB9UJn;?IGZjKCAoB=^@0
+!s100 9V6cfj2^In;i?X]UzV]N90
 R3
 33
-R20
+R45
 !i10b 1
-R21
-R53
-R54
+R46
+R57
+R58
 !i113 1
 R6
 R7

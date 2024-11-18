@@ -19,3 +19,18 @@
 # transcript error: error writing "stdout": broken pipe
     while executing
 "puts -nonewline stdout $s"
+# Current time Mon Nov 18 16:31:46 2024
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vish
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+
+Exception c0000005 has occurred at address 69e89e6f. Traceback:
+# 0    0x69e89e6f: 'Tcl_GetString + 0xf'
+# 1    0x69e71f5a: 'TclListObjSetElement + 0x31a'
+# 2    0x69de3a49: 'TclNRRunCallbacks + 0x49'
+StackWalk failed 299
+# End of Stack Trace
+
