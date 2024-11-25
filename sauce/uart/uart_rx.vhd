@@ -31,6 +31,8 @@ entity uart_rx is
     o_msg         : out std_logic_vector(MSG_W-1 downto 0); -- data output
     o_msg_vld_strb: out std_logic;            -- message out valid strobe signal
 
+    o_busy        : out std_logic;
+
     o_err_noise_strb   : out std_logic;            -- message noise error
     o_err_frame_strb   : out std_logic;            -- message frame error
     o_err_par_strb     : out std_logic             -- message parity error
@@ -64,6 +66,7 @@ architecture behavioral of uart_rx is
   signal rx_sample_stb  : std_logic;                            -- stability of rx
 begin
 
+  o_busy <= '1' when s_rx /= s_rx_IDLE else '0';
 ----------------------------------------------------------------------------------------
 --#SECTION -  SAMPLER
 ----------------------------------------------------------------------------------------

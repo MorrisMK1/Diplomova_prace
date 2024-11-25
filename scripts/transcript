@@ -1,6 +1,6 @@
 # Reading pref.tcl
-# vsim -gui -do "do D:\projekty\CVUT\VSCODE\HDL\diplomova_prace\tbtb_universal_uart.do; run -all" design.tb_universal_uart -assertdebug 
-# Start time: 21:59:06 on Nov 18,2024
+# vsim -gui -do "do D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.do; run -all" design.tb_universal_uart -assertdebug 
+# Start time: 16:21:16 on Nov 25,2024
 # Loading std.standard
 # Loading std.textio(body)
 # Loading ieee.std_logic_1164(body)
@@ -15,8 +15,12 @@
 # Loading design.uart_tx(behavioral)
 # ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/comm_wire_0 has no driver.
 # This port will contribute value (Z) to the signal network.
-# do D:\projekty\CVUT\VSCODE\HDL\diplomova_prace\tbtb_universal_uart.do
-# Cannot open macro file: D:projektyCVUTVSCODEHDLdiplomova_prace	btb_universal_uart.do
+# do D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.do
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: klukz  Hostname: LAPTOP-S2JGJMUA  ProcessID: 13764
+#           Attempting to use alternate WLF file "./wlftaa54gs".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftaa54gs
 #  run -all
 # ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
 #    Time: 0 ps  Iteration: 0  Region: /tb_universal_uart/universal_ctrl_DUT/g_interface
@@ -28,31 +32,6 @@
 #    Time: 5 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
 # ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
 #    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
-#    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
-#    Time: 20 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
-#    Time: 30 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
-#    Time: 40 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-add wave -position insertpoint sim:/tb_universal_uart/*
-restart
-# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
-# ** Warning: (vsim-8683) Uninitialized inout port /tb_universal_uart/universal_ctrl_DUT/comm_wire_0 has no driver.
-# This port will contribute value (Z) to the signal network.
-run
-# GetModuleFileName: Uvedený modul nebyl nalezen.
-# 
-# 
-# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
-#    Time: 0 ps  Iteration: 0  Region: /tb_universal_uart/universal_ctrl_DUT/g_interface
-# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
-#    Time: 0 ps  Iteration: 0  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
-#    Time: 0 ps  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
-#    Time: 5 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
 # ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
 #    Time: 10 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
 # ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
@@ -63,10 +42,6 @@ run
 #    Time: 30 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
 # ** Warning: NUMERIC_STD."=": metavalue detected, returning FALSE
 #    Time: 40 ns  Iteration: 2  Instance: /tb_universal_uart/universal_ctrl_DUT
-run
-run
-run
-run
-run
-# End time: 22:02:26 on Nov 18,2024, Elapsed time: 0:03:20
-# Errors: 0, Warnings: 10
+# Break in Process p_test at D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/tb_universal_uart.vhd line 106
+# End time: 16:22:41 on Nov 25,2024, Elapsed time: 0:01:25
+# Errors: 0, Warnings: 13

@@ -29,14 +29,14 @@ architecture sim of tb_universal_uart is
   signal i_i_data_fifo_ready : out_ready;
   signal o_i_data_fifo_next : in_pulse;
   signal o_o_data_fifo_data : data_bus;
-  signal o_o_data_fifo_ready : out_ready;
-  signal i_o_data_fifo_next : in_pulse;
+  signal i_o_data_fifo_ready : out_ready;
+  signal o_o_data_fifo_next : in_pulse;
   signal i_i_info_fifo_data : info_bus;
   signal i_i_info_fifo_ready : out_ready;
   signal o_i_info_fifo_next : in_pulse;
   signal o_o_info_fifo_data : info_bus;
-  signal o_o_info_fifo_ready : out_ready;
-  signal i_o_info_fifo_next : in_pulse;
+  signal i_o_info_fifo_ready : out_ready;
+  signal o_o_info_fifo_next : in_pulse;
 
 
 begin
@@ -46,61 +46,63 @@ begin
     generate_clk(clk,CLK_PERIOD);
   end process;
 
+  p_fifo_info :process
+  begin
+    sim_fifo_in(o_o_info_fifo_data,o_o_info_fifo_next,i_o_info_fifo_ready,recieved_info,CLK_PERIOD);
+  end process;
+
+  p_fifo_data :process
+  begin
+    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_next,i_o_data_fifo_ready,recieved_data,CLK_PERIOD);
+  end process;
+
   p_test  : process
   begin
     wait for 1 ns;
     i_i_data_fifo_data <= (others => '0');
     i_i_data_fifo_ready <= '0';
-    i_o_data_fifo_next <= '0';
     i_i_info_fifo_data <= (others => '0');
     i_i_info_fifo_ready <= '0';
-    i_o_info_fifo_next <= '0';
-    recieved_data <= ((others => '0') );
-    recieved_info <= ((others => '0') );
     wait for CLK_PERIOD*2;
     i_rst_n <= '1';
     wait for CLK_PERIOD*10;
-    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,"111000000000010100000101");
-    wait until o_i_info_fifo_next = '1';
-    i_i_info_fifo_ready <= '0';
-    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,"01101001");
-    wait until o_i_data_fifo_next = '1';
-    i_i_data_fifo_ready <= '0';
-    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_ready,recieved_data,CLK_PERIOD);
-    i_o_data_fifo_next <= '1';
-    wait until o_o_data_fifo_ready = '0';
-    i_o_data_fifo_next <= '0';
-    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,"11011100");
-    wait until o_i_data_fifo_next = '1';
-    i_i_data_fifo_ready <= '0';
-    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_ready,recieved_data,CLK_PERIOD);
-    i_o_data_fifo_next <= '1';
-    wait until o_o_data_fifo_ready = '0';
-    i_o_data_fifo_next <= '0';
-    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,"00011000");
-    wait until o_i_data_fifo_next = '1';
-    i_i_data_fifo_ready <= '0';
-    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_ready,recieved_data,CLK_PERIOD);
-    i_o_data_fifo_next <= '1';
-    wait until o_o_data_fifo_ready = '0';
-    i_o_data_fifo_next <= '0';
-    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,"10100101");
-    wait until o_i_data_fifo_next = '1';
-    i_i_data_fifo_ready <= '0';
-    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_ready,recieved_data,CLK_PERIOD);
-    i_o_data_fifo_next <= '1';
-    wait until o_o_data_fifo_ready = '0';
-    i_o_data_fifo_next <= '0';
-    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,"11110000");
-    wait until o_i_data_fifo_next = '1';
-    i_i_data_fifo_ready <= '0';
-    sim_fifo_in(o_o_data_fifo_data,o_o_data_fifo_ready,recieved_data,CLK_PERIOD);
-    i_o_data_fifo_next <= '1';
-    wait until o_o_data_fifo_ready = '0';
-    i_o_data_fifo_next <= '0';
-    sim_fifo_in(o_o_info_fifo_data,o_o_info_fifo_ready,recieved_info,CLK_PERIOD);
-    wait until o_o_info_fifo_ready = '0';
-    wait for CLK_PERIOD*10;
+    -- standart test of send + recieve into it self
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_reg0_w("00","000","00000101"));
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"01101001");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"11011100");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"00011000");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"10100101");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"11110000");
+
+    wait for CLK_PERIOD*10000;
+    -- test bitrate change
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_reg1_w("00","000",'0','0','0','0',"101"));
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,"111000000000001100000011");
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"10100101");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"11100011");
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"11010010");
+    wait for CLK_PERIOD*10000;
+    -- test timeout
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_reg2_w("10","000",'0','1',"00010"));
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_reg0_w("00","000","00000010"));
+
+    sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"11100011");
+
+    wait for CLK_PERIOD*10000;
+    --sim_fifo_out(i_i_data_fifo_data,i_i_data_fifo_ready,o_i_data_fifo_next,"00101100");
+
+    wait for CLK_PERIOD*10000;
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_regX_r("01","000","01"));
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_reg1_w("00","000",'1','0','0','0',"101"));
+    sim_fifo_out(i_i_info_fifo_data,i_i_info_fifo_ready,o_i_info_fifo_next,create_regX_r("10","000","01"));
+    
+    wait for CLK_PERIOD*10000;
     std.env.stop(0);
   end process p_test;
 
@@ -121,14 +123,14 @@ begin
     i_i_data_fifo_ready =>  i_i_data_fifo_ready,
     o_i_data_fifo_next =>   o_i_data_fifo_next,
     o_o_data_fifo_data =>   o_o_data_fifo_data,
-    o_o_data_fifo_ready =>  o_o_data_fifo_ready,
-    i_o_data_fifo_next =>   i_o_data_fifo_next,
+    i_o_data_fifo_ready =>  i_o_data_fifo_ready,
+    o_o_data_fifo_next =>   o_o_data_fifo_next,
     i_i_info_fifo_data =>   i_i_info_fifo_data,
     i_i_info_fifo_ready =>  i_i_info_fifo_ready,
     o_i_info_fifo_next =>   o_i_info_fifo_next,
     o_o_info_fifo_data =>   o_o_info_fifo_data,
-    o_o_info_fifo_ready =>  o_o_info_fifo_ready,
-    i_o_info_fifo_next =>   i_o_info_fifo_next,
+    i_o_info_fifo_ready =>  i_o_info_fifo_ready,
+    o_o_info_fifo_next =>   o_o_info_fifo_next,
     comm_wire_0 => comm_wire,
     comm_wire_1 => comm_wire,
     SPI_device_sel => SPI_device_sel

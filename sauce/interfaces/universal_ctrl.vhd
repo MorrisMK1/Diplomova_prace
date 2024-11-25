@@ -27,16 +27,16 @@ entity universal_ctrl is
     o_i_data_fifo_next      : out in_pulse;
 
     o_o_data_fifo_data      : out data_bus;
-    o_o_data_fifo_ready     : out out_ready;
-    i_o_data_fifo_next      : in  in_pulse;
+    i_o_data_fifo_ready     : in  out_ready;
+    o_o_data_fifo_next      : out in_pulse;
   
     i_i_info_fifo_data      : in  info_bus;
     i_i_info_fifo_ready     : in  out_ready;
     o_i_info_fifo_next      : out in_pulse;
 
     o_o_info_fifo_data      : out info_bus;
-    o_o_info_fifo_ready     : out out_ready;
-    i_o_info_fifo_next      : in  in_pulse;
+    i_o_info_fifo_ready     : in  out_ready;
+    o_o_info_fifo_next      : out in_pulse;
 
     comm_wire_0             : inout std_logic := 'Z';
     comm_wire_1             : inout std_logic := 'Z';
@@ -53,13 +53,16 @@ architecture behavioral of universal_ctrl is
     st_downstr_IDLE,
     st_downstr_CHECK,
     st_downstr_REGS,
-    st_downstr_DATA
+    st_downstr_DATA,
+    st_downstr_SYNC
   );
   type t_upstr_state is (
     st_upstr_IDLE,
     st_upstr_DATA,
     st_upstr_REGS,
-    st_upstr_CHECK
+    st_upstr_CHECK,
+    st_upstr_RPRT,
+    st_upstr_SYNC
   );
   type t_updownstr_state is (
     st_updown_IDLE,
@@ -73,6 +76,7 @@ architecture behavioral of universal_ctrl is
 
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
   signal flags          : std_logic_vector(MSG_W-1 downto 0);
+  signal flag_rst       : std_logic;
 
   signal msg_i_vld      : std_logic;
   signal msg_o_vld      : std_logic;
@@ -96,17 +100,27 @@ architecture behavioral of universal_ctrl is
   signal timeout_s      : std_logic;
   signal timeout_rst    : std_logic;
 
-  alias clk_div_sel     : std_logic_vector(2 downto 0) is r_registers(1)(2 downto 0);
-  constant start_polarity  : std_logic := '0';
-  alias auto_flag_rep   : std_logic is r_registers(1)(3);
-  alias allow_unexp_msg : std_logic is r_registers(1)(4);
-  alias interrupt_en    : std_logic is r_registers(1)(5);
-  alias parity_en       : std_logic is r_registers(1)(6);
-  alias timeout_en      : std_logic is r_registers(1)(7);
+  signal sync_up        : std_logic;
+  signal sync_dw        : std_logic;
 
-  alias parity_odd     : std_logic is r_registers(2)(6);
-  alias rst_r           : std_logic is r_registers(2)(7);
-  alias timeout_val     : std_logic_vector(5 downto 0) is r_registers(2)(5 downto 0);
+  constant start_polarity  : std_logic := '0';
+  alias clk_div_sel     : std_logic_vector(2 downto 0) is r_registers(1)(2 downto 0);
+  alias auto_flag_rep   : std_logic is r_registers(1)(3);
+  alias parity_en       : std_logic is r_registers(1)(5);
+  alias parity_odd      : std_logic is r_registers(1)(6);
+  alias rst_r           : std_logic is r_registers(1)(7);
+
+  alias timeout_val     : std_logic_vector(4 downto 0) is r_registers(2)(4 downto 0);
+  alias timeout_en      : std_logic is r_registers(2)(5);
+  alias allow_unexp_msg : std_logic is r_registers(2)(6);
+
+  alias flg_frame       : std_logic is flags(0);
+  alias flg_timeout     : std_logic is flags(1);
+  alias flg_parity      : std_logic is flags(2);
+  alias flg_data_size   : std_logic is flags(3);
+  alias flg_undef_flg   : std_logic_vector(1 downto 0) is flags(5 downto 4);
+  alias flg_unexpected  : std_logic is flags(6);
+  alias flg_noise       : std_logic is flags(7);
 
 begin
 ----------------------------------------------------------------------------------------
@@ -114,10 +128,12 @@ begin
 ----------------------------------------------------------------------------------------
 rst_n <= i_rst_n and not rst_r and not en_rst;
 clk_en <= i_clk and i_en;
+flg_undef_flg <= (others => '0'); 
 
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable
 ----------------------------------------------------------------------------------------
+--  generating reset pulse after enabling interface to ensure indentical start state
 p_en_autorst  : process (i_clk)
   variable last_en    : std_logic;
 begin
@@ -146,30 +162,38 @@ begin
   register_selection := to_integer(unsigned(reg_reg_op));
   if rising_edge(clk_en) then 
     inf_rdy_strb <= '0';
+    -- internal reset from registr should not reset registers
     if (i_rst_n = '0' or en_rst = '1') then
       for i in 1 to 3 loop
         r_registers(i) <= (others => '0');
       end loop;
       inf_reg <= (others => '0');
     else
+      rst_r <= '0'; -- internal reset is only a strobe
       if reg_op_rdy_strb = '1' then
         if read_reg_op = '0' and (reg_reg_op(0) xor reg_reg_op(1)) = '1' then
           r_registers(register_selection) <= data_reg_op;
         end if;
         if read_reg_op = '1' then
-          inf_reg <= id_reg_op & "0" & reg_reg_op & MY_ID & r_registers(register_selection);
+          inf_reg <= id_reg_op & "0" & reg_reg_op & MY_ID & r_registers(register_selection) & x"00";
           inf_rdy_strb <= '1';
         end if;
+        -- register 3 will be reset after every interaction
         if register_selection = 3 then
           r_registers(3) <= (others => '0') ;
         end if;
       end if;
     end if;
-    for i in flags'range loop
-      if flags(i) = '1' then
-        r_registers(3)(i) <= '1';
-      end if;
-    end loop;
+    -- separate capturing of flags, they are strobed
+    if flag_rst = '1' then
+      r_registers(3) <= (others => '0');
+    else
+      for i in flags'range loop
+        if flags(i) = '1' then
+          r_registers(3)(i) <= '1';
+        end if;
+      end loop;
+    end if;
   end if;
 end process p_cfg_manager;
 
@@ -177,22 +201,25 @@ end process p_cfg_manager;
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
 p_timeout : process (clk_en)
-  variable step : natural range 0 to 1118481;
+  variable step : natural range 0 to 1048575;
+  variable offset : std_logic_vector(clk_div'length downto 0);
 begin
+  -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
   if rising_edge (clk_en) then
-    if (clk_div(14 downto 0) & "0") = timeout_reg then
-      timeout_s <= '1';
+    offset := ("0" & clk_div) when parity_en = '1' else (clk_div & "0");
+    if to_integer(unsigned(timeout_val)) = timeout_reg + 1 then
+      timeout_s <= timeout_en or allow_unexp_msg;
     else
       timeout_s <= '0';
     end if;
     if (timeout_rst = '1') then
       timeout_reg <= (others => '0');
       step := 0;
-    elsif timeout_s = '0'then
+    elsif timeout_s = '0' then
       step := step + 1;
     end if;
-    if step = (clk_div & x"00") then
-      timeout_reg <= timeout_reg + 1;
+    if step = (clk_div & "000" + offset) then
+      timeout_reg <= timeout_reg + not sync_up; -- this way it will wait till all data is send before starting timeout on recieved data
       step := 0;
     end if;
   end if;
@@ -218,6 +245,8 @@ begin
     o_i_data_fifo_next <= '0';
     o_i_info_fifo_next <= '0';
     msg_i_vld <= '0';
+    sync_dw <= '0';
+    flg_data_size <= '0';
     if (rst_n = '0')then
       st_downstr := st_downstr_IDLE;
       reg_op <= (others => '0');
@@ -228,21 +257,22 @@ begin
       case( st_downstr ) is
         when st_downstr_IDLE =>
           data_cnt := 0;
+          sync_dw <= '1';
           if i_i_info_fifo_ready = '1' then
             st_downstr := st_downstr_CHECK;
           end if;
         when st_downstr_CHECK =>
-          if i_i_info_fifo_data(MSG_W*2+4 downto MSG_W*2+3) /= "00" then
+          if i_i_info_fifo_data(MSG_W*2+4 downto MSG_W*2+3) /= "00" then -- redirectiong to register controller
             reg_op <= i_i_info_fifo_data(3 * MSG_W - 1 downto MSG_W);
             st_downstr := st_downstr_REGS;
             reg_op_rdy_strb <= '1';
-          else
+          else  -- continue writing data
             data_cnt := to_integer(unsigned(i_i_info_fifo_data(7+MSG_W downto MSG_W)));
             st_downstr := st_downstr_DATA;
           end if;
             o_i_info_fifo_next <= '1';
         when st_downstr_REGS =>
-          if inf_rdy_strb = '1' then
+          if inf_rdy_strb = '0' then
             st_downstr := st_downstr_IDLE;
           end if;
         when st_downstr_DATA =>
@@ -254,10 +284,20 @@ begin
                 msg_i_vld <= '1';
               end if;
             elsif last_out_state = '0' then
-              o_i_data_fifo_next <= '1';
+              o_i_data_fifo_next <= i_i_data_fifo_ready;
+              if i_i_data_fifo_ready = '0' then
+                flg_data_size <= '1';
+                st_downstr := st_downstr_IDLE;
+              end if;
             end if;
             last_out_state := out_busy;
           elsif out_busy = '0' then
+            st_downstr := st_downstr_SYNC;
+            o_i_data_fifo_next <= '1';
+          end if;
+        when st_downstr_SYNC =>
+          sync_dw <= '1'; -- make sure the streams are synchronized
+          if sync_up = '1' then
             st_downstr := st_downstr_IDLE;
           end if;
         when others =>
@@ -277,51 +317,79 @@ p_upstream  : process (clk_en)
 begin
   if rising_edge(clk_en) then
     timeout_rst <= '0';
-    o_o_data_fifo_ready <= '0';
-    flags(7) <= '0';
+    o_o_data_fifo_next <= '0';
+    flg_timeout <= '0';
+    sync_up <= '0';
+    flag_rst <= '0';
+    flg_unexpected <= '0';
     if rst_n = '0' then
       st_upstr := st_upstr_IDLE;
       data_cnt := 0;
       o_o_data_fifo_data <= (others => '0');
+      o_o_info_fifo_data <= (others => '0'); 
+      flag_rst <= '1';
     else
       case st_upstr is
         when st_upstr_IDLE =>
           timeout_rst <= '1';
-          o_o_info_fifo_ready <= '0';
+          sync_up <= '1';
+          o_o_info_fifo_next <= '0';
           if i_i_info_fifo_ready = '1' and i_i_info_fifo_data(MSG_W*2+4 downto MSG_W*2+3) = "00" then
             data_cnt := 0;
             cmd := i_i_info_fifo_data(3*MSG_W-1 downto 2*MSG_W) &  i_i_info_fifo_data(1*MSG_W-1 downto 0*MSG_W);
             st_upstr := st_upstr_DATA;
           elsif inf_rdy_strb = '1' then
             st_upstr := st_upstr_REGS;
-            o_o_info_fifo_data <= cmd & std_logic_vector(to_unsigned(0,MSG_W));
+            o_o_info_fifo_data <= inf_reg;
           end if;
+          
+          if BUS_MODE = t_bus_UART then
+            if msg_o_vld = '1' then
+              if allow_unexp_msg = '1' then
+                --#TODO - finish unexpected messages 
+              else
+                flg_unexpected <= '1';
+              end if;
+            end if;
+          end if;
+
         when st_upstr_REGS =>
-          o_o_info_fifo_ready <= '1';
+          o_o_info_fifo_next <= '1';
           st_upstr := st_upstr_IDLE;
         when st_upstr_DATA =>
           if out_busy = '1' or data_cnt < cmd(MSG_W-1 downto 0) then
-            if timeout_s = '1' then
-              st_upstr := st_upstr_CHECK;
-              flags(7) <= '1';
+            if timeout_s = '1' and timeout_en = '1' then
+              cmd(MSG_W-1 downto 0) := std_logic_vector(to_unsigned(data_cnt,MSG_W));
+              flg_timeout <= '1';
             end if;
             if msg_o_vld = '1' then
               timeout_rst <= '1';
               o_o_data_fifo_data <= msg_o_dat;
-              o_o_data_fifo_ready <= '1';
+              o_o_data_fifo_next <= '1';
               data_cnt := data_cnt + 1;
             end if;
           else
             st_upstr := st_upstr_CHECK;
           end if;
         when st_upstr_CHECK =>
-            if r_registers(3) = x"00" then
-              o_o_info_fifo_data <= (cmd and "1101111111111111") & x"00";
-            elsif auto_flag_rep = '1' then
-              o_o_info_fifo_data <= (cmd(15 downto 8) & r_registers(3));
+            if auto_flag_rep = '1' and r_registers(3) /= x"00" then
+              o_o_info_fifo_data <= (cmd and "1101111111111111") & r_registers(3);
+            else
+              o_o_info_fifo_data <= (cmd) & r_registers(3);
             end if;
-            o_o_info_fifo_ready <= '1';
-            st_upstr := st_upstr_IDLE;
+            st_upstr := st_upstr_RPRT;
+            o_o_info_fifo_next <= '1';
+        when st_upstr_RPRT =>
+            if r_registers(3) /= x"00" and flag_rst <= '0' then
+              flag_rst <= '1';
+            else
+              st_upstr := st_upstr_SYNC;
+            end if;
+        when st_upstr_SYNC =>
+            sync_up <= '1';
+            if sync_dw = '1' then
+              st_upstr := st_upstr_IDLE;
+            end if;
         when others =>
           st_upstr := st_upstr_IDLE;
       end case;
@@ -385,9 +453,9 @@ end generate;
       i_clk_div => unsigned(clk_div),
       o_msg => msg_o_dat,
       o_msg_vld_strb => msg_o_vld,
-      o_err_noise_strb => flags(7),
-      o_err_frame_strb => flags(0),
-      o_err_par_strb => flags(2)
+      o_err_noise_strb => flg_noise,
+      o_err_frame_strb => flg_frame,
+      o_err_par_strb => flg_parity
     );
   
     uart_tx_inst : entity work.uart_tx

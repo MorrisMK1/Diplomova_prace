@@ -20,7 +20,7 @@ COMPILE_LIST_FILE="$SCRIPT_DIR/../sauce/compile_list.txt"
 VERIFICATION_DIR="$SCRIPT_DIR/../tb"
 LIBRARY_DIR="$SCRIPT_DIR/../library"
 TMP_DIR="$SCRIPT_DIR/tmp"
-DO_PATH="D:\projekty\CVUT\VSCODE\HDL\diplomova_prace\tb"
+DO_PATH="D:/projekty/CVUT/VSCODE/HDL/diplomova_prace/tb/"
 
 # Process command line arguments
 while getopts ":wltgh" opt; do

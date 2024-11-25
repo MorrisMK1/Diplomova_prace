@@ -1,0 +1,5 @@
+
+scripts/**
+!scripts/run_test
+!scripts/transcript
+!scripts/vsim.wlf

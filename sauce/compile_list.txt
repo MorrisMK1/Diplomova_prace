@@ -2,6 +2,7 @@
 /common/tb_common.vhd
 /uart/uart_tx.vhd
 /uart/uart_rx.vhd
-/common/universal_ctrl.vhd
+/interfaces/universal_ctrl.vhd
+/interfaces/main_ctrl.vhd
 /tb/tb_uart.vhd
 /tb/tb_universal_uart.vhd
