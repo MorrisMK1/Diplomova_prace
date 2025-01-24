@@ -1,34 +1,36 @@
 library ieee;
-use ieee.std_logic_1164.ALL;
-use ieee.numeric_std.all;
-use ieee.NUMERIC_STD_UNSIGNED.all;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use ieee.numeric_std_unsigned.all;
+
 library work;
-use work.my_common.all;
+  use work.my_common.all;
 
 ----------------------------------------------------------------------------------------
 -- #ANCHOR - ENTITY
 ----------------------------------------------------------------------------------------
+
 entity main_ctrl is
   port (
-    i_clk   : in std_logic;
-    i_rst_n : in std_logic;
+    i_clk                   : in    std_logic;
+    i_rst_n                 : in    std_logic;
 
-    i_i_data_fifo_data      : in  data_bus;
-    i_i_data_fifo_ready     : in  out_ready;
-    o_i_data_fifo_next      : out in_pulse;
-    o_o_data_fifo_data      : out data_bus;
-    i_o_data_fifo_ready     : in  out_ready;
-    o_o_data_fifo_next      : out in_pulse;
+    i_i_data_fifo_data      : in    data_bus;
+    i_i_data_fifo_ready     : in    out_ready;
+    o_i_data_fifo_next      : out   in_pulse;
+    o_o_data_fifo_data      : out   data_bus;
+    i_o_data_fifo_ready     : in    out_ready;
+    o_o_data_fifo_next      : out   in_pulse;
 
-    i_i_info_fifo_data      : in  info_bus;
-    i_i_info_fifo_ready     : in  out_ready;
-    o_i_info_fifo_next      : out in_pulse;
-    o_o_info_fifo_data      : out info_bus;
-    i_o_info_fifo_ready     : in  out_ready;
-    o_o_info_fifo_next      : out in_pulse;
+    i_i_info_fifo_data      : in    info_bus;
+    i_i_info_fifo_ready     : in    out_ready;
+    o_i_info_fifo_next      : out   in_pulse;
+    o_o_info_fifo_data      : out   info_bus;
+    i_o_info_fifo_ready     : in    out_ready;
+    o_o_info_fifo_next      : out   in_pulse;
 
-    i_settings              : in  std_logic_array (1 to 2) (MSG_W-1 downto 0);
-    o_flags                 : out std_logic_vector(MSG_W-1 downto 0);
+    i_settings              : in    std_logic_array (1 to 2) (MSG_W-1 downto 0);
+    o_flags                 : out   std_logic_vector(MSG_W-1 downto 0);
 
     comm_wire_0             : inout std_logic := 'Z';
     comm_wire_1             : inout std_logic := 'Z'
@@ -42,25 +44,28 @@ architecture behavioral of main_ctrl is
     st_reciever_h_info,
     st_reciever_h_data,
     st_reciever_h_back,
-    st_reciever_data
+    st_reciever_data,
+    st_reciever_header
   );
 
   signal start_pol        : std_logic;
   signal par_en           : std_logic;
   signal par_type         : std_logic;
   signal clk_div          : unsigned(15 downto 0);
-  signal o_msg            : std_logic_vector(MSG_W-1 downto 0);
+  signal o_msg            : std_logic_vector(MSG_W - 1 downto 0);
   signal o_msg_vld_strb   : std_logic;
   signal o_busy_rx        : std_logic;
   signal o_err_noise_strb : std_logic;
   signal o_err_frame_strb : std_logic;
   signal o_err_par_strb   : std_logic;
 
-  signal i_msg            : std_logic_vector(MSG_W-1 downto 0);
+  signal i_msg            : std_logic_vector(MSG_W - 1 downto 0);
   signal i_msg_vld        : std_logic;
   signal o_busy_tx        : std_logic;
 
   signal timeout_s        : std_logic;
+  signal timeout_rst      : std_logic;
+  signal timeout_reg      : std_logic_vector(4 downto 0);
 
   alias clk_div_sel       : std_logic_vector(2 downto 0) is i_settings(1)(2 downto 0);
   alias auto_flag_rep     : std_logic is i_settings(1)(3);
@@ -69,7 +74,6 @@ architecture behavioral of main_ctrl is
 
   alias timeout_val       : std_logic_vector(4 downto 0) is i_settings(2)(4 downto 0);
   alias timeout_en        : std_logic is i_settings(2)(5);
-  alias allow_unexp_msg   : std_logic is i_settings(2)(6);
 
 
 begin
@@ -77,31 +81,33 @@ begin
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
-p_timeout : process (i_clk)
-  variable step : natural range 0 to 1048575;
-  variable offset : std_logic_vector(clk_div'length downto 0);
-begin
-  -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
-  if rising_edge (i_clk) then
-    offset := ("0" & clk_div) when parity_en = '1' else (clk_div & "0");
-    if to_integer(unsigned(timeout_val)) = timeout_reg + 1 then
-      timeout_s <= timeout_en or allow_unexp_msg;
-    else
-      timeout_s <= '0';
+  p_timeout : process (i_clk)
+    variable step : natural range 0 to 1048575;
+    variable offset : std_logic_vector(clk_div'length downto 0);
+  begin
+    -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
+    if rising_edge (i_clk) then
+      offset := ("0" & clk_div) when parity_en = '1' else (clk_div & "0");
+      if to_integer(unsigned(timeout_val)) = timeout_reg + 1 then
+        timeout_s <= timeout_en;
+      else
+        timeout_s <= '0';
+      end if;
+      if (timeout_rst = '1') then
+        timeout_reg <= (others => '0');
+        step := 0;
+      elsif (timeout_s = '0') then
+        step := step + 1;
+      end if;
+      if (step = (clk_div & "000" + offset)) then
+        timeout_reg <= timeout_reg + not sync_up; -- this way it will wait till all data is send before starting timeout on recieved data
+        step := 0;
+      end if;
     end if;
-    if (timeout_rst = '1') then
-      timeout_reg <= (others => '0');
-      step := 0;
-    elsif timeout_s = '0' then
-      step := step + 1;
-    end if;
-    if step = (clk_div & "000" + offset) then
-      timeout_reg <= timeout_reg + not sync_up; -- this way it will wait till all data is send before starting timeout on recieved data
-      step := 0;
-    end if;
-  end if;
-end process;
-
+  end process;
+----------------------------------------------------------------------------------------
+--ANCHOR - Speed selection
+----------------------------------------------------------------------------------------
 p_clk_div_sel : process (clk_div_sel)
   begin
     case( to_integer(unsigned(clk_div_sel)) ) is
@@ -131,33 +137,81 @@ p_clk_div_sel : process (clk_div_sel)
 ----------------------------------------------------------------------------------------
 p_reciever : process (i_clk)
   variable st_reciever : fsm_reciever := st_reciever_idle;
+  variable header      : info_bus;
+  variable data_cnt    : std_logic_vector(MSG_W - 1 downto 0);
 begin
   if i_rst_n = '0' then
-    st_reciever <= idle;
+    st_reciever := st_reciever_idle;
     o_o_info_fifo_data <= (others => '0');
     o_o_data_fifo_data <= (others => '0');
+    header := (others => '0');
   else
     o_o_data_fifo_next <= '0';
     o_o_info_fifo_next <= '0';
     case( st_reciever ) is
-      when st_reciver_idle =>
+      when st_reciever_idle =>
+        header := (others => '0');
+        data_cnt := 0;
         if o_busy_rx = '1' then
-          st_reciever <= st_reciever_h_info;
+          st_reciever := st_reciever_h_info;
         end if;
       when st_reciever_h_info =>
         if o_msg_vld_strb = '1' then
-
+          header := (o_msg & header(MSG_W * 2 - 1 downto 0));
+          if (o_msg(4 downto 3) /= "00") then
+            if (o_msg(5) = '1') then
+              st_reciever := st_reciever_header;
+            else
+              st_reciever := st_reciever_h_data;
+            end if;
+          else
+            st_reciever := st_reciever_h_data;
+          end if;
         end if;
       when st_reciever_h_data =>
+        if (o_msg_vld_strb = '1') then
+          header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
+          data_cnt := o_msg;
+          if (header(MSG_W * 2 + 4 downto MSG_W * 2 + 3) /= "00") then
+            st_reciever := st_reciever_header;
+          elsif (header(MSG_W * 2 + 5) = 1) then
+            st_reciever := st_reciever_h_back;
+          else
+            st_reciever := st_reciever_data;
+          end if;
+        end if;
       when st_reciever_h_back =>
+        if (o_msg_vld_strb = '1') then
+          header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
+          st_reciever := st_reciever_data;
+        end if;
       when st_reciever_data =>
-    
+        if (o_msg_vld_strb = '1') then
+          if (i_o_data_fifo_ready = '1') then
+            o_o_data_fifo_data <= o_msg;
+            o_o_data_fifo_next <= '1';
+            data_cnt := data_cnt - 1;
+          else
+            st_reciever := st_reciever_header;
+          end if;
+        end if;
+        if (data_cnt < 1) then
+          st_reciever := st_reciever_header;
+        end if;
+      when st_reciever_header =>
+        if (i_o_data_fifo_ready = '1') then
+
+        else
+
+        end if;
       when others =>
-    
+        st_reciever := st_reciever_idle;
     end case ;
   end if;
 end process; --#!SECTION
-
+----------------------------------------------------------------------------------------
+--#SECTION - UART
+----------------------------------------------------------------------------------------
   uart_tx_inst : entity work.uart_tx
   generic map (
     MSG_W => MSG_W,
@@ -197,7 +251,7 @@ port map (
   o_err_frame_strb => o_err_frame_strb,
   o_err_par_strb => o_err_par_strb
 );
-
+--!SECTION
 
 end architecture;
 

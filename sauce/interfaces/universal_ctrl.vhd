@@ -225,11 +225,7 @@ begin
   end if;
 end process;
 ----------------------------------------------------------------------------------------
---#SECTION - STREAM  CONTROL GENERATION
-----------------------------------------------------------------------------------------
-g_duplex : if BUS_MODE = t_bus_UART or BUS_MODE = t_bus_SPI generate
-----------------------------------------------------------------------------------------
---#SECTION - FULL DUPLEX
+--#SECTION - STREAM  CONTROL
 ----------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------
@@ -372,7 +368,7 @@ begin
             st_upstr := st_upstr_CHECK;
           end if;
         when st_upstr_CHECK =>
-            if auto_flag_rep = '1' and r_registers(3) /= x"00" then
+            if auto_flag_rep = '1' and ( b"00" & r_registers(3)(5 downto 0)) /= x"00" then
               o_o_info_fifo_data <= (cmd and "1101111111111111") & r_registers(3);
             else
               o_o_info_fifo_data <= (cmd) & r_registers(3);
@@ -397,20 +393,8 @@ begin
   end if;
 end process p_upstream;
 
---#!SECTION
-else generate
 ----------------------------------------------------------------------------------------
---#SECTION - HALF DUPLEX
-----------------------------------------------------------------------------------------
---#!SECTION
-end generate;
---#!SECTION
-----------------------------------------------------------------------------------------
---#SECTION - BUS CONTROLLER GENERATION
-----------------------------------------------------------------------------------------
-  g_interface : case BUS_MODE generate
-----------------------------------------------------------------------------------------
---#ANCHOR - UART
+--#SECTION - UART
 ----------------------------------------------------------------------------------------
     when t_bus_UART =>
     p_clk_div_sel : process (clk_div_sel)
@@ -478,7 +462,5 @@ end generate;
   
     when others =>
     
-  end generate; --#!SECTION
-
 
 end architecture; --#!SECTION
