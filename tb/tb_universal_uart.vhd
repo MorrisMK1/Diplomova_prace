@@ -107,7 +107,7 @@ begin
   end process p_test;
 
 
-  universal_ctrl_DUT : entity work.universal_ctrl
+  universal_ctrl_DUT : entity uart_ctrl
   generic map (
     MSG_W => MSG_W,
     SMPL_W => SMPL_W,

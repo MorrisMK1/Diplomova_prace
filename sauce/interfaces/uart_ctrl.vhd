@@ -9,12 +9,11 @@ use work.my_common.all;
 ----------------------------------------------------------------------------------------
 -- #ANCHOR - ENTITY
 ----------------------------------------------------------------------------------------
-entity universal_ctrl is
+entity uart_ctrl is
   generic (
     constant  MSG_W         : natural := 8;             -- message width
     constant  SMPL_W        : natural := 8;             -- rx line sample width
     constant  START_OFFSET  : natural := 10;            -- offset in clks between start and first bit
-    constant  BUS_MODE      : t_bus_type := t_bus_UART; -- type of bus
     constant  MY_ID         : STD_LOGIC_VECTOR(BUS_ID_W-1 downto 0) := "000"
   );
   port (
@@ -42,12 +41,12 @@ entity universal_ctrl is
     comm_wire_1             : inout std_logic := 'Z';
     SPI_device_sel          : out STD_LOGIC_VECTOR(MSG_W-1 downto 0) := (others => 'Z')
   );
-end universal_ctrl;
+end uart_ctrl;
 
 ----------------------------------------------------------------------------------------
 --#SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture behavioral of universal_ctrl is
+architecture behavioral of uart_ctrl is
 
   type t_downstr_state is (
     st_downstr_IDLE,
@@ -339,15 +338,14 @@ begin
             o_o_info_fifo_data <= inf_reg;
           end if;
           
-          if BUS_MODE = t_bus_UART then
-            if msg_o_vld = '1' then
-              if allow_unexp_msg = '1' then
-                --#TODO - finish unexpected messages 
-              else
-                flg_unexpected <= '1';
-              end if;
+          if msg_o_vld = '1' then
+            if allow_unexp_msg = '1' then
+              --#TODO - finish unexpected messages 
+            else
+              flg_unexpected <= '1';
             end if;
           end if;
+          
 
         when st_upstr_REGS =>
           o_o_info_fifo_next <= '1';
@@ -396,7 +394,7 @@ end process p_upstream;
 ----------------------------------------------------------------------------------------
 --#SECTION - UART
 ----------------------------------------------------------------------------------------
-    when t_bus_UART =>
+
     p_clk_div_sel : process (clk_div_sel)
     begin
       case( to_integer(unsigned(clk_div_sel)) ) is
@@ -460,7 +458,6 @@ end process p_upstream;
       o_busy => out_busy
     );
   
-    when others =>
     
 
 end architecture; --#!SECTION

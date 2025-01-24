@@ -30,7 +30,7 @@ entity main_ctrl is
     o_o_info_fifo_next      : out   in_pulse;
 
     i_settings              : in    std_logic_array (1 to 2) (MSG_W-1 downto 0);
-    o_flags                 : out   std_logic_vector(MSG_W-1 downto 0);
+    o_ready                 : out   std_logic;
 
     comm_wire_0             : inout std_logic := 'Z';
     comm_wire_1             : inout std_logic := 'Z'
@@ -48,16 +48,20 @@ architecture behavioral of main_ctrl is
     st_reciever_header
   );
 
-  signal start_pol        : std_logic;
-  signal par_en           : std_logic;
-  signal par_type         : std_logic;
+  type fsm_sender is (
+    st_sender_idle,
+    st_sender_snd_head_1,
+    st_sender_snd_head_2,
+    st_sender_snd_head_3,
+    st_sender_snd_data,
+    st_sender_term
+  );
+
   signal clk_div          : unsigned(15 downto 0);
+
   signal o_msg            : std_logic_vector(MSG_W - 1 downto 0);
   signal o_msg_vld_strb   : std_logic;
   signal o_busy_rx        : std_logic;
-  signal o_err_noise_strb : std_logic;
-  signal o_err_frame_strb : std_logic;
-  signal o_err_par_strb   : std_logic;
 
   signal i_msg            : std_logic_vector(MSG_W - 1 downto 0);
   signal i_msg_vld        : std_logic;
@@ -67,17 +71,46 @@ architecture behavioral of main_ctrl is
   signal timeout_rst      : std_logic;
   signal timeout_reg      : std_logic_vector(4 downto 0);
 
+  signal flags_reg        : std_logic_vector(MSG_W-1 downto 0);
+  signal flags            : std_logic_vector(MSG_W-1 downto 0);
+  signal flag_rst         : std_logic;
+  signal sync_up          : std_logic;
+
   alias clk_div_sel       : std_logic_vector(2 downto 0) is i_settings(1)(2 downto 0);
   alias auto_flag_rep     : std_logic is i_settings(1)(3);
   alias parity_en         : std_logic is i_settings(1)(5);
   alias parity_odd        : std_logic is i_settings(1)(6);
+  constant start_pol        : std_logic := '0';
 
   alias timeout_val       : std_logic_vector(4 downto 0) is i_settings(2)(4 downto 0);
   alias timeout_en        : std_logic is i_settings(2)(5);
+  
+  alias err_noise_strb    : std_logic is flags(7);
+  alias err_frame_strb    : std_logic is flags(0);
+  alias err_timeout_strb  : std_logic is flags(1);
+  alias err_par_strb      : std_logic is flags(2);
+  alias err_data_size_strb: std_logic is flags(3);
 
 
 begin
 
+----------------------------------------------------------------------------------------
+--#ANCHOR - Flag management
+----------------------------------------------------------------------------------------
+  flag_p : process (i_clk)
+  begin
+    if rising_edge(i_clk) then
+      if flag_rst = '1' then
+        flags_reg <= (others => '0');
+      else
+        for i in flags'range loop
+          if flags(i) = '1' then
+            flags_reg <= '1';
+          end if;
+        end loop;
+      end if;
+    end if;
+  end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
@@ -131,23 +164,31 @@ p_clk_div_sel : process (clk_div_sel)
         clk_div <= x"208D";
     end case ;
   end process;
-
 ----------------------------------------------------------------------------------------
---#SECTION - Data input logic
+--SECTION - Stream logic
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--ANCHOR - Data input logic
 ----------------------------------------------------------------------------------------
 p_reciever : process (i_clk)
   variable st_reciever : fsm_reciever := st_reciever_idle;
   variable header      : info_bus;
   variable data_cnt    : std_logic_vector(MSG_W - 1 downto 0);
 begin
-  if i_rst_n = '0' then
+  if (i_rst_n = '0') then
+    err_data_size_strb <= '0';
+    flag_rst <= '1';
     st_reciever := st_reciever_idle;
     o_o_info_fifo_data <= (others => '0');
     o_o_data_fifo_data <= (others => '0');
     header := (others => '0');
-  else
+    o_ready <= '0';
+  elsif (rising_edge(i_clk)) then
+    o_ready <= i_o_info_fifo_ready and st_reciever = st_reciever_idle;
+    flag_rst <= '0';
     o_o_data_fifo_next <= '0';
     o_o_info_fifo_next <= '0';
+    err_data_size_strb <= '0';
     case( st_reciever ) is
       when st_reciever_idle =>
         header := (others => '0');
@@ -193,24 +234,105 @@ begin
             data_cnt := data_cnt - 1;
           else
             st_reciever := st_reciever_header;
+            err_data_size_strb <= '1';
           end if;
         end if;
         if (data_cnt < 1) then
           st_reciever := st_reciever_header;
         end if;
       when st_reciever_header =>
-        if (i_o_data_fifo_ready = '1') then
-
-        else
-
+        if (i_o_info_fifo_ready = '1') then
+          if (data_cnt > 0) then
+            -- says that wants no response but gives flags as response size  => its error message
+            -- given size of data to be transfered will be erased from data output
+            o_o_info_fifo_data <= (header(MSG_W * 3 - 1 downto MSG_W * 2 + 6) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & (header(MSG_W * 2 - 1 downto MSG_W * 1) - data_cnt) & flags_reg);
+          else
+            o_o_info_fifo_data <= header;
+          end if;
+          o_o_info_fifo_next <= '1';
+          st_reciever := st_reciever_idle;
         end if;
       when others =>
         st_reciever := st_reciever_idle;
     end case ;
   end if;
-end process; --#!SECTION
+end process; 
+
+----------------------------------------------------------------------------------------
+--ANCHOR - Data output logic
+----------------------------------------------------------------------------------------
+  p_sender: process (i_clk)
+    variable st_sender    : fsm_sender;
+    variable data_cnt     : std_logic_vector(MSG_W - 1 downto 0);
+    variable header       : info_bus;
+  begin
+    if(i_rst_n = '0') then
+      data_cnt := '0';
+      st_sender := st_sender_idle;
+      header := (others => '0') ;
+      o_i_data_fifo_next <= '0';
+      o_i_info_fifo_next <= '0';
+      i_msg_vld <= '0';
+    elsif rising_edge(i_clk) then
+      o_i_data_fifo_next <= '0';
+      o_i_info_fifo_next <= '0';
+      i_msg_vld <= '0';
+      case( st_sender ) is
+        when st_sender_idle =>
+          if (i_i_info_fifo_ready = '1') then
+            st_sender := st_sender_snd_head_1;
+            o_i_info_fifo_next <= '1';
+            data_cnt := 0;
+          end if;
+        when st_sender_snd_head_1 =>
+          header := i_i_info_fifo_data;
+          i_msg <= i_i_info_fifo_data(MSG_W * 3 - 1 downto MSG_W * 2);
+          if (o_busy_tx = '0') then
+            i_msg_vld <= '1';
+            st_sender := st_sender_snd_head_2;
+          end if;
+        when st_sender_snd_head_2 =>
+        i_msg <= header(MSG_W * 2 - 1 downto MSG_W * 1);
+        if (o_busy_tx = '0') then
+          i_msg_vld <= '1';
+          st_sender := st_sender_snd_head_3;
+        end if;
+        when st_sender_snd_head_3 =>
+        i_msg <= header(MSG_W * 1 - 1 downto MSG_W * 0);
+        if (o_busy_tx = '0') then
+          i_msg_vld <= '1';
+          st_sender := st_sender_snd_data;
+          o_i_data_fifo_next <= '1';
+        end if;
+        when st_sender_snd_data =>
+          if (data_cnt < header(MSG_W * 2 - 1 downto MSG_W * 1)) then
+            if (i_i_data_fifo_ready = '1') then
+              i_msg <= i_i_data_fifo_data;
+              if (o_busy_tx = '0') then
+                o_i_data_fifo_next <= '1';
+                data_cnt := data_cnt + 1;
+                i_msg_vld <= '1';
+              end if;
+            else -- this shouldnt be possible but oh well
+              st_sender := st_sender_term;
+            end if;
+          else
+            st_sender := st_sender_term;
+          end if;
+        when st_sender_term =>
+          st_sender := st_sender_idle;
+        when others =>
+          st_sender := st_sender_idle;
+      end case ;
+    end if;
+  end process;
+--#!SECTION
+
 ----------------------------------------------------------------------------------------
 --#SECTION - UART
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--ANCHOR - TX
 ----------------------------------------------------------------------------------------
   uart_tx_inst : entity work.uart_tx
   generic map (
@@ -223,13 +345,15 @@ end process; --#!SECTION
     i_msg => i_msg,
     i_msg_vld => i_msg_vld,
     i_start_pol => start_pol,
-    i_par_en => par_en,
-    i_par_type => par_type,
+    i_par_en => parity_en,
+    i_par_type => parity_odd,
     i_clk_div => clk_div,
     o_tx => comm_wire_0,
     o_busy => o_busy_tx
   );
-
+----------------------------------------------------------------------------------------
+--ANCHOR - RX
+----------------------------------------------------------------------------------------
 uart_rx_inst : entity work.uart_rx
 generic map (
   MSG_W => MSG_W,
@@ -241,15 +365,15 @@ port map (
   i_rst_n => i_rst_n,
   i_rx => comm_wire_1,
   i_start_pol => start_pol,
-  i_par_en => par_en,
-  i_par_type => par_type,
+  i_par_en => parity_en,
+  i_par_type => parity_odd,
   i_clk_div => clk_div,
   o_msg => o_msg,
   o_msg_vld_strb => o_msg_vld_strb,
   o_busy => o_busy_rx,
-  o_err_noise_strb => o_err_noise_strb,
-  o_err_frame_strb => o_err_frame_strb,
-  o_err_par_strb => o_err_par_strb
+  o_err_noise_strb => err_noise_strb,
+  o_err_frame_strb => err_frame_strb,
+  o_err_par_strb => err_par_strb
 );
 --!SECTION
 
