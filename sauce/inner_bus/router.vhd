@@ -108,6 +108,9 @@ architecture behavioral of router is
   o_o_data_fifo_next_X <= i_i_data_fifo_ready;
   o_i_data_fifo_next <= i_o_data_fifo_ready_X when bypass else next_data;
 
+  o_o_data_fifo_data <= i_i_data_fifo_data;
+  o_o_info_fifo_data <= i_i_info_fifo_data;
+
   tg_info_ready <=i_o_info_fifo_ready_0 when (target = 0) else
                   i_o_info_fifo_ready_1 when (target = 1) else
                   i_o_info_fifo_ready_2 when (target = 2) else
@@ -185,7 +188,6 @@ architecture behavioral of router is
         when st_router_data =>
           if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
             if (tg_data_ready = '1' and i_i_data_fifo_ready = '1')then
-              o_o_data_fifo_data <= i_i_data_fifo_data;
               next_data <= '1';
               tg_data_push <= '1';
               data_cnt <= data_cnt + 1;
@@ -194,7 +196,6 @@ architecture behavioral of router is
             st_router <= st_router_head;
           end if;
         when st_router_head =>
-          o_o_info_fifo_data <= header;
           if (tg_info_ready = '1') then
             tg_info_push <= '1';
             st_router <= st_router_idle;

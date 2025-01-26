@@ -16,8 +16,8 @@ entity collector is
     i_clk                   : in    std_logic;
     i_rst_n                 : in    std_logic;
 
-    i_bypass                : in    std_logic;
-    o_err_rep               : out   std_logic;
+    o_bypass                : out   std_logic;
+    i_err_rep               : in    std_logic;
 
     i_i_data_fifo_data      : in    data_bus;
     i_i_data_fifo_ready_X   : in    out_ready;
@@ -76,13 +76,15 @@ end entity collector;
 architecture behavioral of collector is
 
   type fsm_selector is(
-    st_selector_idle,
+    st_selector_start,
     st_selector_search,
-    st_selector_data,
     st_selector_head,
+    st_selector_data,
     st_selector_report,
     st_selector_bypass
   );
+
+  signal st_selector      : fsm_selector;
 
   signal src_info_ready   : std_logic;
   signal src_info_next    : std_logic;
@@ -91,12 +93,17 @@ architecture behavioral of collector is
   signal src_data_next    : std_logic;
 
   signal target           : std_ulogic_vector(2 downto 0);
+  signal header           : info_bus;
+  signal data_cnt         : STD_ULOGIC_VECTOR(MSG_W - 1 downto 0);
 
 
 begin
   ----------------------------------------------------------------------------------------
   -- #ANCHOR - PIN ASSIGMENT
   ----------------------------------------------------------------------------------------
+
+
+  o_o_data_fifo_data <= i_i_data_fifo_data;
 
   src_info_ready <= i_i_info_fifo_ready_0 when (target = 0) else
                     i_i_info_fifo_ready_1 when (target = 1) else
@@ -141,7 +148,79 @@ p_main  : process (i_clk) is
 
   begin
 
-  end process;
+    if (i_rst_n = 0) then
+      st_selector <= st_selector_start;
+      target <= 0;
+      o_bypass <= '0';
+      data_cnt <= 0;
+      o_o_data_fifo_next <= '0';
+      src_data_next <= '0';
+    elsif (rising_edge(i_clk)) then
+      o_bypass <= '0';
+      o_o_data_fifo_next <= '0';
+      src_data_next <= '0';
+      case st_selector is
 
+        when st_selector_start =>
+          if (i_err_rep = '1') then
+            st_selector <= st_selector_report;
+            o_bypass <= '1';
+          else
+            st_selector <= st_selector_search;
+          end if;
+
+        when st_selector_search =>
+          if (src_info_ready = '1') then
+            st_selector <= st_selector_head;  
+          else
+            if (target = 7) then
+              st_selector <= st_selector_start;  
+            end if;
+            target <= target + 1;
+          end if;
+
+        when st_selector_head =>
+          header <= i_i_info_fifo_data;
+          src_info_next <= '1';
+          data_cnt <= 0;
+          st_selector <= st_selector_data;  
+
+        when st_selector_data =>
+          if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
+            if (i_o_data_fifo_ready = '1' and src_data_ready = '1') then
+              o_o_data_fifo_next <= '1';
+              src_data_next <= '1';
+              data_cnt <= data_cnt + 1;
+            end if;
+          else
+            data_cnt <= 0;
+            st_selector <= st_selector_start;  
+          end if;
+
+        when st_selector_report =>
+          o_bypass <= '1';
+          header <= i_i_info_fifo_data;
+          src_info_next <= '1';
+          data_cnt <= 0;
+          st_selector <= st_selector_data;  
+
+        when st_selector_bypass =>
+          o_bypass <= '1';
+          if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
+            if (i_o_data_fifo_ready = '1' and src_data_ready = '1') then
+              src_data_next <= '1';
+              data_cnt <= data_cnt + 1;
+            end if;
+          else
+            data_cnt <= 0;
+            st_selector <= st_selector_start;  
+          end if;
+          
+        when others =>
+          st_selector <= st_selector_start;
+      end case;
+    end if;
+
+  end process;
 
 end architecture; --!SECTION 
