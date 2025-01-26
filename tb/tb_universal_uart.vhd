@@ -107,12 +107,11 @@ begin
   end process p_test;
 
 
-  universal_ctrl_DUT : entity uart_ctrl
+  universal_ctrl_DUT : entity work.uart_ctrl
   generic map (
     MSG_W => MSG_W,
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
-    BUS_MODE => BUS_MODE,
     MY_ID => "000"
   )
   port map (
@@ -132,8 +131,7 @@ begin
     i_o_info_fifo_ready =>  i_o_info_fifo_ready,
     o_o_info_fifo_next =>   o_o_info_fifo_next,
     comm_wire_0 => comm_wire,
-    comm_wire_1 => comm_wire,
-    SPI_device_sel => SPI_device_sel
+    comm_wire_1 => comm_wire
   );
 
 end architecture;

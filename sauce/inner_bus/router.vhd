@@ -85,7 +85,7 @@ architecture behavioral of router is
   );
 
   signal st_router  : fsm_router;
-  signal data_cnt   : std_ulogic_vector(MSG_W-1 downto 0);
+  signal data_cnt   : unsigned(MSG_W-1 downto 0);
   signal bypass     : std_logic;
   signal next_data  : std_logic;
   signal next_info  : std_logic;
@@ -155,7 +155,7 @@ architecture behavioral of router is
   begin
     if (i_rst_n = '0') then
       st_router <= st_router_idle;
-      data_cnt <= 0;
+      data_cnt <= to_unsigned(0,MSG_W);
       bypass <= '0';
       next_data <= '0';
       next_info <= '0';
@@ -182,11 +182,11 @@ architecture behavioral of router is
             st_router <= st_router_report;
           else
             st_router <= st_router_data;
-            data_cnt <= 0;
+            data_cnt <= to_unsigned(0,MSG_W);
             next_data <= '1';
           end if;
         when st_router_data =>
-          if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
+          if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (tg_data_ready = '1' and i_i_data_fifo_ready = '1')then
               next_data <= '1';
               tg_data_push <= '1';

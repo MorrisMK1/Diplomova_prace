@@ -105,7 +105,7 @@ begin
       else
         for i in flags'range loop
           if flags(i) = '1' then
-            flags_reg <= '1';
+            flags_reg(i) <= '1';
           end if;
         end loop;
       end if;
@@ -116,7 +116,7 @@ begin
 ----------------------------------------------------------------------------------------
   p_timeout : process (i_clk)
     variable step : natural range 0 to 1048575;
-    variable offset : std_logic_vector(clk_div'length downto 0);
+    variable offset : unsigned(clk_div'length downto 0);
   begin
     -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
     if rising_edge (i_clk) then
@@ -173,7 +173,7 @@ p_clk_div_sel : process (clk_div_sel)
 p_reciever : process (i_clk)
   variable st_reciever : fsm_reciever := st_reciever_idle;
   variable header      : info_bus;
-  variable data_cnt    : std_logic_vector(MSG_W - 1 downto 0);
+  variable data_cnt    : unsigned(MSG_W - 1 downto 0);
 begin
   if (i_rst_n = '0') then
     err_data_size_strb <= '0';
@@ -184,7 +184,7 @@ begin
     header := (others => '0');
     o_ready <= '0';
   elsif (rising_edge(i_clk)) then
-    o_ready <= i_o_info_fifo_ready and st_reciever = st_reciever_idle;
+    o_ready <= '1' when ((i_o_info_fifo_ready = '1') and (st_reciever = st_reciever_idle)) else '0';
     flag_rst <= '0';
     o_o_data_fifo_next <= '0';
     o_o_info_fifo_next <= '0';
@@ -192,7 +192,7 @@ begin
     case( st_reciever ) is
       when st_reciever_idle =>
         header := (others => '0');
-        data_cnt := 0;
+        data_cnt := to_unsigned(0,MSG_W);
         if o_busy_rx = '1' then
           st_reciever := st_reciever_h_info;
         end if;
@@ -212,10 +212,10 @@ begin
       when st_reciever_h_data =>
         if (o_msg_vld_strb = '1') then
           header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
-          data_cnt := o_msg;
+          data_cnt := unsigned(o_msg);
           if (header(MSG_W * 2 + 4 downto MSG_W * 2 + 3) /= "00") then
             st_reciever := st_reciever_header;
-          elsif (header(MSG_W * 2 + 5) = 1) then
+          elsif (header(MSG_W * 2 + 5) = '1') then
             st_reciever := st_reciever_h_back;
           else
             st_reciever := st_reciever_data;
@@ -245,7 +245,7 @@ begin
           if (data_cnt > 0) then
             -- says that wants no response but gives flags as response size  => its error message
             -- given size of data to be transfered will be erased from data output
-            o_o_info_fifo_data <= (header(MSG_W * 3 - 1 downto MSG_W * 2 + 6) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & (header(MSG_W * 2 - 1 downto MSG_W * 1) - data_cnt) & flags_reg);
+            o_o_info_fifo_data <= (header((MSG_W * 3 - 1) downto (MSG_W * 2 + 6)) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
           else
             o_o_info_fifo_data <= header;
           end if;
@@ -263,11 +263,11 @@ end process;
 ----------------------------------------------------------------------------------------
   p_sender: process (i_clk)
     variable st_sender    : fsm_sender;
-    variable data_cnt     : std_logic_vector(MSG_W - 1 downto 0);
+    variable data_cnt     : unsigned(MSG_W - 1 downto 0);
     variable header       : info_bus;
   begin
     if(i_rst_n = '0') then
-      data_cnt := '0';
+      data_cnt := to_unsigned(0,MSG_W);
       st_sender := st_sender_idle;
       header := (others => '0') ;
       o_i_data_fifo_next <= '0';
@@ -282,7 +282,7 @@ end process;
           if (i_i_info_fifo_ready = '1') then
             st_sender := st_sender_snd_head_1;
             o_i_info_fifo_next <= '1';
-            data_cnt := 0;
+            data_cnt := to_unsigned(0,MSG_W);
           end if;
         when st_sender_snd_head_1 =>
           header := i_i_info_fifo_data;
@@ -305,7 +305,7 @@ end process;
           o_i_data_fifo_next <= '1';
         end if;
         when st_sender_snd_data =>
-          if (data_cnt < header(MSG_W * 2 - 1 downto MSG_W * 1)) then
+          if (data_cnt < unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1))) then
             if (i_i_data_fifo_ready = '1') then
               i_msg <= i_i_data_fifo_data;
               if (o_busy_tx = '0') then
