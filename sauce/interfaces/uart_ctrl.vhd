@@ -38,8 +38,7 @@ entity uart_ctrl is
     o_o_info_fifo_next      : out in_pulse;
 
     comm_wire_0             : inout std_logic := 'Z';
-    comm_wire_1             : inout std_logic := 'Z';
-    SPI_device_sel          : out STD_LOGIC_VECTOR(MSG_W-1 downto 0) := (others => 'Z')
+    comm_wire_1             : inout std_logic := 'Z'
   );
 end uart_ctrl;
 

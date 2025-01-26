@@ -2,6 +2,7 @@
 /common/tb_common.vhd
 /uart/uart_tx.vhd
 /uart/uart_rx.vhd
+/FIFO/FIFO_placeholder.vhd
 /interfaces/uart_ctrl.vhd
 /interfaces/main_ctrl.vhd
 /inner_bus/collector.vhd
