@@ -1,5 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.ALL;
+use ieee.numeric_std.all;
+use ieee.numeric_std_unsigned.all;
 
 library work;
 use work.my_common.all;
@@ -15,7 +17,13 @@ package tb_common is
 
   procedure sim_fifo_in ( signal data_fifo : in  STD_LOGIC_VECTOR; signal ready : in in_pulse; signal ack : out out_ready; signal received_data : out std_logic_vector; constant CLK_PER : in time);
 
+  procedure uart_tx ( signal tx : out std_logic; signal clk : in std_logic; signal start_bit : in std_logic; variable data : in std_logic_vector(7 downto 0); constant baud_period : time);
+
+  procedure uart_rx ( signal rx : in std_logic; variable data : out std_logic_vector(7 downto 0); constant baud_period : time);
+
   function create_reg0_w (id:std_logic_vector(1 downto 0); target:std_logic_vector(2 downto 0); send_recieve_bytes : std_logic_vector(7 downto 0))return info_bus;
+
+  function create_reg0_w ( id:std_logic_vector(1 downto 0);  target:std_logic_vector(2 downto 0);  send_bytes : std_logic_vector(7 downto 0); recieve_bytes : std_logic_vector(7 downto 0) )return info_bus;
 
   function create_reg1_w (id:std_logic_vector(1 downto 0); target:std_logic_vector(2 downto 0); rst : std_logic; par_L  : std_logic; par_en : std_logic; report_flg : std_logic; bitrate : std_logic_vector(2 downto 0))return info_bus;
   
@@ -106,6 +114,19 @@ begin
   return id & "100" & target & send_recieve_bytes & send_recieve_bytes;
 end function;
 
+function create_reg0_w (
+  id:std_logic_vector(1 downto 0); 
+  target:std_logic_vector(2 downto 0); 
+  send_bytes : std_logic_vector(7 downto 0);
+  recieve_bytes : std_logic_vector(7 downto 0)
+  )return info_bus is
+    variable resp :std_logic;
+begin
+  resp := '1' when (unsigned(recieve_bytes) > 0) else '0';
+
+  return id & resp & "00" & target & send_bytes & recieve_bytes;
+end function;
+
 function create_reg1_w (
   id:std_logic_vector(1 downto 0); 
   target:std_logic_vector(2 downto 0); 
@@ -140,5 +161,61 @@ function  create_regX_r (
 begin
   return id & "1" & target_reg & target_dev & x"0000";
 end function;
+
+procedure uart_tx (
+    signal tx        : out std_logic; -- UART transmit line
+    signal clk       : in std_logic;  -- Clock signal
+    signal start_bit : in std_logic;  -- Start bit signal
+    variable data    : in std_logic_vector(7 downto 0); -- Data to transmit
+    constant baud_period : time       -- Bit period for the desired baud rate
+) is
+begin
+    -- Ensure the line is idle before transmission
+    tx <= '1';
+    wait until rising_edge(clk) and start_bit = '1';
+
+    -- Transmit start bit
+    tx <= '0';
+    wait for baud_period;
+
+    -- Transmit each bit (LSB first)
+    for i in data'range loop
+        tx <= data(i);
+        wait for baud_period;
+    end loop;
+
+    -- Transmit stop bit
+    tx <= '1';
+    wait for baud_period;
+
+    -- End of transmission
+    tx <= '1'; -- Return to idle state
+end procedure;
+
+procedure uart_rx (
+    signal rx        : in std_logic;  -- UART receive line
+    variable data    : out std_logic_vector(7 downto 0); -- Received data
+    constant baud_period : time       -- Bit period for the desired baud rate
+) is
+    constant bit_sample : time := baud_period / 2; -- Sampling at middle of the bit
+begin
+    -- Wait for the start bit (falling edge)
+    wait until falling_edge(rx);
+
+    -- Wait to sample at the middle of the start bit
+    wait for bit_sample;
+
+    -- Receive each bit (LSB first)
+    for i in data'range loop
+        wait for baud_period;
+        data(i) := rx;
+    end loop;
+
+    -- Wait for the stop bit
+    wait for baud_period;
+
+    -- Optionally check the stop bit (rx should be '1')
+    assert rx = '1' report "Stop bit error" severity warning;
+end procedure;
 
 end package body;

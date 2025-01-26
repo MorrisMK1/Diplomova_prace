@@ -57,6 +57,8 @@ signal rx_ms          : std_logic;
 signal i_settings     : std_logic_array (1 to 2) (MSG_W -1 downto 0);
 signal o_ready        : std_logic;
 
+signal gen_header     : info_bus;
+
 begin
 ----------------------------------------------------------------------------------------
 --ANCHOR - CLK
@@ -76,7 +78,13 @@ begin
   i_settings(2) <= "00000000";
   wait for CLK_PERIOD*2;
   i_rst_n <= '1';
+  gen_header <= create_reg0_w("00","000",2,0);
   wait for CLK_PERIOD*10;
+  uart_tx(rx_ms,i_clk,'1',gen_header(MSG_W * 3 - 1 downto MSG_W * 2),(CLK_PERIOD/x"208D"));
+  uart_tx(rx_ms,i_clk,'1',gen_header(MSG_W * 2 - 1 downto MSG_W * 1),(CLK_PERIOD/x"208D"));
+  uart_tx(rx_ms,i_clk,'1',gen_header(MSG_W * 1 - 1 downto MSG_W * 0),(CLK_PERIOD/x"208D"));
+  uart_tx(rx_ms,i_clk,'1',"01011010",(CLK_PERIOD/x"208D"));
+  uart_tx(rx_ms,i_clk,'1',"11001001",(CLK_PERIOD/x"208D"));
 
 end process;
 ----------------------------------------------------------------------------------------

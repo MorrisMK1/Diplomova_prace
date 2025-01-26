@@ -104,6 +104,7 @@ begin
 
 
   o_o_data_fifo_data <= i_i_data_fifo_data;
+  o_o_info_fifo_data <= i_i_info_fifo_data;
 
   src_info_ready <= i_i_info_fifo_ready_0 when (target = 0) else
                     i_i_info_fifo_ready_1 when (target = 1) else
@@ -207,12 +208,13 @@ p_main  : process (i_clk) is
         when st_selector_bypass =>
           o_bypass <= '1';
           if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
-            if (i_o_data_fifo_ready = '1' and src_data_ready = '1') then
-              src_data_next <= '1';
+            if (i_o_data_fifo_ready = '1' and i_i_data_fifo_ready_X = '1') then
+              o_i_data_fifo_next_X <= '1';
               data_cnt <= data_cnt + 1;
             end if;
           else
             data_cnt <= 0;
+            o_i_info_fifo_next_X <= '1';
             st_selector <= st_selector_start;  
           end if;
           
