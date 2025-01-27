@@ -110,6 +110,7 @@ begin
         when s_tx_IDLE =>
           o_tx <= not i_start_pol;
           counter_start <= '0';
+          parity_chck := i_par_type;
           if i_msg_vld  = '1' then
             msg_buff := i_msg;
             s_tx <= s_tx_START;
@@ -134,8 +135,8 @@ begin
             end if;
           end if;
         when s_tx_PARITY =>
+        o_tx<=parity_chck;
         if counter_done = '1' then
-          o_tx<=parity_chck;
           s_tx<=s_tx_TERMINATE;
         end if;
         when s_tx_TERMINATE =>

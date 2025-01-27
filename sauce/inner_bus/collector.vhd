@@ -94,7 +94,7 @@ architecture behavioral of collector is
 
   signal target           : std_ulogic_vector(2 downto 0);
   signal header           : info_bus;
-  signal data_cnt         : STD_ULOGIC_VECTOR(MSG_W - 1 downto 0);
+  signal data_cnt         : unsigned(MSG_W - 1 downto 0);
 
 
 begin
@@ -149,11 +149,11 @@ p_main  : process (i_clk) is
 
   begin
 
-    if (i_rst_n = 0) then
+    if (i_rst_n = '0') then
       st_selector <= st_selector_start;
-      target <= 0;
+      target <= (others => '0') ;
       o_bypass <= '0';
-      data_cnt <= 0;
+      data_cnt <= to_unsigned(0,MSG_W);
       o_o_data_fifo_next <= '0';
       src_data_next <= '0';
     elsif (rising_edge(i_clk)) then
@@ -183,18 +183,18 @@ p_main  : process (i_clk) is
         when st_selector_head =>
           header <= i_i_info_fifo_data;
           src_info_next <= '1';
-          data_cnt <= 0;
+          data_cnt <= to_unsigned(0,MSG_W);
           st_selector <= st_selector_data;  
 
         when st_selector_data =>
-          if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
+          if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (i_o_data_fifo_ready = '1' and src_data_ready = '1') then
               o_o_data_fifo_next <= '1';
               src_data_next <= '1';
               data_cnt <= data_cnt + 1;
             end if;
           else
-            data_cnt <= 0;
+            data_cnt <= to_unsigned(0,MSG_W);
             st_selector <= st_selector_start;  
           end if;
 
@@ -202,18 +202,18 @@ p_main  : process (i_clk) is
           o_bypass <= '1';
           header <= i_i_info_fifo_data;
           src_info_next <= '1';
-          data_cnt <= 0;
+          data_cnt <= to_unsigned(0,MSG_W);
           st_selector <= st_selector_data;  
 
         when st_selector_bypass =>
           o_bypass <= '1';
-          if (data_cnt < header(MSG_W * 2 -1 downto MSG_W * 1)) then
+          if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (i_o_data_fifo_ready = '1' and i_i_data_fifo_ready_X = '1') then
               o_i_data_fifo_next_X <= '1';
               data_cnt <= data_cnt + 1;
             end if;
           else
-            data_cnt <= 0;
+            data_cnt <= to_unsigned(0,MSG_W);
             o_i_info_fifo_next_X <= '1';
             st_selector <= st_selector_start;  
           end if;

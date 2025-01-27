@@ -17,7 +17,7 @@ package tb_common is
 
   procedure sim_fifo_in ( signal data_fifo : in  STD_LOGIC_VECTOR; signal ready : in in_pulse; signal ack : out out_ready; signal received_data : out std_logic_vector; constant CLK_PER : in time);
 
-  procedure uart_tx ( signal tx : out std_logic; signal clk : in std_logic; signal start_bit : in std_logic; variable data : in std_logic_vector(7 downto 0); constant baud_period : time);
+  procedure uart_tx ( signal tx : out std_logic; signal clk : in std_logic; signal data : in std_logic_vector(7 downto 0); constant baud_period : time);
 
   procedure uart_rx ( signal rx : in std_logic; variable data : out std_logic_vector(7 downto 0); constant baud_period : time);
 
@@ -165,14 +165,13 @@ end function;
 procedure uart_tx (
     signal tx        : out std_logic; -- UART transmit line
     signal clk       : in std_logic;  -- Clock signal
-    signal start_bit : in std_logic;  -- Start bit signal
-    variable data    : in std_logic_vector(7 downto 0); -- Data to transmit
+    signal data    : in std_logic_vector(7 downto 0); -- Data to transmit
     constant baud_period : time       -- Bit period for the desired baud rate
 ) is
 begin
     -- Ensure the line is idle before transmission
     tx <= '1';
-    wait until rising_edge(clk) and start_bit = '1';
+    wait until rising_edge(clk);
 
     -- Transmit start bit
     tx <= '0';
@@ -180,7 +179,7 @@ begin
 
     -- Transmit each bit (LSB first)
     for i in data'range loop
-        tx <= data(i);
+        tx <= data(((data'length)-1)-i);
         wait for baud_period;
     end loop;
 

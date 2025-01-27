@@ -81,6 +81,7 @@ architecture behavioral of uart_ctrl is
   signal msg_i_dat      : STD_LOGIC_VECTOR(MSG_W-1 downto 0);
   signal msg_o_dat      : STD_LOGIC_VECTOR(MSG_W-1 downto 0);
   signal out_busy       : std_logic;
+  signal rx_busy       : std_logic;
 
   signal clk_div        : std_logic_vector(15 downto 0);
 
@@ -232,63 +233,74 @@ end process;
 p_downstream  : process (clk_en)
   variable st_downstr:  t_downstr_state := st_downstr_IDLE;
   variable data_cnt : natural range 0 to 255  := 0;
+  variable req_resp :std_logic;
   variable last_out_state : STD_LOGIC;
 begin
   if rising_edge(clk_en) then
-    reg_op_rdy_strb <= '0';
-    o_i_data_fifo_next <= '0';
-    o_i_info_fifo_next <= '0';
-    msg_i_vld <= '0';
-    sync_dw <= '0';
-    flg_data_size <= '0';
     if (rst_n = '0')then
       st_downstr := st_downstr_IDLE;
       reg_op <= (others => '0');
       data_cnt := 0;
       last_out_state := '0';
       msg_i_dat <= (others => '0');
+      reg_op_rdy_strb <= '0';
+      o_i_data_fifo_next <= '0';
+      o_i_info_fifo_next <= '0';
+      msg_i_vld <= '0';
+      sync_dw <= '0';
+      flg_data_size <= '0';
     else
+      reg_op_rdy_strb <= '0';
+      o_i_data_fifo_next <= '0';
+      o_i_info_fifo_next <= '0';
+      msg_i_vld <= '0';
+      sync_dw <= '0';
+      flg_data_size <= '0';
       case( st_downstr ) is
         when st_downstr_IDLE =>
           data_cnt := 0;
+          req_resp := '0';
           sync_dw <= '1';
           if i_i_info_fifo_ready = '1' then
             st_downstr := st_downstr_CHECK;
           end if;
         when st_downstr_CHECK =>
+          req_resp := i_i_info_fifo_data(MSG_W*2+5);
           if i_i_info_fifo_data(MSG_W*2+4 downto MSG_W*2+3) /= "00" then -- redirectiong to register controller
             reg_op <= i_i_info_fifo_data(3 * MSG_W - 1 downto MSG_W);
             st_downstr := st_downstr_REGS;
+            o_i_info_fifo_next <= '1';
             reg_op_rdy_strb <= '1';
           else  -- continue writing data
             data_cnt := to_integer(unsigned(i_i_info_fifo_data(7+MSG_W downto MSG_W)));
+            last_out_state := '1';
             st_downstr := st_downstr_DATA;
-          end if;
             o_i_info_fifo_next <= '1';
+          end if;
         when st_downstr_REGS =>
           if inf_rdy_strb = '0' then
             st_downstr := st_downstr_IDLE;
           end if;
         when st_downstr_DATA =>
-          if data_cnt > 0 then
-            if data_cnt = to_integer(unsigned(i_i_info_fifo_data(7+MSG_W downto MSG_W))) or (out_busy = '0' and last_out_state = '1') then
-              if  i_i_data_fifo_ready = '1' then
-                data_cnt := data_cnt - 1;
-                msg_i_dat <= i_i_data_fifo_data;
-                msg_i_vld <= '1';
-              end if;
-            elsif last_out_state = '0' then
-              o_i_data_fifo_next <= i_i_data_fifo_ready;
-              if i_i_data_fifo_ready = '0' then
-                flg_data_size <= '1';
-                st_downstr := st_downstr_IDLE;
-              end if;
-            end if;
-            last_out_state := out_busy;
-          elsif out_busy = '0' then
-            st_downstr := st_downstr_SYNC;
+        if data_cnt > 0 then
+          if (out_busy = '0' and last_out_state = '1') then
+            msg_i_dat <= i_i_data_fifo_data;
+            msg_i_vld <= '1';
+            data_cnt := data_cnt - 1;
             o_i_data_fifo_next <= '1';
           end if;
+          if i_i_data_fifo_ready = '0' then
+            flg_data_size <= '1';
+            st_downstr := st_downstr_IDLE;
+          end if;
+          last_out_state := out_busy;
+        else
+          if (req_resp = '1') then
+            st_downstr := st_downstr_SYNC;
+          else
+            st_downstr := st_downstr_IDLE;
+          end if;
+        end if;
         when st_downstr_SYNC =>
           sync_dw <= '1'; -- make sure the streams are synchronized
           if sync_up = '1' then
@@ -306,12 +318,11 @@ end process;
 p_upstream  : process (clk_en)
   variable st_upstr:  t_upstr_state := st_upstr_IDLE;
   variable data_cnt : natural range 0 to 255  := 0;
-  variable last_out_state : STD_LOGIC;
+  variable last_in_state : STD_LOGIC;
   variable cmd      : STD_LOGIC_VECTOR(2*MSG_W-1 downto 0);
 begin
   if rising_edge(clk_en) then
     timeout_rst <= '0';
-    o_o_data_fifo_next <= '0';
     flg_timeout <= '0';
     sync_up <= '0';
     flag_rst <= '0';
@@ -322,13 +333,19 @@ begin
       o_o_data_fifo_data <= (others => '0');
       o_o_info_fifo_data <= (others => '0'); 
       flag_rst <= '1';
+      o_o_info_fifo_next <= '0';
+      o_o_data_fifo_next <= '0';
     else
+      o_o_data_fifo_next <= '0';
+      o_o_info_fifo_next <= '0';
+      o_o_data_fifo_data <= (others => '0');
+      o_o_info_fifo_data <= (others => '0'); 
       case st_upstr is
         when st_upstr_IDLE =>
           timeout_rst <= '1';
           sync_up <= '1';
           o_o_info_fifo_next <= '0';
-          if i_i_info_fifo_ready = '1' and i_i_info_fifo_data(MSG_W*2+4 downto MSG_W*2+3) = "00" then
+          if ((i_i_info_fifo_ready = '1' and i_i_info_fifo_data(MSG_W*2+5 downto MSG_W*2+3) = "100") or rx_busy = '1') then
             data_cnt := 0;
             cmd := i_i_info_fifo_data(3*MSG_W-1 downto 2*MSG_W) &  i_i_info_fifo_data(1*MSG_W-1 downto 0*MSG_W);
             st_upstr := st_upstr_DATA;
@@ -350,20 +367,23 @@ begin
           o_o_info_fifo_next <= '1';
           st_upstr := st_upstr_IDLE;
         when st_upstr_DATA =>
-          if out_busy = '1' or data_cnt < cmd(MSG_W-1 downto 0) then
+          if rx_busy = '1' or data_cnt < cmd(MSG_W-1 downto 0) then
             if timeout_s = '1' and timeout_en = '1' then
               cmd(MSG_W-1 downto 0) := std_logic_vector(to_unsigned(data_cnt,MSG_W));
               flg_timeout <= '1';
             end if;
-            if msg_o_vld = '1' then
+            if (msg_o_vld = '1'and last_in_state = '0') then
               timeout_rst <= '1';
               o_o_data_fifo_data <= msg_o_dat;
               o_o_data_fifo_next <= '1';
-              data_cnt := data_cnt + 1;
+              if cmd(MSG_W + 5) = '1' then
+                data_cnt := data_cnt + 1;
+              end if;
             end if;
           else
             st_upstr := st_upstr_CHECK;
           end if;
+          last_in_state := msg_o_vld;
         when st_upstr_CHECK =>
             if auto_flag_rep = '1' and ( b"00" & r_registers(3)(5 downto 0)) /= x"00" then
               o_o_info_fifo_data <= (cmd and "1101111111111111") & r_registers(3);
@@ -371,7 +391,9 @@ begin
               o_o_info_fifo_data <= (cmd) & r_registers(3);
             end if;
             st_upstr := st_upstr_RPRT;
-            o_o_info_fifo_next <= '1';
+            if cmd(MSG_W + 5) = '1' then
+              o_o_info_fifo_next <= '1';
+            end if;
         when st_upstr_RPRT =>
             if r_registers(3) /= x"00" and flag_rst <= '0' then
               flag_rst <= '1';
@@ -427,12 +449,13 @@ end process p_upstream;
     port map (
       i_clk => clk_en,
       i_rst_n => rst_n,
-      i_rx => comm_wire_0,
+      i_rx => comm_wire_1,
       i_start_pol => start_polarity,
       i_par_en => parity_en,
       i_par_type => parity_odd,
       i_clk_div => unsigned(clk_div),
       o_msg => msg_o_dat,
+      o_busy => rx_busy,
       o_msg_vld_strb => msg_o_vld,
       o_err_noise_strb => flg_noise,
       o_err_frame_strb => flg_frame,
@@ -453,7 +476,7 @@ end process p_upstream;
       i_par_en => parity_en,
       i_par_type => parity_odd,
       i_clk_div => unsigned(clk_div),
-      o_tx => comm_wire_1,
+      o_tx => comm_wire_0,
       o_busy => out_busy
     );
   

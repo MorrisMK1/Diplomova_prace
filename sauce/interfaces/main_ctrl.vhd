@@ -175,86 +175,91 @@ p_reciever : process (i_clk)
   variable header      : info_bus;
   variable data_cnt    : unsigned(MSG_W - 1 downto 0);
 begin
-  if (i_rst_n = '0') then
-    err_data_size_strb <= '0';
-    flag_rst <= '1';
-    st_reciever := st_reciever_idle;
-    o_o_info_fifo_data <= (others => '0');
-    o_o_data_fifo_data <= (others => '0');
-    header := (others => '0');
-    o_ready <= '0';
-  elsif (rising_edge(i_clk)) then
-    o_ready <= '1' when ((i_o_info_fifo_ready = '1') and (st_reciever = st_reciever_idle)) else '0';
-    flag_rst <= '0';
-    o_o_data_fifo_next <= '0';
-    o_o_info_fifo_next <= '0';
-    err_data_size_strb <= '0';
-    case( st_reciever ) is
-      when st_reciever_idle =>
-        header := (others => '0');
-        data_cnt := to_unsigned(0,MSG_W);
-        if o_busy_rx = '1' then
-          st_reciever := st_reciever_h_info;
-        end if;
-      when st_reciever_h_info =>
-        if o_msg_vld_strb = '1' then
-          header := (o_msg & header(MSG_W * 2 - 1 downto 0));
-          if (o_msg(4 downto 3) /= "00") then
-            if (o_msg(5) = '1') then
-              st_reciever := st_reciever_header;
+  if (rising_edge(i_clk)) then
+    if (i_rst_n = '0') then
+      err_data_size_strb <= '0';
+      flag_rst <= '1';
+      st_reciever := st_reciever_idle;
+      o_o_info_fifo_data <= (others => '0');
+      o_o_data_fifo_data <= (others => '0');
+      header := (others => '0');
+      o_ready <= '0';
+      o_o_info_fifo_next <= '0';
+      o_o_data_fifo_next <= '0';
+    else
+      o_ready <= '1' when ((i_o_info_fifo_ready = '1') and (st_reciever = st_reciever_idle)) else '0';
+      flag_rst <= '0';
+      o_o_data_fifo_next <= '0';
+      o_o_info_fifo_next <= '0';
+      err_data_size_strb <= '0';
+      case( st_reciever ) is
+        when st_reciever_idle =>
+          header := (others => '0');
+          data_cnt := to_unsigned(0,MSG_W);
+          if o_busy_rx = '1' then
+            st_reciever := st_reciever_h_info;
+          end if;
+        when st_reciever_h_info =>
+          if o_msg_vld_strb = '1' then
+            header := (o_msg & header(MSG_W * 2 - 1 downto 0));
+            if (o_msg(4 downto 3) /= "00") then
+              if (o_msg(5) = '1') then
+                st_reciever := st_reciever_header;
+              else
+                st_reciever := st_reciever_h_data;
+              end if;
             else
               st_reciever := st_reciever_h_data;
             end if;
-          else
-            st_reciever := st_reciever_h_data;
           end if;
-        end if;
-      when st_reciever_h_data =>
-        if (o_msg_vld_strb = '1') then
-          header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
-          data_cnt := unsigned(o_msg);
-          if (header(MSG_W * 2 + 4 downto MSG_W * 2 + 3) /= "00") then
-            st_reciever := st_reciever_header;
-          elsif (header(MSG_W * 2 + 5) = '1') then
-            st_reciever := st_reciever_h_back;
-          else
+        when st_reciever_h_data =>
+          if (o_msg_vld_strb = '1') then
+            header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
+            if (header(MSG_W * 2 + 4 downto MSG_W * 2 + 3) /= "00") then
+              st_reciever := st_reciever_header;
+            elsif (header(MSG_W * 2 + 5) = '1') then
+              data_cnt := unsigned(o_msg);
+              st_reciever := st_reciever_h_back;
+            else
+              data_cnt := unsigned(o_msg);
+              st_reciever := st_reciever_data;
+            end if;
+          end if;
+        when st_reciever_h_back =>
+          if (o_msg_vld_strb = '1') then
+            header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
             st_reciever := st_reciever_data;
           end if;
-        end if;
-      when st_reciever_h_back =>
-        if (o_msg_vld_strb = '1') then
-          header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
-          st_reciever := st_reciever_data;
-        end if;
-      when st_reciever_data =>
-        if (o_msg_vld_strb = '1') then
-          if (i_o_data_fifo_ready = '1') then
-            o_o_data_fifo_data <= o_msg;
-            o_o_data_fifo_next <= '1';
-            data_cnt := data_cnt - 1;
-          else
+        when st_reciever_data =>
+          if (o_msg_vld_strb = '1') then
+            if (i_o_data_fifo_ready = '1') then
+              o_o_data_fifo_data <= o_msg;
+              o_o_data_fifo_next <= '1';
+              data_cnt := data_cnt - 1;
+            else
+              st_reciever := st_reciever_header;
+              err_data_size_strb <= '1';
+            end if;
+          end if;
+          if (data_cnt < 1) then
             st_reciever := st_reciever_header;
-            err_data_size_strb <= '1';
           end if;
-        end if;
-        if (data_cnt < 1) then
-          st_reciever := st_reciever_header;
-        end if;
-      when st_reciever_header =>
-        if (i_o_info_fifo_ready = '1') then
-          if (data_cnt > 0) then
-            -- says that wants no response but gives flags as response size  => its error message
-            -- given size of data to be transfered will be erased from data output
-            o_o_info_fifo_data <= (header((MSG_W * 3 - 1) downto (MSG_W * 2 + 6)) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
-          else
-            o_o_info_fifo_data <= header;
+        when st_reciever_header =>
+          if (i_o_info_fifo_ready = '1') then
+            if (data_cnt > 0) then
+              -- says that wants no response but gives flags as response size  => its error message
+              -- given size of data to be transfered will be erased from data output
+              o_o_info_fifo_data <= (header((MSG_W * 3 - 1) downto (MSG_W * 2 + 6)) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
+            else
+              o_o_info_fifo_data <= header;
+            end if;
+            o_o_info_fifo_next <= '1';
+            st_reciever := st_reciever_idle;
           end if;
-          o_o_info_fifo_next <= '1';
+        when others =>
           st_reciever := st_reciever_idle;
-        end if;
-      when others =>
-        st_reciever := st_reciever_idle;
-    end case ;
+      end case ;
+    end if;
   end if;
 end process; 
 
@@ -265,65 +270,75 @@ end process;
     variable st_sender    : fsm_sender;
     variable data_cnt     : unsigned(MSG_W - 1 downto 0);
     variable header       : info_bus;
+    variable last_out_st  : std_logic;
   begin
-    if(i_rst_n = '0') then
-      data_cnt := to_unsigned(0,MSG_W);
-      st_sender := st_sender_idle;
-      header := (others => '0') ;
-      o_i_data_fifo_next <= '0';
-      o_i_info_fifo_next <= '0';
-      i_msg_vld <= '0';
-    elsif rising_edge(i_clk) then
-      o_i_data_fifo_next <= '0';
-      o_i_info_fifo_next <= '0';
-      i_msg_vld <= '0';
-      case( st_sender ) is
-        when st_sender_idle =>
-          if (i_i_info_fifo_ready = '1') then
-            st_sender := st_sender_snd_head_1;
-            o_i_info_fifo_next <= '1';
-            data_cnt := to_unsigned(0,MSG_W);
-          end if;
-        when st_sender_snd_head_1 =>
-          header := i_i_info_fifo_data;
-          i_msg <= i_i_info_fifo_data(MSG_W * 3 - 1 downto MSG_W * 2);
-          if (o_busy_tx = '0') then
-            i_msg_vld <= '1';
-            st_sender := st_sender_snd_head_2;
-          end if;
-        when st_sender_snd_head_2 =>
-        i_msg <= header(MSG_W * 2 - 1 downto MSG_W * 1);
-        if (o_busy_tx = '0') then
-          i_msg_vld <= '1';
-          st_sender := st_sender_snd_head_3;
-        end if;
-        when st_sender_snd_head_3 =>
-        i_msg <= header(MSG_W * 1 - 1 downto MSG_W * 0);
-        if (o_busy_tx = '0') then
-          i_msg_vld <= '1';
-          st_sender := st_sender_snd_data;
-          o_i_data_fifo_next <= '1';
-        end if;
-        when st_sender_snd_data =>
-          if (data_cnt < unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1))) then
-            if (i_i_data_fifo_ready = '1') then
-              i_msg <= i_i_data_fifo_data;
-              if (o_busy_tx = '0') then
-                o_i_data_fifo_next <= '1';
-                data_cnt := data_cnt + 1;
-                i_msg_vld <= '1';
+    if rising_edge(i_clk) then
+      if(i_rst_n = '0') then
+        data_cnt := to_unsigned(0,MSG_W);
+        st_sender := st_sender_idle;
+        header := (others => '0') ;
+        o_i_data_fifo_next <= '0';
+        o_i_info_fifo_next <= '0';
+        i_msg_vld <= '0';
+      else
+        o_i_data_fifo_next <= '0';
+        o_i_info_fifo_next <= '0';
+        i_msg_vld <= '0';
+        case( st_sender ) is
+          when st_sender_idle =>
+            if (i_i_info_fifo_ready = '1') then
+              st_sender := st_sender_snd_head_1;
+              last_out_st := '1';
+              data_cnt := to_unsigned(0,MSG_W);
+            end if;
+          when st_sender_snd_head_1 =>
+            header := i_i_info_fifo_data;
+            i_msg <= i_i_info_fifo_data(MSG_W * 3 - 1 downto MSG_W * 2);
+            if (o_busy_tx = '0') then
+              i_msg_vld <= '1';
+            elsif (last_out_st = '0' and o_busy_tx = '1') then
+              st_sender := st_sender_snd_head_2;
+            end if;
+            last_out_st := o_busy_tx;
+          when st_sender_snd_head_2 =>
+            i_msg <= header(MSG_W * 2 - 1 downto MSG_W * 1);
+            if (o_busy_tx = '0' and last_out_st = '1') then
+              i_msg_vld <= '1';
+            elsif (last_out_st = '0' and o_busy_tx = '1') then
+              st_sender := st_sender_snd_head_3;
+            end if;
+            last_out_st := o_busy_tx;
+          when st_sender_snd_head_3 =>
+            i_msg <= header(MSG_W * 1 - 1 downto MSG_W * 0);
+            if (o_busy_tx = '0' and last_out_st = '1') then
+              i_msg_vld <= '1';
+            elsif (last_out_st = '0' and o_busy_tx = '1') then
+              st_sender := st_sender_snd_data;
+              o_i_info_fifo_next <= '1';
+            end if;
+            last_out_st := o_busy_tx;
+          when st_sender_snd_data =>
+            if (data_cnt < unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1))) then
+              if (i_i_data_fifo_ready = '1') then
+                i_msg <= i_i_data_fifo_data;
+                if (o_busy_tx = '0' and last_out_st = '1') then
+                  o_i_data_fifo_next <= '1';
+                  data_cnt := data_cnt + 1;
+                  i_msg_vld <= '1';
+                end if;
+              else -- this shouldnt be possible but oh well
+                st_sender := st_sender_term;
               end if;
-            else -- this shouldnt be possible but oh well
+            else
               st_sender := st_sender_term;
             end if;
-          else
-            st_sender := st_sender_term;
-          end if;
-        when st_sender_term =>
-          st_sender := st_sender_idle;
-        when others =>
-          st_sender := st_sender_idle;
-      end case ;
+            last_out_st := o_busy_tx;
+          when st_sender_term =>
+            st_sender := st_sender_idle;
+          when others =>
+            st_sender := st_sender_idle;
+        end case ;
+      end if;
     end if;
   end process;
 --#!SECTION
