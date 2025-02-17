@@ -16,6 +16,8 @@ entity router is
     i_clk                   : in    std_logic;
     i_rst_n                 : in    std_logic;
 
+    i_out_en                : in    std_logic_vector(MSG_W -1 downto 0);
+
     i_bypass                : in    std_logic;
     o_err_rep               : out   std_logic;
 
@@ -129,24 +131,24 @@ architecture behavioral of router is
                   i_o_data_fifo_ready_6 when (target = 6) else
                   i_o_data_fifo_ready_7;
 
-  o_o_info_fifo_next_0 <= tg_info_push when (target = 0) else '0';
-  o_o_info_fifo_next_1 <= tg_info_push when (target = 1) else '0';
-  o_o_info_fifo_next_2 <= tg_info_push when (target = 2) else '0';
-  o_o_info_fifo_next_3 <= tg_info_push when (target = 3) else '0';
-  o_o_info_fifo_next_4 <= tg_info_push when (target = 4) else '0';
-  o_o_info_fifo_next_5 <= tg_info_push when (target = 5) else '0';
-  o_o_info_fifo_next_6 <= tg_info_push when (target = 6) else '0';
-  o_o_info_fifo_next_7 <= tg_info_push when (target = 7) else '0';
+  o_o_info_fifo_next_0 <= (tg_info_push and i_out_en(0)) when (target = 0) else '0';
+  o_o_info_fifo_next_1 <= (tg_info_push and i_out_en(1)) when (target = 1) else '0';
+  o_o_info_fifo_next_2 <= (tg_info_push and i_out_en(2)) when (target = 2) else '0';
+  o_o_info_fifo_next_3 <= (tg_info_push and i_out_en(3)) when (target = 3) else '0';
+  o_o_info_fifo_next_4 <= (tg_info_push and i_out_en(4)) when (target = 4) else '0';
+  o_o_info_fifo_next_5 <= (tg_info_push and i_out_en(5)) when (target = 5) else '0';
+  o_o_info_fifo_next_6 <= (tg_info_push and i_out_en(6)) when (target = 6) else '0';
+  o_o_info_fifo_next_7 <= (tg_info_push and i_out_en(7)) when (target = 7) else '0';
 
-  o_o_data_fifo_next_0 <= tg_data_push when (target = 0) else '0';
-  o_o_data_fifo_next_1 <= tg_data_push when (target = 1) else '0';
-  o_o_data_fifo_next_2 <= tg_data_push when (target = 2) else '0';
-  o_o_data_fifo_next_3 <= tg_data_push when (target = 3) else '0';
-  o_o_data_fifo_next_4 <= tg_data_push when (target = 4) else '0';
-  o_o_data_fifo_next_5 <= tg_data_push when (target = 5) else '0';
-  o_o_data_fifo_next_6 <= tg_data_push when (target = 6) else '0';
-  o_o_data_fifo_next_7 <= tg_data_push when (target = 7) else '0';
-
+  o_o_data_fifo_next_0 <= (tg_data_push and i_out_en(0)) when (target = 0) else '0';
+  o_o_data_fifo_next_1 <= (tg_data_push and i_out_en(1)) when (target = 1) else '0';
+  o_o_data_fifo_next_2 <= (tg_data_push and i_out_en(2)) when (target = 2) else '0';
+  o_o_data_fifo_next_3 <= (tg_data_push and i_out_en(3)) when (target = 3) else '0';
+  o_o_data_fifo_next_4 <= (tg_data_push and i_out_en(4)) when (target = 4) else '0';
+  o_o_data_fifo_next_5 <= (tg_data_push and i_out_en(5)) when (target = 5) else '0';
+  o_o_data_fifo_next_6 <= (tg_data_push and i_out_en(6)) when (target = 6) else '0';
+  o_o_data_fifo_next_7 <= (tg_data_push and i_out_en(7)) when (target = 7) else '0';
+  
 ----------------------------------------------------------------------------------------
 -- #ANCHOR - MAIN PROCESS
 ----------------------------------------------------------------------------------------
@@ -172,7 +174,6 @@ architecture behavioral of router is
         when st_router_idle =>
           o_err_rep <= '0';
           if (i_i_info_fifo_ready = '1') then
-            next_info <= '1';
             st_router <= st_router_target;
           end if;
         when st_router_target =>
@@ -183,7 +184,6 @@ architecture behavioral of router is
           else
             st_router <= st_router_data;
             data_cnt <= to_unsigned(0,MSG_W);
-            next_data <= '1';
           end if;
         when st_router_data =>
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then

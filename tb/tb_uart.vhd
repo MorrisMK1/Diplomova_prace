@@ -1,13 +1,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use std.env.all;
-library work;
+
 use work.tb_common.all;
 use work.my_common.all;
 
+
+LIBRARY VUNIT_LIB;
+CONTEXT VUNIT_LIB.VUNIT_CONTEXT;
+
 entity tb_uart is
-end entity tb_uart;
+  generic (runner_cfg : string);
+ end entity tb_uart;
 
 architecture sim of tb_uart is
 
@@ -101,6 +105,7 @@ begin
   -- UART transmission test
   p_uart_tx : process
   begin
+    test_runner_setup(runner, runner_cfg);
     wait for 10 us;
     rst_n <= '1';
     msg_i_dat <= "01010101";
@@ -125,8 +130,8 @@ begin
     uart_tx(clk, tx, data_byte); -- Call the UART transmit procedure
     wait for 1 ms; -- Wait some time
     
-    -- Ukončení simulace
-    std.env.stop(0);
+    -- Ukončení simulace        test_runner_cleanup(runner);
+    test_runner_cleanup(runner);
   end process p_uart_tx;
 
 ----------------------------------------------------------------------------------------
