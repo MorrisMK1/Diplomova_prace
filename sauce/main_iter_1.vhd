@@ -4,17 +4,16 @@ use ieee.numeric_std.all;
 use std.env.all;
 library work;
 use work.my_common.all;
-use work.tb_common.all;
 
 
-entity tb_base_design is
+entity main is
 
-end entity tb_base_design;
+end entity main;
 
 ----------------------------------------------------------------------------------------
 --SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture sim of tb_base_design is 
+architecture behavioral of main is 
 
 constant CLK_PERIOD : TIME := 10 ns;
 
@@ -148,132 +147,6 @@ signal s_o_o_info_fifo_next : in_pulse;
 
 begin
 ----------------------------------------------------------------------------------------
---ANCHOR - CLK
-----------------------------------------------------------------------------------------
-p_clk :process
-begin
-  generate_clk(i_clk,CLK_PERIOD);
-end process;
-----------------------------------------------------------------------------------------
---SECTION - TESTCASE
-----------------------------------------------------------------------------------------
-p_test  : process
-begin
-  --ANCHOR - init
-  wait for 1 ns;
-  i_rst_n <= '0';
-  i_settings(1) <= "00000101";
-  i_settings(2) <= "00000000";
-  rx_sl <= '1';
-  rx_ms <= '1';
-  wait for CLK_PERIOD*2;
-  i_rst_n <= '1';
-  --ANCHOR - first message
-  gen_header <= create_reg0_w("00","000","00000010","00000010");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= "01011010";
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= "11001001";
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  --ANCHOR - second message
-  gen_header <= create_reg0_w("01","000","00000001","00000001");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= "01100110";
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-
-  --ANCHOR - third message - set new parameters
-  gen_header <= create_reg1_w("10","000",'0','0','1','0',"001");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  
-  --ANCHOR - fourth message - repeat of second
-  gen_header <= create_reg0_w("01","000","00000001","00000001");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= "01100110";
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  
-  --ANCHOR - 5 message - set new parameters
-  gen_header <= create_reg1_w("10","000",'0','1','1','0',"001");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  
-  --ANCHOR - 6 message - repeat of second
-  gen_header <= create_reg0_w("01","000","00000001","00000001");
-  wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-  wait for 0 ns;
-  msg_to_ms <= "01100110";
-  wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
-
-  wait for CLK_PERIOD * 100_000_000;
-
-end process;--!SECTION
-----------------------------------------------------------------------------------------
 --SECTION - INSTANCES
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -291,7 +164,7 @@ module_fifo_INFO_MtoF : entity work.module_fifo_regs_no_flags
     i_wr_data =>  o_m_i_f_inf,
     o_full =>     ms_full_info,
     i_rd_en =>    rt_next_info,
-    o_rd_data =>  i_r_o_f_dat,
+    o_rd_data =>  i_r_o_f_inf,
     o_empty =>    rt_emty_info
   );
 
@@ -350,6 +223,9 @@ module_fifo_INFO_MtoF : entity work.module_fifo_regs_no_flags
   ----------------------------------------------------------------------------------------
   --ANCHOR - ROUTER
   ----------------------------------------------------------------------------------------
+
+  
+
   router_inst : entity work.router
   port map (
     i_clk => i_clk,

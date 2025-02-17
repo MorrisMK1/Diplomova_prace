@@ -1,7 +1,7 @@
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
-  use ieee.numeric_std_unsigned.all;
+  use ieee.std_logic_unsigned.all;
 
 library work;
   use work.my_common.all;
@@ -106,41 +106,41 @@ begin
   o_o_data_fifo_data <= i_i_data_fifo_data;
   o_o_info_fifo_data <= i_i_info_fifo_data;
 
-  src_info_ready <= i_i_info_fifo_ready_0 when (target = 0) else
-                    i_i_info_fifo_ready_1 when (target = 1) else
-                    i_i_info_fifo_ready_2 when (target = 2) else
-                    i_i_info_fifo_ready_3 when (target = 3) else
-                    i_i_info_fifo_ready_4 when (target = 4) else
-                    i_i_info_fifo_ready_5 when (target = 5) else
-                    i_i_info_fifo_ready_6 when (target = 6) else
+  src_info_ready <= i_i_info_fifo_ready_0 when (unsigned(target) = 0) else
+                    i_i_info_fifo_ready_1 when (unsigned(target) = 1) else
+                    i_i_info_fifo_ready_2 when (unsigned(target) = 2) else
+                    i_i_info_fifo_ready_3 when (unsigned(target) = 3) else
+                    i_i_info_fifo_ready_4 when (unsigned(target) = 4) else
+                    i_i_info_fifo_ready_5 when (unsigned(target) = 5) else
+                    i_i_info_fifo_ready_6 when (unsigned(target) = 6) else
                     i_i_info_fifo_ready_7 ;
 
-  src_data_ready <= i_i_data_fifo_ready_0 when (target = 0) else
-                    i_i_data_fifo_ready_1 when (target = 1) else
-                    i_i_data_fifo_ready_2 when (target = 2) else
-                    i_i_data_fifo_ready_3 when (target = 3) else
-                    i_i_data_fifo_ready_4 when (target = 4) else
-                    i_i_data_fifo_ready_5 when (target = 5) else
-                    i_i_data_fifo_ready_6 when (target = 6) else
+  src_data_ready <= i_i_data_fifo_ready_0 when (unsigned(target) = 0) else
+                    i_i_data_fifo_ready_1 when (unsigned(target) = 1) else
+                    i_i_data_fifo_ready_2 when (unsigned(target) = 2) else
+                    i_i_data_fifo_ready_3 when (unsigned(target) = 3) else
+                    i_i_data_fifo_ready_4 when (unsigned(target) = 4) else
+                    i_i_data_fifo_ready_5 when (unsigned(target) = 5) else
+                    i_i_data_fifo_ready_6 when (unsigned(target) = 6) else
                     i_i_data_fifo_ready_7 ;
 
-  o_i_info_fifo_next_0 <= src_info_next when (target = 0) else '0';
-  o_i_info_fifo_next_1 <= src_info_next when (target = 1) else '0';
-  o_i_info_fifo_next_2 <= src_info_next when (target = 2) else '0';
-  o_i_info_fifo_next_3 <= src_info_next when (target = 3) else '0';
-  o_i_info_fifo_next_4 <= src_info_next when (target = 4) else '0';
-  o_i_info_fifo_next_5 <= src_info_next when (target = 5) else '0';
-  o_i_info_fifo_next_6 <= src_info_next when (target = 6) else '0';
-  o_i_info_fifo_next_7 <= src_info_next when (target = 7) else '0';
+  o_i_info_fifo_next_0 <= src_info_next when (unsigned(target) = 0) else '0';
+  o_i_info_fifo_next_1 <= src_info_next when (unsigned(target) = 1) else '0';
+  o_i_info_fifo_next_2 <= src_info_next when (unsigned(target) = 2) else '0';
+  o_i_info_fifo_next_3 <= src_info_next when (unsigned(target) = 3) else '0';
+  o_i_info_fifo_next_4 <= src_info_next when (unsigned(target) = 4) else '0';
+  o_i_info_fifo_next_5 <= src_info_next when (unsigned(target) = 5) else '0';
+  o_i_info_fifo_next_6 <= src_info_next when (unsigned(target) = 6) else '0';
+  o_i_info_fifo_next_7 <= src_info_next when (unsigned(target) = 7) else '0';
 
-  o_i_data_fifo_next_0 <= src_data_next when (target = 0) else '0';
-  o_i_data_fifo_next_1 <= src_data_next when (target = 1) else '0';
-  o_i_data_fifo_next_2 <= src_data_next when (target = 2) else '0';
-  o_i_data_fifo_next_3 <= src_data_next when (target = 3) else '0';
-  o_i_data_fifo_next_4 <= src_data_next when (target = 4) else '0';
-  o_i_data_fifo_next_5 <= src_data_next when (target = 5) else '0';
-  o_i_data_fifo_next_6 <= src_data_next when (target = 6) else '0';
-  o_i_data_fifo_next_7 <= src_data_next when (target = 7) else '0';
+  o_i_data_fifo_next_0 <= src_data_next when (unsigned(target) = 0) else '0';
+  o_i_data_fifo_next_1 <= src_data_next when (unsigned(target) = 1) else '0';
+  o_i_data_fifo_next_2 <= src_data_next when (unsigned(target) = 2) else '0';
+  o_i_data_fifo_next_3 <= src_data_next when (unsigned(target) = 3) else '0';
+  o_i_data_fifo_next_4 <= src_data_next when (unsigned(target) = 4) else '0';
+  o_i_data_fifo_next_5 <= src_data_next when (unsigned(target) = 5) else '0';
+  o_i_data_fifo_next_6 <= src_data_next when (unsigned(target) = 6) else '0';
+  o_i_data_fifo_next_7 <= src_data_next when (unsigned(target) = 7) else '0';
 
   ----------------------------------------------------------------------------------------
 -- #ANCHOR - MAIN PROCESS
@@ -174,10 +174,10 @@ p_main  : process (i_clk) is
           if (src_info_ready = '1') then
             st_selector <= st_selector_head;  
           else
-            if (target = 7) then
+            if (unsigned(target) = 7) then
               st_selector <= st_selector_start;  
             end if;
-            target <= target + 1;
+            target <= STD_ULOGIC_VECTOR(unsigned(target) + 1);
           end if;
 
         when st_selector_head =>

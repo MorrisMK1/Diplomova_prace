@@ -1,7 +1,7 @@
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
-  use ieee.numeric_std_unsigned.all;
+  use ieee.std_logic_unsigned.all;
 
 library work;
   use work.my_common.all;
@@ -105,49 +105,49 @@ architecture behavioral of router is
 ----------------------------------------------------------------------------------------
 
   o_o_info_fifo_next_X <= i_i_info_fifo_ready;
-  o_i_info_fifo_next <= i_o_info_fifo_ready_X when bypass else next_info;
+  o_i_info_fifo_next <= i_o_info_fifo_ready_X when (bypass = '1') else next_info;
 
   o_o_data_fifo_next_X <= i_i_data_fifo_ready;
-  o_i_data_fifo_next <= i_o_data_fifo_ready_X when bypass else next_data;
+  o_i_data_fifo_next <= i_o_data_fifo_ready_X when (bypass = '1') else next_data;
 
   o_o_data_fifo_data <= i_i_data_fifo_data;
   o_o_info_fifo_data <= i_i_info_fifo_data;
 
-  tg_info_ready <=i_o_info_fifo_ready_0 when (target = 0) else
-                  i_o_info_fifo_ready_1 when (target = 1) else
-                  i_o_info_fifo_ready_2 when (target = 2) else
-                  i_o_info_fifo_ready_3 when (target = 3) else
-                  i_o_info_fifo_ready_4 when (target = 4) else
-                  i_o_info_fifo_ready_5 when (target = 5) else
-                  i_o_info_fifo_ready_6 when (target = 6) else
+  tg_info_ready <=i_o_info_fifo_ready_0 when (unsigned(target) = 0) else
+                  i_o_info_fifo_ready_1 when (unsigned(target) = 1) else
+                  i_o_info_fifo_ready_2 when (unsigned(target) = 2) else
+                  i_o_info_fifo_ready_3 when (unsigned(target) = 3) else
+                  i_o_info_fifo_ready_4 when (unsigned(target) = 4) else
+                  i_o_info_fifo_ready_5 when (unsigned(target) = 5) else
+                  i_o_info_fifo_ready_6 when (unsigned(target) = 6) else
                   i_o_info_fifo_ready_7;
 
-  tg_data_ready <=i_o_data_fifo_ready_0 when (target = 0) else
-                  i_o_data_fifo_ready_1 when (target = 1) else
-                  i_o_data_fifo_ready_2 when (target = 2) else
-                  i_o_data_fifo_ready_3 when (target = 3) else
-                  i_o_data_fifo_ready_4 when (target = 4) else
-                  i_o_data_fifo_ready_5 when (target = 5) else
-                  i_o_data_fifo_ready_6 when (target = 6) else
+  tg_data_ready <=i_o_data_fifo_ready_0 when (unsigned(target) = 0) else
+                  i_o_data_fifo_ready_1 when (unsigned(target) = 1) else
+                  i_o_data_fifo_ready_2 when (unsigned(target) = 2) else
+                  i_o_data_fifo_ready_3 when (unsigned(target) = 3) else
+                  i_o_data_fifo_ready_4 when (unsigned(target) = 4) else
+                  i_o_data_fifo_ready_5 when (unsigned(target) = 5) else
+                  i_o_data_fifo_ready_6 when (unsigned(target) = 6) else
                   i_o_data_fifo_ready_7;
 
-  o_o_info_fifo_next_0 <= (tg_info_push and i_out_en(0)) when (target = 0) else '0';
-  o_o_info_fifo_next_1 <= (tg_info_push and i_out_en(1)) when (target = 1) else '0';
-  o_o_info_fifo_next_2 <= (tg_info_push and i_out_en(2)) when (target = 2) else '0';
-  o_o_info_fifo_next_3 <= (tg_info_push and i_out_en(3)) when (target = 3) else '0';
-  o_o_info_fifo_next_4 <= (tg_info_push and i_out_en(4)) when (target = 4) else '0';
-  o_o_info_fifo_next_5 <= (tg_info_push and i_out_en(5)) when (target = 5) else '0';
-  o_o_info_fifo_next_6 <= (tg_info_push and i_out_en(6)) when (target = 6) else '0';
-  o_o_info_fifo_next_7 <= (tg_info_push and i_out_en(7)) when (target = 7) else '0';
+  o_o_info_fifo_next_0 <= (tg_info_push and i_out_en(0)) when (unsigned(target) = 0) else '0';
+  o_o_info_fifo_next_1 <= (tg_info_push and i_out_en(1)) when (unsigned(target) = 1) else '0';
+  o_o_info_fifo_next_2 <= (tg_info_push and i_out_en(2)) when (unsigned(target) = 2) else '0';
+  o_o_info_fifo_next_3 <= (tg_info_push and i_out_en(3)) when (unsigned(target) = 3) else '0';
+  o_o_info_fifo_next_4 <= (tg_info_push and i_out_en(4)) when (unsigned(target) = 4) else '0';
+  o_o_info_fifo_next_5 <= (tg_info_push and i_out_en(5)) when (unsigned(target) = 5) else '0';
+  o_o_info_fifo_next_6 <= (tg_info_push and i_out_en(6)) when (unsigned(target) = 6) else '0';
+  o_o_info_fifo_next_7 <= (tg_info_push and i_out_en(7)) when (unsigned(target) = 7) else '0';
 
-  o_o_data_fifo_next_0 <= (tg_data_push and i_out_en(0)) when (target = 0) else '0';
-  o_o_data_fifo_next_1 <= (tg_data_push and i_out_en(1)) when (target = 1) else '0';
-  o_o_data_fifo_next_2 <= (tg_data_push and i_out_en(2)) when (target = 2) else '0';
-  o_o_data_fifo_next_3 <= (tg_data_push and i_out_en(3)) when (target = 3) else '0';
-  o_o_data_fifo_next_4 <= (tg_data_push and i_out_en(4)) when (target = 4) else '0';
-  o_o_data_fifo_next_5 <= (tg_data_push and i_out_en(5)) when (target = 5) else '0';
-  o_o_data_fifo_next_6 <= (tg_data_push and i_out_en(6)) when (target = 6) else '0';
-  o_o_data_fifo_next_7 <= (tg_data_push and i_out_en(7)) when (target = 7) else '0';
+  o_o_data_fifo_next_0 <= (tg_data_push and i_out_en(0)) when (unsigned(target) = 0) else '0';
+  o_o_data_fifo_next_1 <= (tg_data_push and i_out_en(1)) when (unsigned(target) = 1) else '0';
+  o_o_data_fifo_next_2 <= (tg_data_push and i_out_en(2)) when (unsigned(target) = 2) else '0';
+  o_o_data_fifo_next_3 <= (tg_data_push and i_out_en(3)) when (unsigned(target) = 3) else '0';
+  o_o_data_fifo_next_4 <= (tg_data_push and i_out_en(4)) when (unsigned(target) = 4) else '0';
+  o_o_data_fifo_next_5 <= (tg_data_push and i_out_en(5)) when (unsigned(target) = 5) else '0';
+  o_o_data_fifo_next_6 <= (tg_data_push and i_out_en(6)) when (unsigned(target) = 6) else '0';
+  o_o_data_fifo_next_7 <= (tg_data_push and i_out_en(7)) when (unsigned(target) = 7) else '0';
   
 ----------------------------------------------------------------------------------------
 -- #ANCHOR - MAIN PROCESS
@@ -178,7 +178,7 @@ architecture behavioral of router is
           end if;
         when st_router_target =>
           header <= i_i_info_fifo_data;
-          target <= i_i_info_fifo_data(MSG_W * 2 + 2 downto MSG_W * 2);
+          target <= std_ulogic_vector(i_i_info_fifo_data(MSG_W * 2 + 2 downto MSG_W * 2));
           if (i_i_info_fifo_data(MSG_W * 2 + 5) = '0' and i_i_info_fifo_data(MSG_W * 1 - 1 downto 0) /= 0) then
             st_router <= st_router_report;
           else

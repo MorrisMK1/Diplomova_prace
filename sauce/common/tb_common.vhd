@@ -1,10 +1,10 @@
 library ieee;
-use ieee.std_logic_1164.ALL;
-use ieee.numeric_std.all;
-use ieee.numeric_std_unsigned.all;
+  use ieee.std_logic_1164.ALL;
+  use ieee.numeric_std.all;
+  use ieee.std_logic_unsigned.all;
 
 library work;
-use work.my_common.all;
+  use work.my_common.all;
 
 package tb_common is
   function std_logic_vector_to_string(signal_in: std_logic_vector)return string;
