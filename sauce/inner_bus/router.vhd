@@ -26,23 +26,23 @@ entity router is
     o_i_data_fifo_next      : out   in_pulse;
 
     o_o_data_fifo_data      : out   data_bus;
-    i_o_data_fifo_ready_0   : in    out_ready;
+    i_o_data_fifo_full_0   : in    out_ready;
     o_o_data_fifo_next_0    : out   in_pulse;
-    i_o_data_fifo_ready_1   : in    out_ready;
+    i_o_data_fifo_full_1   : in    out_ready;
     o_o_data_fifo_next_1    : out   in_pulse;
-    i_o_data_fifo_ready_2   : in    out_ready;
+    i_o_data_fifo_full_2   : in    out_ready;
     o_o_data_fifo_next_2    : out   in_pulse;
-    i_o_data_fifo_ready_3   : in    out_ready;
+    i_o_data_fifo_full_3   : in    out_ready;
     o_o_data_fifo_next_3    : out   in_pulse;
-    i_o_data_fifo_ready_4   : in    out_ready;
+    i_o_data_fifo_full_4   : in    out_ready;
     o_o_data_fifo_next_4    : out   in_pulse;
-    i_o_data_fifo_ready_5   : in    out_ready;
+    i_o_data_fifo_full_5   : in    out_ready;
     o_o_data_fifo_next_5    : out   in_pulse;
-    i_o_data_fifo_ready_6   : in    out_ready;
+    i_o_data_fifo_full_6   : in    out_ready;
     o_o_data_fifo_next_6    : out   in_pulse;
-    i_o_data_fifo_ready_7   : in    out_ready;
+    i_o_data_fifo_full_7   : in    out_ready;
     o_o_data_fifo_next_7    : out   in_pulse;
-    i_o_data_fifo_ready_X   : in    out_ready;
+    i_o_data_fifo_full_X   : in    out_ready;
     o_o_data_fifo_next_X    : out   in_pulse;
 
     i_i_info_fifo_data      : in    info_bus;
@@ -50,23 +50,23 @@ entity router is
     o_i_info_fifo_next      : out   in_pulse;
 
     o_o_info_fifo_data      : out   info_bus;
-    i_o_info_fifo_ready_0   : in    out_ready;
+    i_o_info_fifo_full_0   : in    out_ready;
     o_o_info_fifo_next_0    : out   in_pulse;
-    i_o_info_fifo_ready_1   : in    out_ready;
+    i_o_info_fifo_full_1   : in    out_ready;
     o_o_info_fifo_next_1    : out   in_pulse;
-    i_o_info_fifo_ready_2   : in    out_ready;
+    i_o_info_fifo_full_2   : in    out_ready;
     o_o_info_fifo_next_2    : out   in_pulse;
-    i_o_info_fifo_ready_3   : in    out_ready;
+    i_o_info_fifo_full_3   : in    out_ready;
     o_o_info_fifo_next_3    : out   in_pulse;
-    i_o_info_fifo_ready_4   : in    out_ready;
+    i_o_info_fifo_full_4   : in    out_ready;
     o_o_info_fifo_next_4    : out   in_pulse;
-    i_o_info_fifo_ready_5   : in    out_ready;
+    i_o_info_fifo_full_5   : in    out_ready;
     o_o_info_fifo_next_5    : out   in_pulse;
-    i_o_info_fifo_ready_6   : in    out_ready;
+    i_o_info_fifo_full_6   : in    out_ready;
     o_o_info_fifo_next_6    : out   in_pulse;
-    i_o_info_fifo_ready_7   : in    out_ready;
+    i_o_info_fifo_full_7   : in    out_ready;
     o_o_info_fifo_next_7    : out   in_pulse;
-    i_o_info_fifo_ready_X   : in    out_ready;
+    i_o_info_fifo_full_X   : in    out_ready;
     o_o_info_fifo_next_X    : out   in_pulse
 
   );
@@ -105,31 +105,31 @@ architecture behavioral of router is
 ----------------------------------------------------------------------------------------
 
   o_o_info_fifo_next_X <= i_i_info_fifo_ready;
-  o_i_info_fifo_next <= i_o_info_fifo_ready_X when (bypass = '1') else next_info;
+  o_i_info_fifo_next <= not(i_o_info_fifo_full_X) when (bypass = '1') else next_info;
 
   o_o_data_fifo_next_X <= i_i_data_fifo_ready;
-  o_i_data_fifo_next <= i_o_data_fifo_ready_X when (bypass = '1') else next_data;
+  o_i_data_fifo_next <= not(i_o_data_fifo_full_X) when (bypass = '1') else next_data;
 
   o_o_data_fifo_data <= i_i_data_fifo_data;
   o_o_info_fifo_data <= i_i_info_fifo_data;
 
-  tg_info_ready <=i_o_info_fifo_ready_0 when (unsigned(target) = 0) else
-                  i_o_info_fifo_ready_1 when (unsigned(target) = 1) else
-                  i_o_info_fifo_ready_2 when (unsigned(target) = 2) else
-                  i_o_info_fifo_ready_3 when (unsigned(target) = 3) else
-                  i_o_info_fifo_ready_4 when (unsigned(target) = 4) else
-                  i_o_info_fifo_ready_5 when (unsigned(target) = 5) else
-                  i_o_info_fifo_ready_6 when (unsigned(target) = 6) else
-                  i_o_info_fifo_ready_7;
+  tg_info_ready <=not(i_o_info_fifo_full_0) when (unsigned(target) = 0) else
+                  not(i_o_info_fifo_full_1) when (unsigned(target) = 1) else
+                  not(i_o_info_fifo_full_2) when (unsigned(target) = 2) else
+                  not(i_o_info_fifo_full_3) when (unsigned(target) = 3) else
+                  not(i_o_info_fifo_full_4) when (unsigned(target) = 4) else
+                  not(i_o_info_fifo_full_5) when (unsigned(target) = 5) else
+                  not(i_o_info_fifo_full_6) when (unsigned(target) = 6) else
+                  not(i_o_info_fifo_full_7);
 
-  tg_data_ready <=i_o_data_fifo_ready_0 when (unsigned(target) = 0) else
-                  i_o_data_fifo_ready_1 when (unsigned(target) = 1) else
-                  i_o_data_fifo_ready_2 when (unsigned(target) = 2) else
-                  i_o_data_fifo_ready_3 when (unsigned(target) = 3) else
-                  i_o_data_fifo_ready_4 when (unsigned(target) = 4) else
-                  i_o_data_fifo_ready_5 when (unsigned(target) = 5) else
-                  i_o_data_fifo_ready_6 when (unsigned(target) = 6) else
-                  i_o_data_fifo_ready_7;
+  tg_data_ready <=not(i_o_data_fifo_full_0) when (unsigned(target) = 0) else
+                  not(i_o_data_fifo_full_1) when (unsigned(target) = 1) else
+                  not(i_o_data_fifo_full_2) when (unsigned(target) = 2) else
+                  not(i_o_data_fifo_full_3) when (unsigned(target) = 3) else
+                  not(i_o_data_fifo_full_4) when (unsigned(target) = 4) else
+                  not(i_o_data_fifo_full_5) when (unsigned(target) = 5) else
+                  not(i_o_data_fifo_full_6) when (unsigned(target) = 6) else
+                  not(i_o_data_fifo_full_7);
 
   o_o_info_fifo_next_0 <= (tg_info_push and i_out_en(0)) when (unsigned(target) = 0) else '0';
   o_o_info_fifo_next_1 <= (tg_info_push and i_out_en(1)) when (unsigned(target) = 1) else '0';
