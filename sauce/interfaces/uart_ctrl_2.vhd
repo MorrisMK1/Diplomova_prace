@@ -91,9 +91,9 @@ architecture behavioral of uart_ctrl is
   signal clk_div        : std_logic_vector(15 downto 0);
 
   signal inf_rdy_strb   : std_logic;
-  signal inf_reg        : STD_LOGIC_VECTOR(3*MSG_W-1 downto 0);
+  signal info_reg       : STD_LOGIC_VECTOR(3*MSG_W-1 downto 0);
 
-  signal reg_op         : STD_LOGIC_VECTOR(2*MSG_W-1 downto 0);
+  signal reg_op         : STD_LOGIC_VECTOR(3*MSG_W-1 downto 0);
   signal reg_op_rdy_strb: std_logic;
 
   signal rst_n          : std_logic;
@@ -104,7 +104,6 @@ architecture behavioral of uart_ctrl is
   signal timeout_s      : std_logic;
   signal timeout_rst    : std_logic;
 
-  constant start_polarity  : std_logic := '0';
   alias clk_div_sel     : std_logic_vector(2 downto 0) is r_registers(1)(2 downto 0);
   alias auto_flag_rep   : std_logic_vector(1 downto 0) is r_registers(1)(4 downto 3);
   alias parity_en       : std_logic is r_registers(1)(5);
@@ -130,8 +129,8 @@ begin
 ----------------------------------------------------------------------------------------
 rst_n <= i_rst_n and not rst_r and not en_rst;
 clk_en <= i_clk and i_en;
-tx <= not internal_tx when (polarity = '1') else internal_tx ;
-internal_rx <= not rx when (polarity = '1') else rx ;
+--tx <= not internal_tx when (polarity = '1') else internal_tx ;
+--internal_rx <= not rx when (polarity = '1') else rx ;
 flg_undef_2 <= '0'; 
 flg_undef_5 <= '0'; 
 
@@ -159,12 +158,8 @@ end process;
 ----------------------------------------------------------------------------------------
 p_cfg_manager : process (clk_en)
   variable register_selection : natural range 0 to 3;
-  alias data_reg_op        : std_logic_vector(MSG_W-1 downto 0)     is reg_op(7 downto 0);
-  alias id_reg_op          : std_logic_vector(USER_ID_W-1 downto 0) is reg_op(15 downto 14);
-  alias reg_reg_op         : std_logic_vector(1 downto 0)           is reg_op(12 downto 11);
-  alias read_reg_op        : std_logic                              is reg_op(13);
 begin
-  register_selection := to_integer(unsigned(reg_reg_op));
+  register_selection := to_integer(unsigned(inf_reg(reg_op)));
   if rising_edge(clk_en) then 
     inf_rdy_strb <= '0';
     -- internal reset from registr should not reset registers
@@ -172,15 +167,15 @@ begin
       for i in 1 to 3 loop
         r_registers(i) <= (others => '0');
       end loop;
-      inf_reg <= (others => '0');
+      info_reg <= (others => '0');
     else
       rst_r <= '0'; -- internal reset is only a strobe
       if reg_op_rdy_strb = '1' then
-        if read_reg_op = '0' and (reg_reg_op(0) xor reg_reg_op(1)) = '1' then
-          r_registers(register_selection) <= data_reg_op;
+        if inf_ret(reg_op) = '0' and (inf_reg(reg_op)(0) xor inf_reg(reg_op)(1)) = '1' then
+          r_registers(register_selection) <= inf_size(reg_op);
         end if;
-        if read_reg_op = '1' then
-          inf_reg <= id_reg_op & "0" & reg_reg_op & MY_ID & r_registers(register_selection) & x"00";
+        if inf_ret(reg_op) = '1' then
+          info_reg <= inf_id(reg_op) & "0" & inf_reg(reg_op) & MY_ID & r_registers(register_selection) & x"00";
           inf_rdy_strb <= '1';
         end if;
         -- register 3 will be reset after every interaction
@@ -245,18 +240,33 @@ begin
       case( st_downstr ) is
         when st_downstr_IDLE =>
           if (i_i_info_fifo_ready = '1' and (tx_ready = '1' or ready_en = '0')) then
-            
+            st_downstr <= st_downstr_CHECK;
+            reg_op <= i_i_info_fifo_data;
           end if;
         when st_downstr_CHECK =>
-
+          if (unsigned(inf_reg(reg_op)) = 0) then
+            st_downstr <= st_downstr_DATA;
+            data_cnt := 0;
+          else
+            reg_op_rdy_strb <= '1';
+            st_downstr <= st_downstr_REGS;
+          end if;
         when st_downstr_REGS =>
-
+          st_downstr <= st_downstr_IDLE;
         when st_downstr_DATA =>
-
+          if (data_cnt < unsigned(inf_size(reg_op))) then 
+            if ((tx_ready = '1' or ready_en = '0') and (out_busy = '0')) then
+              msg_i_dat <= i_i_data_fifo_data;
+              msg_i_vld <= '1';
+              data_cnt := data_cnt + 1;
+            end if;
+          else
+            st_downstr := st_downstr_IDLE;
+          end if;
         when st_downstr_SYNC =>
-
+          st_downstr := st_downstr_IDLE;
         when others =>
-        st_downstr := st_downstr_IDLE;
+          st_downstr := st_downstr_IDLE;
       end case ;
     end if;
   end if;
@@ -343,8 +353,8 @@ end process p_upstream;
     port map (
       i_clk => clk_en,
       i_rst_n => rst_n,
-      i_rx => internal_rx,
-      i_start_pol => start_polarity,
+      i_rx => rx,
+      i_start_pol => polarity,
       i_par_en => parity_en,
       i_par_type => parity_odd,
       i_clk_div => unsigned(clk_div),
@@ -366,11 +376,11 @@ end process p_upstream;
       i_rst_n => rst_n,
       i_msg => msg_i_dat,
       i_msg_vld  => msg_i_vld,
-      i_start_pol => start_polarity,
+      i_start_pol => polarity,
       i_par_en => parity_en,
       i_par_type => parity_odd,
       i_clk_div => unsigned(clk_div),
-      o_tx => internal_tx,
+      o_tx => tx,
       o_busy => out_busy
     );
   
