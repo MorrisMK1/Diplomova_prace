@@ -35,4 +35,40 @@ package my_common is
     t_bus_1WIRE
   );
 
+  function inf_id(info:info_bus)return std_logic_vector;
+  function inf_tg(info:info_bus)return std_logic_vector;
+  function inf_reg(info:info_bus)return std_logic_vector;
+  function inf_ret(info:info_bus)return std_logic;
+  function inf_size(info:info_bus)return std_logic_vector;
+
 end package my_common;
+
+package body my_common is
+
+  function inf_id(info:info_bus)return std_logic_vector is
+  begin
+    return info(MSG_W * 2 + 7 downto MSG_W * 2 + 6);
+  end function;
+
+  function inf_tg(info:info_bus)return std_logic_vector is
+  begin
+    return info(MSG_W * 2 + 2 downto MSG_W * 2);
+  end function;
+
+  function inf_reg(info:info_bus)return std_logic_vector is
+  begin
+    return info(MSG_W * 2 + 4 downto MSG_W * 2 + 3);
+  end function;
+
+  function inf_ret(info:info_bus)return std_logic is
+  begin
+    return info(MSG_W * 2 + 5);
+  end function;
+
+  function inf_size(info:info_bus)return std_logic_vector is
+  begin
+    return info(MSG_W * 2 - 1 downto MSG_W * 1);
+  end function;
+
+
+end package body;

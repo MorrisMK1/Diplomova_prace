@@ -32,8 +32,8 @@ architecture behavioral of main is
 
 constant CLK_PERIOD : TIME := 10 ns;
 
-signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf, sl1_info_in, sl1_info_out, sl2_info_in, sl2_info_out     : info_bus;
-signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat, sl1_data_in, sl1_data_out, sl2_data_in, sl2_data_out      : data_bus;
+signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf, sl1_info_in, sl1_info_out: info_bus;
+signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat, sl1_data_in, sl1_data_out: data_bus;
 
 signal sl1_push_info   : std_logic;
 signal sl1_push_data   : std_logic;
@@ -44,27 +44,15 @@ signal sl1_emty_data   : std_logic;
 signal sl1_full_info   : std_logic;
 signal sl1_full_data   : std_logic;
 
-signal sl2_push_info, sl2_push_data, sl2_next_info, sl2_next_data, sl2_emty_info, sl2_emty_data, sl2_full_info, sl2_full_data : std_logic;
-
-
 signal ms_push_info, ms_push_data, ms_next_info, ms_next_data, ms_emty_info, ms_emty_data, ms_full_info, ms_full_data   : std_logic;
 
-signal rt_push_info, rt_push_data, rt_next_info, rt_next_data, rt_emty_info, rt_emty_data, rt_full_info, rt_full_data   : std_logic;
-
-signal cl_push_info, cl_push_data, cl_next_info, cl_next_data, cl_emty_info, cl_emty_data, cl_full_info, cl_full_data   : std_logic;
+signal rt_next_info, rt_next_data, rt_emty_info, rt_emty_data   : std_logic;
 
 signal o_ready        : std_logic;
 
-signal gen_header     : info_bus;
-signal msg_to_ms      : data_bus;
-
-signal r_i_out_en : std_logic_vector(MSG_W -1 downto 0);
 signal r_i_bypass : std_logic;
 signal r_o_err_rep : std_logic;
 
-signal r_i_i_data_fifo_data : data_bus;
-signal r_i_i_data_fifo_empty : out_ready;
-signal r_o_i_data_fifo_next : in_pulse;
 signal r_o_o_data_fifo_data : data_bus;
 signal r_i_o_data_fifo_full_0 : out_ready;
 signal r_o_o_data_fifo_next_0 : in_pulse;
@@ -84,9 +72,6 @@ signal r_i_o_data_fifo_full_7 : out_ready;
 signal r_o_o_data_fifo_next_7 : in_pulse;
 signal r_i_o_data_fifo_full_X : out_ready;
 signal r_o_o_data_fifo_next_X : in_pulse;
-signal r_i_i_info_fifo_data : info_bus;
-signal r_i_i_info_fifo_empty : out_ready;
-signal r_o_i_info_fifo_next : in_pulse;
 signal r_o_o_info_fifo_data : info_bus;
 signal r_i_o_info_fifo_full_0 : out_ready;
 signal r_o_o_info_fifo_next_0 : in_pulse;
@@ -182,7 +167,7 @@ begin
   port map (
     i_clk => i_clk,
     i_rst_n => i_rst_n,
-    i_out_en =>               r_i_out_en,
+    i_out_en =>               (others =>'1'),
     i_bypass =>               r_i_bypass,
     o_err_rep =>              r_o_err_rep,
     i_i_data_fifo_data =>     i_r_o_f_dat,

@@ -193,10 +193,14 @@ p_main  : process (i_clk) is
       data_cnt <= to_unsigned(0,MSG_W);
       o_o_data_fifo_next <= '0';
       src_data_next <= '0';
+      src_info_next <= '0';
+      o_o_info_fifo_next <= '0';
     elsif (rising_edge(i_clk)) then
       o_bypass <= '0';
       o_o_data_fifo_next <= '0';
       src_data_next <= '0';
+      src_info_next <= '0';
+      o_o_info_fifo_next <= '0';
       case st_selector is
 
         when st_selector_start =>
@@ -219,9 +223,10 @@ p_main  : process (i_clk) is
 
         when st_selector_head =>
           header <= src_info_data;
-          src_info_next <= '1';
-          data_cnt <= to_unsigned(0,MSG_W);
-          st_selector <= st_selector_data;  
+          if (i_o_info_fifo_ready = '1') then
+            data_cnt <= to_unsigned(0,MSG_W);
+            st_selector <= st_selector_data;  
+          end if;
 
         when st_selector_data =>
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
@@ -232,6 +237,8 @@ p_main  : process (i_clk) is
             end if;
           else
             data_cnt <= to_unsigned(0,MSG_W);
+            src_info_next <= '1';
+            o_o_info_fifo_next <= '1';
             st_selector <= st_selector_start;  
           end if;
 

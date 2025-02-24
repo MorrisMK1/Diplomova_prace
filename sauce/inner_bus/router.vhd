@@ -82,6 +82,7 @@ architecture behavioral of router is
     st_router_target,
     st_router_data,
     st_router_head,
+    st_router_delay,
     st_router_report,
     st_router_bypass
   );
@@ -178,9 +179,11 @@ architecture behavioral of router is
           end if;
         when st_router_target =>
           header <= i_i_info_fifo_data;
-          target <= std_ulogic_vector(i_i_info_fifo_data(MSG_W * 2 + 2 downto MSG_W * 2));
-          if (i_i_info_fifo_data(MSG_W * 2 + 5) = '0' and i_i_info_fifo_data(MSG_W * 1 - 1 downto 0) /= 0) then
+          target <= std_ulogic_vector(inf_tg(i_i_info_fifo_data));
+          if (inf_ret(i_i_info_fifo_data) = '0' and i_i_info_fifo_data(MSG_W * 1 - 1 downto 0) /= 0) then
             st_router <= st_router_report;
+          elsif  (inf_reg(i_i_info_fifo_data) /= "00") then
+            st_router <= st_router_head;
           else
             st_router <= st_router_data;
             data_cnt <= to_unsigned(0,MSG_W);
@@ -188,8 +191,8 @@ architecture behavioral of router is
         when st_router_data =>
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (tg_data_ready = '1' and i_i_data_fifo_ready = '1')then
-              next_data <= '1';
               tg_data_push <= '1';
+              next_data <= '1';
               data_cnt <= data_cnt + 1;
             end if;
           else
@@ -198,7 +201,8 @@ architecture behavioral of router is
         when st_router_head =>
           if (tg_info_ready = '1') then
             tg_info_push <= '1';
-            st_router <= st_router_idle;
+            st_router <= st_router_delay;
+            next_info <= '1';
           end if;
         when st_router_report =>
           bypass <= '1';
@@ -212,7 +216,7 @@ architecture behavioral of router is
             st_router <= st_router_idle;
           end if;
         when others =>
-          st_router <= st_router_idle;
+          st_router <= st_router_idle; 
       end case;
 
     end if;
