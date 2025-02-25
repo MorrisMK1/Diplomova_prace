@@ -18,13 +18,14 @@ entity uart_rx is
     constant  START_OFFSET  : natural := 10           -- offset in clks between start and first bit
   );
   port(
-    i_clk         : in  std_logic;            -- clk pin
-    i_rst_n       : in  std_logic;            -- negative reset pin
-    i_rx          : in  std_logic;            -- reciever pin
+    i_clk         : in  std_logic;                -- clk pin
+    i_rst_n       : in  std_logic;                -- negative reset pin
+    i_rx          : in  std_logic;                -- reciever pin
 
-    i_start_pol   : in  std_logic := '0';     -- polarity of start bit (negative of end bit)
-    i_par_en      : in  std_logic := '0';     -- parity bit enable 
-    i_par_type    : in  std_logic := '0';     -- parity type (0:ODD;1:EVEN)
+    i_start_pol   : in  std_logic := '0';         -- polarity of start bit (negative of end bit)
+    i_par_en      : in  std_logic := '0';         -- parity bit enable 
+    i_par_type    : in  std_logic := '0';         -- parity type (0:ODD;1:EVEN)
+    i_char_len    : in  std_logic_vector(1 downto 0) := "11"; -- length of word (5 + x)
 
     i_clk_div     : in  unsigned(15 downto 0) := x"0300";  -- clock divisor for baudrate (def = 7.3728 MHz => ~9600)
 
@@ -168,7 +169,7 @@ begin
           end if;
         when s_rx_RECIEVE =>
           parity_res := TRUE;
-          if bit_cnt < MSG_W then
+          if bit_cnt < (5 + unsigned(i_char_len)) then
             if counter_done = '1' then
               msg_buffer := rx_sample_val & msg_buffer(MSG_W-1 downto 1);
               parity_chck := (rx_sample_val xor parity_chck);
@@ -177,8 +178,11 @@ begin
                 stab_cnt := stab_cnt + 1;
               end if ;
             end if;
+          elsif bit_cnt < MSG_W then
+            msg_buffer := '0' &  msg_buffer(MSG_W-1 downto 1);
+            bit_cnt <= bit_cnt + 1;
           else
-            o_msg <= msg_buffer;
+            o_msg <= msg_buffer; --TODO -  fit different size to lsb
             if i_par_en = '1' then
               s_rx <= s_rx_PARITY;
             else

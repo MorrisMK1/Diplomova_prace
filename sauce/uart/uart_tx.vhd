@@ -17,14 +17,15 @@ entity uart_tx is
     constant  SMPL_W        : natural := 8            -- rx line sample width
   );
   port(
-    i_clk         : in  std_logic;            -- clk pin
-    i_rst_n       : in  std_logic;            -- negative reset pin
+    i_clk         : in  std_logic;                -- clk pin
+    i_rst_n       : in  std_logic;                -- negative reset pin
     i_msg         : in  std_logic_vector(MSG_W-1 downto 0); -- data input
-    i_msg_vld     : in std_logic;            -- message in valid strobe signal
+    i_msg_vld     : in std_logic;                 -- message in valid strobe signal
 
-    i_start_pol   : in  std_logic := '0';     -- polarity of start bit (negative of end bit)
-    i_par_en      : in  std_logic := '0';     -- parity bit enable 
-    i_par_type    : in  std_logic := '0';     -- parity type (0:ODD;1:EVEN)
+    i_start_pol   : in  std_logic := '0';         -- polarity of start bit (negative of end bit)
+    i_par_en      : in  std_logic := '0';         -- parity bit enable 
+    i_par_type    : in  std_logic := '0';         -- parity type (0:ODD;1:EVEN)
+    i_char_len    : in  std_logic_vector(1 downto 0) := "11"; -- length of word (5 + x)
 
     i_clk_div     : in  unsigned(15 downto 0) := x"0300";  -- clock divisor for baudrate (def = 7.3728 MHz => ~9600)
 
@@ -122,7 +123,7 @@ begin
           s_tx <= s_tx_DATA;
         when s_tx_DATA =>
           if counter_done = '1' then
-            if bit_cnt < MSG_W then
+            if bit_cnt < (unsigned(i_char_len) + 5) then
               o_tx <= msg_buff(bit_cnt);
               parity_chck := (parity_chck xor msg_buff(bit_cnt));
               bit_cnt <= bit_cnt + 1;
