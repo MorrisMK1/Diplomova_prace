@@ -18,7 +18,7 @@ entity uart_rx is
     constant  START_OFFSET  : natural := 10           -- offset in clks between start and first bit
   );
   port(
-    i_clk         : in  std_logic;                -- clk pin
+    i_clk         : in  std_logic;                -- clk pin (100MHz)
     i_rst_n       : in  std_logic;                -- negative reset pin
     i_rx          : in  std_logic;                -- reciever pin
 
@@ -102,6 +102,7 @@ end process;
 ----------------------------------------------------------------------------------------
 p_clk_div : process (i_clk) is
   variable cnt  : unsigned(15 downto 0);
+  variable div10: natural range 0 to 10;
   variable run  : BOOLEAN;
 begin
   if rising_edge(i_clk) then
@@ -109,19 +110,28 @@ begin
       cnt := (others => '0');
       counter_done <= '0';
       run := false;
+      div10 := 0;
     else
       if run then
-        if cnt < i_clk_div then
-          cnt := cnt + 1;
-        else
+        if (cnt < i_clk_div) then
+          if (div10 = 10) then
+            cnt := cnt + 1;
+          end if;
+        else 
           counter_done <= '1';
           run := false;
+        end if;
+        if (div10 < 10) then
+          div10 := div10 + 1;
+        else
+          div10 := 1;
         end if;
       else
         counter_done <= '0';
         if counter_start = '1' then
           run := true;
           cnt := (others => '0');
+          div10 := 0;
         end if;
       end if;
     end if;
@@ -169,7 +179,7 @@ begin
           end if;
         when s_rx_RECIEVE =>
           parity_res := TRUE;
-          if bit_cnt < (5 + unsigned(i_char_len)) then
+          if bit_cnt < (5 + to_integer(unsigned(i_char_len))) then
             if counter_done = '1' then
               msg_buffer := rx_sample_val & msg_buffer(MSG_W-1 downto 1);
               parity_chck := (rx_sample_val xor parity_chck);

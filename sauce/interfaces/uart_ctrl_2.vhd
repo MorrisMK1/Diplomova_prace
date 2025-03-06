@@ -9,7 +9,7 @@ library work;
 ----------------------------------------------------------------------------------------
 -- #ANCHOR - ENTITY
 ----------------------------------------------------------------------------------------
-entity uart_ctrl is
+entity uart_ctrl2 is
   generic (
     constant  MSG_W         : natural := 8;             -- message width
     constant  SMPL_W        : natural := 8;             -- rx line sample width
@@ -43,12 +43,12 @@ entity uart_ctrl is
     tx_ready                : in std_logic := '1';
     rx_ready                : out std_logic
   );
-end uart_ctrl;
+end uart_ctrl2;
 
 ----------------------------------------------------------------------------------------
 --#SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture behavioral of uart_ctrl is
+architecture behavioral of uart_ctrl2 is
 
   type t_downstr_state is (
     st_downstr_IDLE,
@@ -75,7 +75,6 @@ architecture behavioral of uart_ctrl is
     st_updown_DATA_D
   );
 
-  signal internal_rx, internal_tx : std_logic;
 
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
   signal flags          : std_logic_vector(MSG_W-1 downto 0);
@@ -205,11 +204,21 @@ end process p_cfg_manager;
 ----------------------------------------------------------------------------------------
 p_timeout : process (clk_en)
   variable step : natural range 0 to (8333*10*32);
+  variable actual_msg_len : natural range 0 to 9;
 begin
   -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
   if rising_edge (clk_en) then
-    if (rx_busy = '0') then
-      if (step = unsigned(clk_div)*(unsigned(parity_en)+unsigned(word_len)+6)) then
+    if (rst_n = '0') then
+      step := 0;
+      timeout_s <= '0';
+    elsif (rx_busy = '0') then
+      if (parity_en = '1') then
+        actual_msg_len := 6;
+      else
+        actual_msg_len := 5;
+      end if;
+      actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
+      if (step = to_integer(unsigned(clk_div))*(actual_msg_len)*10) then
         timeout_s <= '1';
       else
         step := step + 1;
@@ -246,34 +255,39 @@ begin
       reg_op_rdy_strb <= '0';
       o_i_data_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
-      msg_i_vld <= '0';
       flg_data_size <= '0';
       case( st_downstr ) is
         when st_downstr_IDLE =>
           if (i_i_info_fifo_empty = '0' and (tx_ready = '1' or ready_en = '0')) then
-            st_downstr <= st_downstr_CHECK;
+            st_downstr := st_downstr_CHECK;
             reg_op <= i_i_info_fifo_data;
+            o_i_info_fifo_next <= '1';
           end if;
         when st_downstr_CHECK =>
-          if (unsigned(inf_reg(reg_op)) = 0) then
-            st_downstr <= st_downstr_DATA;
+          if (to_integer(unsigned(inf_reg(reg_op))) = 0) then
+            st_downstr := st_downstr_DATA;
             data_cnt := 0;
-          else
-            st_downstr <= st_downstr_REGS;
+          elsif (out_busy = ZERO_BIT) then
+            st_downstr := st_downstr_REGS;
           end if;
         when st_downstr_REGS =>
           if (info_rdy = '0') then
             reg_op_rdy_strb <= '1';
-            st_downstr <= st_downstr_IDLE;
+            st_downstr := st_downstr_IDLE;
           end if;
         when st_downstr_DATA =>
-          if (data_cnt < unsigned(inf_size(reg_op))) then 
-            if ((tx_ready = '1' or ready_en = '0') and (out_busy = '0')) then
+          if (data_cnt < to_integer(unsigned(inf_size(reg_op)))) then 
+            if ((tx_ready = '1' or ready_en = '0') and (out_busy = '0') and (msg_i_vld = '0')) then
               msg_i_dat <= i_i_data_fifo_data;
+              o_i_data_fifo_next <= '1';
               msg_i_vld <= '1';
               data_cnt := data_cnt + 1;
             end if;
+            if ((msg_i_vld = '1') and (out_busy = '1')) then
+              msg_i_vld <= '0';
+            end if;
           else
+            msg_i_vld <= '0';
             st_downstr := st_downstr_IDLE;
           end if;
         when st_downstr_SYNC =>
@@ -332,14 +346,15 @@ begin
           end if;
         when st_upstr_DATA =>
           if (timeout_s = '0') then
-            if (rx_ready = '1' and rx_ready_last = '0') then
+            if (msg_o_vld = '1' and rx_ready_last = '0') then
               o_o_data_fifo_data <= msg_o_dat;
               o_o_data_fifo_next <= '1';
+              data_cnt := data_cnt + 1;
             elsif (i_o_data_fifo_full = '1') then
               flg_data_size <= '1';
               st_upstr := st_upstr_CHECK; 
             end if;
-            rx_ready_last := rx_ready;
+            rx_ready_last := msg_o_vld;
           else
             st_upstr := st_upstr_CHECK; 
           end if;
@@ -347,7 +362,11 @@ begin
         rx_ready <= '0';
         if (timeout_s = '1'and i_o_info_fifo_full = '0') then
           o_o_info_fifo_data <= std_logic_vector(to_unsigned(cur_ID,2)) & '0' & "00" & MY_ID & std_logic_vector(to_unsigned(data_cnt,8)) & r_registers(3);
-          cur_ID := cur_ID + 1;
+          if (cur_ID = 3) then
+            cur_ID := 0;
+          else
+            cur_ID := cur_ID + 1;
+          end if;
           o_o_info_fifo_next <= '1';
           st_upstr := st_upstr_SYNC; 
         end if;

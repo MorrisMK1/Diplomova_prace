@@ -17,7 +17,7 @@ entity uart_tx is
     constant  SMPL_W        : natural := 8            -- rx line sample width
   );
   port(
-    i_clk         : in  std_logic;                -- clk pin
+    i_clk         : in  std_logic;                -- clk pin (100MHz)
     i_rst_n       : in  std_logic;                -- negative reset pin
     i_msg         : in  std_logic_vector(MSG_W-1 downto 0); -- data input
     i_msg_vld     : in std_logic;                 -- message in valid strobe signal
@@ -66,6 +66,7 @@ begin
 ----------------------------------------------------------------------------------------
 p_clk_div : process (i_clk) is
     variable cnt  : unsigned(15 downto 0);
+    variable div10: natural range 0 to 10;
     variable run  : BOOLEAN;
   begin
     if rising_edge(i_clk) then
@@ -74,20 +75,28 @@ p_clk_div : process (i_clk) is
         counter_done <= '0';
         run := false;
       else
-        if run then
-          if cnt < i_clk_div then
+      if run then
+        if (cnt < i_clk_div) then
+          if (div10 = 10) then
             cnt := cnt + 1;
-          else
-            counter_done <= '1';
-            run := false;
           end if;
         else
-          counter_done <= '0';
-          if counter_start = '1' then
-            run := true;
-            cnt := (others => '0');
-          end if;
+          counter_done <= '1';
+          run := false;
         end if;
+        if (div10 < 10) then
+          div10 := div10 + 1;
+        else
+          div10 := 1;
+        end if;
+      else
+        counter_done <= '0';
+        if counter_start = '1' then
+          run := true;
+          cnt := (others => '0');
+          div10 := 0;
+        end if;
+      end if;
       end if;
     end if;
   end process p_clk_div;
@@ -123,7 +132,7 @@ begin
           s_tx <= s_tx_DATA;
         when s_tx_DATA =>
           if counter_done = '1' then
-            if bit_cnt < (unsigned(i_char_len) + 5) then
+            if bit_cnt < (to_integer(unsigned(i_char_len)) + 5) then
               o_tx <= msg_buff(bit_cnt);
               parity_chck := (parity_chck xor msg_buff(bit_cnt));
               bit_cnt <= bit_cnt + 1;

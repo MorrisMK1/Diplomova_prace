@@ -7,6 +7,9 @@ use work.my_common.all;
 
 
 entity uart_module is
+  generic (
+    ID : std_logic_vector(2 downto 0)
+  );
   port(
     i_clk           : in std_logic;
     i_rst_n         : in std_logic;
@@ -28,8 +31,8 @@ entity uart_module is
     o_o_data_data   : out data_bus;
     o_o_data_empty  : out std_logic;
 
-    slv_tx          : inout std_logic;
-    slv_rx          : inout std_logic
+    slv_tx          : out std_logic;
+    slv_rx          : in  std_logic
 
   );
 end entity uart_module;
@@ -51,7 +54,7 @@ begin
 ----------------------------------------------------------------------------------------
 module_fifo_INFO_SLV1_i : entity work.module_fifo_regs_no_flags
   generic map (
-    g_WIDTH => 24,
+    g_WIDTH => MSG_W * 3,
     g_DEPTH => 32
   )
   port map (
@@ -67,7 +70,7 @@ module_fifo_INFO_SLV1_i : entity work.module_fifo_regs_no_flags
 
 module_fifo_DATA_SLV1_i : entity work.module_fifo_regs_no_flags
   generic map (
-    g_WIDTH => 8,
+    g_WIDTH => MSG_W,
     g_DEPTH => 512
   )
   port map (
@@ -86,7 +89,7 @@ module_fifo_DATA_SLV1_i : entity work.module_fifo_regs_no_flags
 ----------------------------------------------------------------------------------------
 module_fifo_INFO_SLV1_o : entity work.module_fifo_regs_no_flags
   generic map (
-    g_WIDTH => 24,
+    g_WIDTH => MSG_W * 3,
     g_DEPTH => 32
   )
   port map (
@@ -102,7 +105,7 @@ module_fifo_INFO_SLV1_o : entity work.module_fifo_regs_no_flags
 
 module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
   generic map (
-    g_WIDTH => 8,
+    g_WIDTH => MSG_W,
     g_DEPTH => 512
   )
   port map (
@@ -119,31 +122,31 @@ module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
   ----------------------------------------------------------------------------------------
   --ANCHOR - SLAVE INTERFACE
   ----------------------------------------------------------------------------------------
-  uart_ctrl_inst1 : entity work.uart_ctrl
+  uart_ctrl_inst1 : entity work.uart_ctrl2
   generic map (
     MSG_W => MSG_W,
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
-    MY_ID => "000"
+    MY_ID => ID
   )
   port map (
     i_clk => i_clk,
     i_rst_n => i_rst_n,
     i_en => i_en,
     i_i_data_fifo_data => sl_data_in,
-    i_i_data_fifo_ready => (not sl_empty_data),
+    i_i_data_fifo_empty =>sl_empty_data,
     o_i_data_fifo_next => sl_next_data,
     o_o_data_fifo_data => sl_data_out,
-    i_o_data_fifo_ready => (not sl_full_data),
+    i_o_data_fifo_full =>sl_full_data,
     o_o_data_fifo_next => sl_push_data,
     i_i_info_fifo_data => sl_info_in,
-    i_i_info_fifo_ready => (not sl_emty_info),
+    i_i_info_fifo_empty =>sl_emty_info,
     o_i_info_fifo_next => sl_next_info,
     o_o_info_fifo_data => sl_info_out,
-    i_o_info_fifo_ready => (not sl_full_info),
+    i_o_info_fifo_full =>sl_full_info,
     o_o_info_fifo_next => sl_push_info,
-    comm_wire_0 => slv_tx,
-    comm_wire_1 => slv_rx
+    tx => slv_tx,
+    rx => slv_rx
   );
 
 

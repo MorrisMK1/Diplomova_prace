@@ -10,7 +10,7 @@ library work;
 -- #ANCHOR - ENTITY
 ----------------------------------------------------------------------------------------
 
-entity main_ctrl is
+entity main_ctrl_2 is
   port (
     i_clk                   : in    std_logic;
     i_rst_n                 : in    std_logic;
@@ -32,12 +32,12 @@ entity main_ctrl is
     i_settings              : in    std_logic_array (1 to 2) (MSG_W-1 downto 0);
     o_ready                 : out   std_logic;
 
-    comm_wire_0             : inout std_logic := 'Z';
-    comm_wire_1             : inout std_logic := 'Z'
+    tx                      : out std_logic;
+    rx                      : in std_logic := 'Z'
   );
 end entity;
 
-architecture behavioral of main_ctrl is
+architecture behavioral of main_ctrl_2 is
 
   type fsm_reciever is (
     st_reciever_idle,
@@ -74,7 +74,6 @@ architecture behavioral of main_ctrl is
   signal flags_reg        : std_logic_vector(MSG_W-1 downto 0);
   signal flags            : std_logic_vector(MSG_W-1 downto 0);
   signal flag_rst         : std_logic;
-  signal sync_up          : std_logic;
 
   alias clk_div_sel       : std_logic_vector(2 downto 0) is i_settings(1)(2 downto 0);
   alias auto_flag_rep     : std_logic is i_settings(1)(3);
@@ -367,7 +366,7 @@ end process;
     i_par_en => parity_en,
     i_par_type => parity_odd,
     i_clk_div => clk_div,
-    o_tx => comm_wire_0,
+    o_tx => tx,
     o_busy => o_busy_tx
   );
 ----------------------------------------------------------------------------------------
@@ -382,7 +381,7 @@ generic map (
 port map (
   i_clk => i_clk,
   i_rst_n => i_rst_n,
-  i_rx => comm_wire_1,
+  i_rx => rx,
   i_start_pol => start_pol,
   i_par_en => parity_en,
   i_par_type => parity_odd,

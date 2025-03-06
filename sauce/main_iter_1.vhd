@@ -19,8 +19,8 @@ entity main is
     slv1_tx       : inout std_logic;
     slv1_rx       : inout std_logic;
     
-    slv2_tx       : inout std_logic;
-    slv2_rx       : inout std_logic
+    slv2_tx       : out std_logic;
+    slv2_rx       : in std_logic
 
   );
 end entity main;
@@ -156,6 +156,53 @@ signal s_o_o_info_fifo_next : in_pulse;
 
 
 begin
+
+  r_i_o_data_fifo_full_0 <= ZERO_BIT;
+  r_i_o_data_fifo_full_3 <= ZERO_BIT;
+  r_i_o_data_fifo_full_4 <= ZERO_BIT;
+  r_i_o_data_fifo_full_5 <= ZERO_BIT;
+  r_i_o_data_fifo_full_6 <= ZERO_BIT;
+  r_i_o_data_fifo_full_7 <= ZERO_BIT;
+  r_i_o_data_fifo_full_X <= ZERO_BIT;
+  r_i_o_info_fifo_full_0 <= ZERO_BIT;
+  r_i_o_info_fifo_full_3 <= ZERO_BIT;
+  r_i_o_info_fifo_full_4 <= ZERO_BIT;
+  r_i_o_info_fifo_full_5 <= ZERO_BIT;
+  r_i_o_info_fifo_full_6 <= ZERO_BIT;
+  r_i_o_info_fifo_full_7 <= ZERO_BIT;
+  r_i_o_info_fifo_full_X <= ZERO_BIT;
+
+  s_i_i_data_fifo_data_X <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_0 <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_3 <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_4 <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_5 <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_6 <= (others => ZERO_BIT); 
+  s_i_i_data_fifo_data_7 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_X <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_0 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_3 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_4 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_5 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_6 <= (others => ZERO_BIT); 
+  s_i_i_info_fifo_data_7 <= (others => ZERO_BIT); 
+
+  s_i_i_data_fifo_empty_0 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_3 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_4 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_5 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_6 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_7 <= HIGH_BIT;
+  s_i_i_data_fifo_empty_X <= HIGH_BIT;
+  s_i_i_info_fifo_empty_0 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_3 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_4 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_5 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_6 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_7 <= HIGH_BIT;
+  s_i_i_info_fifo_empty_X <= HIGH_BIT;
+
+
 ----------------------------------------------------------------------------------------
 --SECTION - INSTANCES
 ----------------------------------------------------------------------------------------
@@ -460,7 +507,7 @@ module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
     MSG_W => MSG_W,
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
-    MY_ID => "000"
+    MY_ID => "001"
   )
   port map (
     i_clk => i_clk,
@@ -486,6 +533,9 @@ module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
 --ANCHOR - SLAVE INTERFACE 2
 ----------------------------------------------------------------------------------------
 uart_module_slv2 : entity work.uart_module
+  generic map(
+    ID => "010"
+  )
   port map (
     i_clk => i_clk,
     i_rst_n => i_rst_n,

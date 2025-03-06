@@ -7,6 +7,8 @@ package my_common is
   constant  START_OFFSET  : natural := 10;          -- offset in clks between start and first bit
   constant  USER_ID_W     : natural := 2;
   constant  BUS_ID_W      : natural := 3;
+  constant  ZERO_BIT      : std_logic := '0';
+  constant  HIGH_BIT      : std_logic := '1';
 
   type std_logic_array is array (natural range <>) of std_logic_vector;
 
@@ -46,18 +48,24 @@ end package my_common;
 package body my_common is
 
   function inf_id(info:info_bus)return std_logic_vector is
+    variable ret_val : std_logic_vector (1 downto 0);
   begin
-    return info(MSG_W * 2 + 7 downto MSG_W * 2 + 6);
+    ret_val := info(MSG_W * 2 + 7 downto MSG_W * 2 + 6);
+    return ret_val;
   end function;
 
   function inf_tg(info:info_bus)return std_logic_vector is
+    variable ret_val : std_logic_vector (2 downto 0);
   begin
-    return info(MSG_W * 2 + 2 downto MSG_W * 2);
+    ret_val := info(MSG_W * 2 + 2 downto MSG_W * 2);
+    return ret_val;
   end function;
 
   function inf_reg(info:info_bus)return std_logic_vector is
+    variable ret_val : std_logic_vector (1 downto 0);
   begin
-    return info(MSG_W * 2 + 4 downto MSG_W * 2 + 3);
+    ret_val := info(MSG_W * 2 + 4 downto MSG_W * 2 + 3);
+    return ret_val;
   end function;
 
   function inf_ret(info:info_bus)return std_logic is
@@ -66,8 +74,10 @@ package body my_common is
   end function;
 
   function inf_size(info:info_bus)return std_logic_vector is
+    variable ret_val : std_logic_vector (MSG_W - 1 downto 0);
   begin
-    return info(MSG_W * 2 - 1 downto MSG_W * 1);
+    ret_val := info(MSG_W * 2 - 1 downto MSG_W * 1);
+    return ret_val;
   end function;
 
 

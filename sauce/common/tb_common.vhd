@@ -7,6 +7,7 @@ library work;
   use work.my_common.all;
 
 package tb_common is
+
   function std_logic_vector_to_string(signal_in: std_logic_vector)return string;
 
   procedure generate_clk ( signal clk : out std_logic; constant period_ns : time);
@@ -19,7 +20,7 @@ package tb_common is
 
   procedure uart_tx ( signal tx : out std_logic; signal clk : in std_logic; signal data : in std_logic_vector(7 downto 0); constant baud_period : time);
 
-  procedure uart_rx ( signal rx : in std_logic; variable data : out std_logic_vector(7 downto 0); constant baud_period : time);
+  procedure uart_rx ( signal rx : in std_logic; variable data : out std_logic_vector(7 downto 0); constant bit_time : time);
 
   function create_reg0_w (id:std_logic_vector(1 downto 0); target:std_logic_vector(2 downto 0); send_recieve_bytes : std_logic_vector(7 downto 0))return info_bus;
 
@@ -192,29 +193,36 @@ begin
 end procedure;
 
 procedure uart_rx (
-    signal rx        : in std_logic;  -- UART receive line
-    variable data    : out std_logic_vector(7 downto 0); -- Received data
-    constant baud_period : time       -- Bit period for the desired baud rate
+    signal rx         : in std_logic;           -- UART RX line
+    variable data : out std_logic_vector(7 downto 0);
+    constant bit_time : time                    -- Time period per bit (bit rate)
 ) is
-    constant bit_sample : time := baud_period / 2; -- Sampling at middle of the bit
+    variable received_data : std_logic_vector(7 downto 0) := (others => '0');
+    variable i            : integer;
 begin
-    -- Wait for the start bit (falling edge)
-    wait until falling_edge(rx);
+    -- Wait for start bit (falling edge)
+    wait until rx = '0';  
+    report "Start bit detected" severity note;
+    
+    -- Wait for the middle of the start bit
+    wait for bit_time / 2;
 
-    -- Wait to sample at the middle of the start bit
-    wait for bit_sample;
-
-    -- Receive each bit (LSB first)
-    for i in data'range loop
-        wait for baud_period;
-        data(i) := rx;
+    -- Read 8 data bits
+    for i in 0 to 7 loop
+        wait for bit_time;  -- Wait for the next bit
+        received_data(i) := rx;
     end loop;
 
-    -- Wait for the stop bit
-    wait for baud_period;
+    -- Wait for stop bit (should be '1')
+    wait for bit_time;
+    
+    if rx /= '1' then
+        report "UART RX Error: Stop bit missing!" severity warning;
+    end if;
+    
+    -- Print received byte
+    report "Received: " & integer'image(to_integer(unsigned(received_data)));
+    data := received_data;
 
-    -- Optionally check the stop bit (rx should be '1')
-    assert rx = '1' report "Stop bit error" severity warning;
 end procedure;
-
 end package body;

@@ -27,11 +27,9 @@ signal tx_ms          : std_logic;
 signal rx_ms          : std_logic;
 
 signal i_settings     : std_logic_array (1 to 2) (MSG_W -1 downto 0);
-signal o_ready        : std_logic;
 
 signal gen_header     : info_bus;
 signal msg_to_ms      : data_bus;
-
 
 
 
@@ -44,11 +42,20 @@ begin
   generate_clk(i_clk,CLK_PERIOD);
 end process;
 ----------------------------------------------------------------------------------------
+--ANCHOR - uart monitor
+----------------------------------------------------------------------------------------
+p_uart_print :process
+  variable ret_msg        : data_bus;
+begin
+  uart_rx(tx_ms,ret_msg,(CLK_PERIOD*2600));
+end process;
+----------------------------------------------------------------------------------------
 --SECTION - TESTCASE
 ----------------------------------------------------------------------------------------
 rx_sl1 <= tx_sl1;
 rx_sl2 <= tx_sl2;
 p_test  : process
+  variable loop_cnt   : unsigned(MSG_W - 1 downto 0);
 begin
   --ANCHOR - init
   wait for 1 ns;
@@ -64,102 +71,108 @@ begin
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= "01011010";
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= "11001001";
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     --ANCHOR - second message
     gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00000001","00000001");
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= "01100110";
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
 
     --ANCHOR - third message - set new parameters
     gen_header <= create_reg1_w("10",std_logic_vector(to_unsigned(i,3)),'0','0','1','0',"001");
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     
     --ANCHOR - fourth message - repeat of second
     gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00000001","00000001");
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= "01100110";
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     
     --ANCHOR - 5 message - set new parameters
-    gen_header <= create_reg1_w("10",std_logic_vector(to_unsigned(i,3)),'0','1','1','0',"001");
+    gen_header <= create_reg1_w("10",std_logic_vector(to_unsigned(i,3)),'0','1','1','0',"111");
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     
     --ANCHOR - 6 message - repeat of second
-    gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00000001","00000001");
+    gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00010100","00010100");
     wait for CLK_PERIOD*10;
     msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
     wait for 0 ns;
     msg_to_ms <= "01100110";
     wait for 0 ns;
-    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
+    for loop_cnt in 1 to 20 loop
+      wait for 0 ns;
+      msg_to_ms <= std_logic_vector(to_unsigned(loop_cnt,MSG_W));
+      wait for 0 ns;
+      uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*2600));
+    end loop;
   end loop;
 
   wait for CLK_PERIOD * 100_000_000;
