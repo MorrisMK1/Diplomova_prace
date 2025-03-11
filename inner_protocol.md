@@ -15,10 +15,10 @@ Popis systému předávání dat z hlavní sběrnice vedlejším a generování 
 ![Stavový stroj sběrače](data/Selector.drawio.png)
 
 
-# Konfigurační registry
+# Konfigurační registry (UART)
 | Registr | Přístup | <7> | <6> | <5> | <4> | <3> | <2> | <1> | <0> |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|    0    |    W    | přesměrován do vstupních dat (max 256 B)            ||||||||
+|    0    |    W    | přesměrován do vstupních dat (max 512 B)            ||||||||
 |    1    |    W    | Reset |Sudá/Lichá parita (0/1)|Povolit parity bit| ----- | Automatické hlášení chyb |bitrate <2>|bitrate <1>|bitrate <0>|
 |    2    |   RW    | ----- | Povolit příchozí data bez požadavku (full duplex) | Povolit timeout | Timeout v počtu bajtů <4> | Timeout v počtu bajtů <3> | Timeout v počtu bajtů <2> | Timeout v počtu bajtů <1> | Timeout v počtu bajtů <0> |
 |    3    |    R(W)    |Šum příznak|Neočekávaná zpráva|-----|-----|Špatná velikost příchozích dat|Parita příznak|Timeout příznak|Frame příznak|

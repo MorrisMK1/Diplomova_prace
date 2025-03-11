@@ -15,8 +15,8 @@ entity tb_uart is
 
 architecture sim of tb_uart is
 
-  constant UART_BAUD_PERIOD : time := 104.166 us; -- Period for 9600 baud rate with a 10 MHz clock
-  constant CLK_PERIOD : time := 100 ns; -- Clock period (10 MHz)
+  constant UART_BAUD_PERIOD : time := 104.166 us; -- Period for 9600 baud rate
+  constant CLK_PERIOD : time := 10 ns; -- Clock period (10 MHz)
 
   signal clk : std_logic := '0'; -- Clock signal
   signal tx : std_logic := '1';  -- UART TX signal (idle state '1')
@@ -35,7 +35,6 @@ architecture sim of tb_uart is
   signal msg_o_vld : std_logic  := '0';
   signal msg_i_rdy : std_logic;
   signal out_busy : std_logic;
-
 
   procedure uart_tx(
     signal clk : in std_logic;

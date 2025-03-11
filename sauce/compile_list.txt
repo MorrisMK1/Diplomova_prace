@@ -7,5 +7,7 @@
 /interfaces/main_ctrl.vhd
 /inner_bus/collector.vhd
 /inner_bus/router.vhd
+/main_iter_1.vhd
 /tb/tb_uart.vhd
 /tb/tb_universal_uart.vhd
+/tb/tb_i2c_driver.vhd

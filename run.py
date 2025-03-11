@@ -12,6 +12,7 @@ VU.add_verification_components()
 
 # Create library 'lib'
 lib = VU.add_library("lib")
+lib.add_source_files("sauce/*.vhd")
 lib.add_source_files("sauce/*/*.vhd")
 lib.add_source_files("tb/*.vhd")
 

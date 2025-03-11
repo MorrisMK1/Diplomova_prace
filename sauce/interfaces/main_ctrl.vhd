@@ -144,28 +144,28 @@ begin
 --ANCHOR - Speed selection
 ----------------------------------------------------------------------------------------
 p_clk_div_sel : process (clk_div_sel)
-  begin
-    case( to_integer(unsigned(clk_div_sel)) ) is
-      when 0 =>
-        clk_div <= x"208D";
-      when 1 =>
-        clk_div <= x"1047";
-      when 2 =>
-        clk_div <= x"0823";
-      when 3 =>
-        clk_div <= x"0412";
-      when 4 =>
-        clk_div <= x"0209";
-      when 5 =>
-        clk_div <= x"0104";
-      when 6 =>
-        clk_div <= x"00AE";
-      when 7 =>
-        clk_div <= x"0057";
-      when others =>
-        clk_div <= x"208D";
-    end case ;
-  end process;
+begin
+  case( to_integer(unsigned(clk_div_sel)) ) is  -- dividers for clk = 100 MHz
+    when 0 =>             -- 9600
+      clk_div <= x"0411";
+    when 1 =>             -- 19200
+      clk_div <= x"0208";
+    when 2 =>             -- 28800
+      clk_div <= x"015B";
+    when 3 =>             -- 57600
+      clk_div <= x"00AD";
+    when 4 =>             -- 76800
+      clk_div <= x"0082";
+    when 5 =>             -- 115200
+      clk_div <= x"0056";
+    when 6 =>             -- 460800
+      clk_div <= x"0015";
+    when 7 =>             -- 921600
+      clk_div <= x"000B";
+    when others =>
+      clk_div <= x"0411";
+  end case ;
+end process;
 ----------------------------------------------------------------------------------------
 --SECTION - Stream logic
 ----------------------------------------------------------------------------------------
