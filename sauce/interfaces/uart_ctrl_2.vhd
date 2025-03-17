@@ -11,7 +11,6 @@ library work;
 ----------------------------------------------------------------------------------------
 entity uart_ctrl2 is
   generic (
-    constant  MSG_W         : natural := 8;             -- message width
     constant  SMPL_W        : natural := 8;             -- rx line sample width
     constant  START_OFFSET  : natural := 10;            -- offset in clks between start and first bit
     constant  MY_ID         : STD_LOGIC_VECTOR(BUS_ID_W-1 downto 0) := "000"
@@ -77,7 +76,7 @@ architecture behavioral of uart_ctrl2 is
 
 
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
-  signal flags          : std_logic_vector(MSG_W-1 downto 0);
+  alias  flags          : std_logic_vector(MSG_W-1 downto 0) is r_registers(3);
   signal flag_rst       : std_logic;
 
   signal msg_i_vld      : std_logic;

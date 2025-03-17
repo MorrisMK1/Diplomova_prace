@@ -124,7 +124,7 @@ begin
           when st_driver_IDLE           =>
             scl_timer_en <= '0';
             if ((i_en_slave = '1') and (sda = '0') and (last_sda = '0') and (scl = '0') and (last_scl = '1')) then  --ANCHOR - start slave 
-              st_driver <= st_driver_sl_addr;
+              st_driver <= st_driver_WAIT; --NOTE - switch to slave, now just wait until other comm passes
               data_cnt <= 0;
             elsif ((i_data_vld = '1')) then  --ANCHOR - start master
               msg := i_data;
@@ -260,6 +260,9 @@ begin
           when st_driver_sl_rec_ter     =>
 
           when st_driver_WAIT           =>
+          if ((scl /= '0') and (last_scl = '1') and (sda /= '0') and (last_sda = '0')) then
+            st_driver <= st_driver_IDLE;
+          end if;
 
           when others =>
             st_driver <= st_driver_IDLE;

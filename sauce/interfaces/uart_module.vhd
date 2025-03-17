@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.env.all;
 library work;
-use work.my_common.all;
+  use work.my_common.all;
 
 
 entity uart_module is
@@ -124,7 +124,6 @@ module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
   ----------------------------------------------------------------------------------------
   uart_ctrl_inst1 : entity work.uart_ctrl2
   generic map (
-    MSG_W => MSG_W,
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
     MY_ID => ID
