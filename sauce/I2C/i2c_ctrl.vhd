@@ -195,8 +195,12 @@ begin
       no_ack_flg <= '0';
       o_o_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
+      o_o_data_fifo_data <= (others => '0') ;
+      o_o_info_fifo_data <= (others => '0') ;
+      o_interrupt <= '0';
     else
       no_ack_flg <= '0';
+      o_interrupt <= '0';
       o_o_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
       data_ovf_flg <= '0';
@@ -231,11 +235,10 @@ begin
             i_data <= i_i_data_fifo_data;
             i_data_vld <= '1';
             if (o_running = '1') then
-              o_i_data_fifo_next <= '1';
               if (i_i_data_fifo_data(0) /= '0') then
+                o_i_data_fifo_next <= '1';
                 st_flow_ctrl <= st_flow_MS_REC;
               else
-                data_cnt <= data_cnt + 1;
                 st_flow_ctrl <= st_flow_MS_SND;
               end if;
             end if;
@@ -262,7 +265,7 @@ begin
             data_cnt <= data_cnt + 1;
             o_i_data_fifo_next <= '1';
           end if;
-          if (data_cnt = to_integer(unsigned(reg_op(MSG_W - 1 downto 0)))) then
+          if (data_cnt = to_integer(unsigned(inf_size(reg_op)))) then
             st_flow_ctrl <= st_flow_MS_TER;
             i_data_vld <= '0';
           elsif (i_i_data_fifo_empty = '1') then
@@ -279,7 +282,7 @@ begin
           if (o_running = '0') then
             flag_rst <= '1';
             st_flow_ctrl <= st_flow_IDLE;
-            if (to_integer(unsigned(reg_op)) /= 0) then
+            if (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) then
               o_o_info_fifo_next <= '1';
               o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(data_cnt,MSG_W)) & r_registers(3) ;
             elsif (to_integer(unsigned(flags)) /= 0) then

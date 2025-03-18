@@ -17,19 +17,10 @@ architecture sim of tb_i2c_ctrl is
   constant CLK_PERIOD : time := 10 ns; -- Clock period (10 MHz)
 
   signal clk : std_logic := '0'; -- Clock signal
-  signal data_byte : std_logic_vector(7 downto 0); -- Data byte to transmit  
-  signal data_byte_received : std_logic_vector(7 downto 0); -- Data byte received via UART
   signal valid : std_logic := '0'; -- Indicates valid data received
   signal rst_n  : std_logic := '0';
-  signal par_en  : std_logic := '0';
-  signal par_type  : std_logic := '0';
-  signal par_st  : std_logic := '0';
   signal flags  : std_logic_vector(7 downto 0); -- Data byte received via UART)
-  signal msg_o_dat  : std_logic_vector(7 downto 0);
-  signal msg_i_dat : std_logic_vector(7 downto 0);
-  signal msg_o_vld : std_logic  := '0';
-  signal msg_i_rdy : std_logic;
-  signal out_busy : std_logic;
+
 
 
   signal i_i_data_fifo_data   : data_bus;
@@ -54,6 +45,7 @@ architecture sim of tb_i2c_ctrl is
 begin
   sda <= 'H';
   scl <= 'H';
+  flags <= o_o_info_fifo_data(MSG_W-1 downto 0);
   ----------------------------------------------------------------------------------------
   --#ANCHOR - CLOCK
   ----------------------------------------------------------------------------------------
@@ -86,15 +78,14 @@ begin
     wait until (o_i_data_fifo_next = '1'); 
     i_i_data_fifo_data <= x"F1";
     i_i_info_fifo_empty <= '1';
-    wait until (o_i_data_fifo_next = '0');
+    wait until rising_edge(clk);
     wait until (o_i_data_fifo_next = '1'); 
     i_i_data_fifo_data <= x"E2";
-    wait until (o_i_data_fifo_next = '0');
+    wait until rising_edge(clk);
     wait until (o_i_data_fifo_next = '1');
     i_i_data_fifo_data <= x"D3";
-    wait until (o_i_data_fifo_next = '0');
+    wait until rising_edge(clk);
     wait until (o_i_data_fifo_next = '1'); --FIXME - turns on empty signal too late
-    i_i_data_fifo_empty <= '1';
     
 
     wait for 1 ms;

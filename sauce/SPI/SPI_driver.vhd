@@ -6,6 +6,10 @@ use IEEE.NUMERIC_STD.ALL;
 use ieee.numeric_std_unsigned.all;
 
 
+library work;
+  use work.my_common.all;
+
+
 entity SPI_driver is
   generic (
     MISO_DEB_BUFF_SIZE : natural := 8
@@ -53,10 +57,10 @@ begin
   begin
     if rising_edge(clk_100MHZ) then
       if (rst_n = '0') then
-        MISO_buffer <= (others => '1');
+        MISO_buffer := (others => '1');
       else
         MISO_1_cnt := 0;
-        for i in range (MISO_DEB_BUFF_SIZE-1 downto 0) loop
+        for i in 0 to MISO_DEB_BUFF_SIZE-1 loop
           if (MISO_buffer(i) = '1') then
             MISO_1_cnt := MISO_1_cnt + 1;
           end if;

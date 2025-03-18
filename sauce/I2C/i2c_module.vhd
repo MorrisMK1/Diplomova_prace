@@ -32,8 +32,10 @@ entity uart_module is
     o_o_data_data   : out data_bus;
     o_o_data_empty  : out std_logic;
 
-    slv_tx          : out std_logic;
-    slv_rx          : in  std_logic
+    scl             : inout std_logic := 'Z';
+    sda             : inout std_logic := 'Z';
+    i_interrupt     : in  std_logic;
+    o_interrupt     : out std_logic
 
   );
 end entity uart_module;
@@ -127,14 +129,14 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
   ----------------------------------------------------------------------------------------
   --ANCHOR - SLAVE INTERFACE
   ----------------------------------------------------------------------------------------
-  uart_ctrl_inst1 : entity work.uart_ctrl2
+  i2c_ctrl_inst1 : entity work.i2c_ctrl
   generic map (
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
     MY_ID => ID
   )
   port map (
-    i_clk => i_clk,
+    clk => i_clk,
     i_rst_n => i_rst_n,
     i_en => i_en,
     i_i_data_fifo_data => sl_data_in,
@@ -149,8 +151,11 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     o_o_info_fifo_data => sl_info_out,
     i_o_info_fifo_full =>sl_full_info,
     o_o_info_fifo_next => sl_push_info,
-    tx => slv_tx,
-    rx => slv_rx
+
+    scl                => scl,
+    sda                => sda,
+    i_interrupt        => i_interrupt,
+    o_interrupt        => o_interrupt
   );
 
 

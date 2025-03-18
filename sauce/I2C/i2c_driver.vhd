@@ -115,6 +115,7 @@ begin
         last_scl <= '1';
         last_sda <= '1';
         o_no_ack <= '0';
+        o_data <= (others => '0');
       else
         o_no_ack <= '0';
         o_busy <= '0';
@@ -203,20 +204,28 @@ begin
             sda <= 'Z';
             if (data_cnt < 8) then
               if ((scl_timer_mid = '1') and (scl /= '0')) then
-                msg := msg(6 downto 0) & sda;
+                if (sda = '0') then
+                  msg := msg(6 downto 0) & '0';
+                else
+                  msg := msg(6 downto 0) & '1';
+                end if;
                 data_cnt <= data_cnt + 1;
               end if;
             else
               o_data <= msg;
               o_data_vld <= '1';
-              st_driver <= st_driver_ms_snd_ack;
+              st_driver <= st_driver_ms_rec_ack;
               data_cnt <= 0;
             end if;
 
           when st_driver_ms_rec_ack     =>
             if ((scl_timer_mid = '1')) then
               if (scl = '0') then
-                sda <= i_recieve;
+                if (i_recieve = '1') then
+                  sda <= '0';
+                else
+                  sda <= 'Z';
+                end if;
               else
                 st_driver <= st_driver_ms_rec_ter;
               end if;
