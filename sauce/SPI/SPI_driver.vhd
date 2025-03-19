@@ -39,13 +39,16 @@ entity SPI_driver is
 end entity SPI_driver;
 
 architecture rtl of SPI_driver is
-  signal sclk_run, sclk_hold, sclk_mid  : std_logic;
+  signal sclk_run, sclk_mid  : std_logic;
   signal out_busy, in_busy: std_logic;
   signal MISO_stable  : std_logic;
   
 
     
 begin
+
+sclk_run <= out_busy or in_busy;
+o_busy <= sclk_run;
 
 ----------------------------------------------------------------------------------------
 --ANCHOR - MISO debounce
@@ -91,7 +94,7 @@ begin
       else
         sclk_mid <= '0';
         if (sclk_run = '1') then
-          if ((sclk_hold = '0') or (SCLK = '1')) then
+          if ((i_hold_active = '0') or (SCLK = '1')) then
             if (sclk_cnt < unsigned(i_clk_div)) then
               sclk_cnt := sclk_cnt + 1;
             else
@@ -123,21 +126,77 @@ begin
     if rising_edge(clk_100MHz) then
       if (rst_n = '0') then
         bits_to_snd := 0;
+        data_to_snd := (others => '0');
+        o_data_read <= '0';
+        out_busy <= '0';
+        MOSI <= '0';
       else
+        out_busy <= '1';
+        o_data_read <= '0';
         if ((i_data_vld = '1') and (bits_to_snd = 0)) then
           if (i_data_dir = '1') then
-            data_to_snd := i_data;  -- TODO - reverse this 
+            for i in i_data'range loop
+              data_to_snd(MSG_W - 1 - i) := i_data(i);
+            end loop;
           else
             data_to_snd := i_data;
           end if;
           bits_to_snd := MSG_W - 1;
-          o_data_read <= '0';
-        else
-
+          o_data_read <= '1';
+        elsif ((sclk_mid = '1') and (SCLK = '0')) then
+          MOSI <= data_to_snd(0);
+          data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
+          if (bits_to_snd /= 0) then
+            bits_to_snd := bits_to_snd - 1;
+          end if ;
+        elsif (bits_to_snd = 0) then
+          out_busy <= '0';
         end if;
       end if;
     end if;
   
   end process;
+
+
+----------------------------------------------------------------------------------------
+--ANCHOR - MISO controller
+----------------------------------------------------------------------------------------
+
+p_flow_ctrl_MISO : process(clk_100MHz)    --TODO - finish this
+  variable bits_to_rec  : natural range MSG_W-1 downto 0;
+  variable data_to_rec  : std_logic_vector(MSG_W-1 downto 0);
+begin
+  if rising_edge(clk_100MHz) then
+    if (rst_n = '0') then
+      bits_to_rec := 0;
+      data_to_rec := (others => '0');
+      o_data_vld <= '0';
+      in_busy <= '0';
+      o_data <= (others => '0');
+    else
+      in_busy <= '1';
+      o_data_vld <= '0';
+      if ((i_data_recieve = '1') and (bits_to_rec = 0)) then
+        data_to_rec := (others => '0');
+        bits_to_rec := MSG_W - 1;
+      elsif ((sclk_mid = '1') and (SCLK = '1')) then
+        if (i_data_dir = '1') then
+          data_to_rec := data_to_rec(MSG_W - 2 downto 0) & MISO_stable;
+        else
+          data_to_rec := MISO_stable & data_to_rec(MSG_W - 1 downto 1);
+        end if;
+        if (bits_to_rec /= 0) then
+          bits_to_rec := bits_to_rec - 1;
+        else
+          o_data_vld <= '1';
+          o_data <= data_to_rec;
+        end if ;
+      elsif ((bits_to_rec = 0) and (SCLK = '0')) then
+        in_busy <= '0';
+      end if;
+    end if;
+  end if;
+
+end process;
 
 end architecture;
