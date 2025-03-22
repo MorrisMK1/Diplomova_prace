@@ -6,7 +6,7 @@ library work;
   use work.my_common.all;
 
 
-entity uart_module is
+entity i2c_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE: string  := "DEFAULT" --NOTE - types: "DEFAULT", "XILINX"
@@ -38,12 +38,12 @@ entity uart_module is
     o_interrupt     : out std_logic
 
   );
-end entity uart_module;
+end entity i2c_module;
 
 ----------------------------------------------------------------------------------------
 --SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture behavioral of uart_module is 
+architecture behavioral of i2c_module is 
 
 signal sl_next_info, sl_emty_info, sl_next_data, sl_push_info, sl_full_info, sl_push_data, sl_full_data, sl_empty_data : std_logic;
 

@@ -76,7 +76,7 @@ architecture behavioral of uart_ctrl2 is
 
 
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
-  alias  flags          : std_logic_vector(MSG_W-1 downto 0) is r_registers(3);
+  signal flags          : std_logic_vector(MSG_W-1 downto 0);
   signal flag_rst       : std_logic;
 
   signal msg_i_vld      : std_logic;
@@ -128,9 +128,6 @@ rst_n <= i_rst_n and not rst_r and not en_rst;
 clk_en <= i_clk and i_en;
 --tx <= not internal_tx when (polarity = '1') else internal_tx ;
 --internal_rx <= not rx when (polarity = '1') else rx ;
-flg_undef_2 <= '0'; 
-flg_undef_5 <= '0'; 
-
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable
 ----------------------------------------------------------------------------------------
@@ -249,12 +246,10 @@ begin
       o_i_data_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
       msg_i_vld <= '0';
-      flg_data_size <= '0';
     else
       reg_op_rdy_strb <= '0';
       o_i_data_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
-      flg_data_size <= '0';
       case( st_downstr ) is
         when st_downstr_IDLE =>
           if (i_i_info_fifo_empty = '0' and (tx_ready = '1' or ready_en = '0')) then

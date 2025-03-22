@@ -50,7 +50,6 @@ library work;
     signal i_ignore : std_logic;
     signal o_no_ack : std_logic;
     signal clk_div : std_logic_vector(MSG_W * 2 - 1 downto 0);
-    signal i_en_slave : std_logic;
     signal o_busy : std_logic;
     signal o_running : std_logic;
 
@@ -355,7 +354,7 @@ end process;
     i_ignore => i_ignore,
     o_no_ack => o_no_ack,
     clk_div => clk_div,
-    i_en_slave => i_en_slave,
+    i_en_slave => slave_mode,
     o_busy => o_busy,
     o_running => o_running
   );

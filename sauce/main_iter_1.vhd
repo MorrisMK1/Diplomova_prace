@@ -20,7 +20,11 @@ entity main is
     slv1_rx       : inout std_logic;
     
     slv2_tx       : out std_logic;
-    slv2_rx       : in std_logic
+    slv2_rx       : in std_logic;
+    
+    scl_3       : inout std_logic;
+    sda_3       : inout std_logic;
+    i2c_3_inter : inout std_logic
 
   );
 end entity main;
@@ -153,19 +157,19 @@ signal s_o_o_info_fifo_data : info_bus;
 signal s_i_o_info_fifo_ready : out_ready;
 signal s_o_o_info_fifo_next : in_pulse;
 
+signal i2c_3_inter_inner    : std_logic;
+
 
 
 begin
 
   r_i_o_data_fifo_full_0 <= ZERO_BIT;
-  r_i_o_data_fifo_full_3 <= ZERO_BIT;
   r_i_o_data_fifo_full_4 <= ZERO_BIT;
   r_i_o_data_fifo_full_5 <= ZERO_BIT;
   r_i_o_data_fifo_full_6 <= ZERO_BIT;
   r_i_o_data_fifo_full_7 <= ZERO_BIT;
   r_i_o_data_fifo_full_X <= ZERO_BIT;
   r_i_o_info_fifo_full_0 <= ZERO_BIT;
-  r_i_o_info_fifo_full_3 <= ZERO_BIT;
   r_i_o_info_fifo_full_4 <= ZERO_BIT;
   r_i_o_info_fifo_full_5 <= ZERO_BIT;
   r_i_o_info_fifo_full_6 <= ZERO_BIT;
@@ -174,28 +178,24 @@ begin
 
   s_i_i_data_fifo_data_X <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_0 <= (others => ZERO_BIT); 
-  s_i_i_data_fifo_data_3 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_4 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_7 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_X <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_0 <= (others => ZERO_BIT); 
-  s_i_i_info_fifo_data_3 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_4 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_7 <= (others => ZERO_BIT); 
 
   s_i_i_data_fifo_empty_0 <= HIGH_BIT;
-  s_i_i_data_fifo_empty_3 <= HIGH_BIT;
   s_i_i_data_fifo_empty_4 <= HIGH_BIT;
   s_i_i_data_fifo_empty_5 <= HIGH_BIT;
   s_i_i_data_fifo_empty_6 <= HIGH_BIT;
   s_i_i_data_fifo_empty_7 <= HIGH_BIT;
   s_i_i_data_fifo_empty_X <= HIGH_BIT;
   s_i_i_info_fifo_empty_0 <= HIGH_BIT;
-  s_i_i_info_fifo_empty_3 <= HIGH_BIT;
   s_i_i_info_fifo_empty_4 <= HIGH_BIT;
   s_i_i_info_fifo_empty_5 <= HIGH_BIT;
   s_i_i_info_fifo_empty_6 <= HIGH_BIT;
@@ -555,6 +555,37 @@ uart_module_slv2 : entity work.uart_module
     slv_tx => slv2_tx,
     slv_rx => slv2_rx
   );
+
+----------------------------------------------------------------------------------------
+--ANCHOR - SLAVE INTERFACE 3
+----------------------------------------------------------------------------------------
+  i2c_module_3 : entity work.i2c_module
+  generic map (
+    ID => "011",
+    GEN_TYPE => "DEFAULT"
+  )
+  port map (
+    i_clk => i_clk,
+    i_rst_n => i_rst_n,
+    i_en => '1',
+    i_i_info_write => r_o_o_info_fifo_next_3,
+    i_i_info_data => r_o_o_info_fifo_data,
+    i_o_info_full => r_i_o_info_fifo_full_3,
+    i_i_data_write => r_o_o_data_fifo_next_3,
+    i_i_data_data => r_o_o_data_fifo_data,
+    i_o_data_full => r_i_o_data_fifo_full_3,
+    o_i_info_next => s_o_i_info_fifo_next_3,
+    o_o_info_data => s_i_i_info_fifo_data_3,
+    o_o_info_empty => s_i_i_info_fifo_empty_3,
+    o_i_data_next => s_o_i_data_fifo_next_3,
+    o_o_data_data => s_i_i_data_fifo_data_3,
+    o_o_data_empty => s_i_i_data_fifo_empty_3,
+    scl => scl_3,
+    sda => sda_3,
+    i_interrupt => i2c_3_inter,
+    o_interrupt => i2c_3_inter_inner
+  );
+
 
 
 
