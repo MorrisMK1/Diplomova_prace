@@ -96,10 +96,16 @@ library work;
       st_flow_SL_SND,
       st_flow_SL_REC,
       st_flow_SL_TER,
-      st_flow_PURGE
+      st_flow_PURGE,
+      st_flow_REG_DELAY
     );
     
     signal st_flow_ctrl   : t_flow_ctrl_state;
+
+    attribute MARK_DEBUG : string;
+
+    attribute MARK_DEBUG of st_flow_ctrl : signal is "TRUE";
+    attribute MARK_DEBUG of reg_op : signal is "TRUE";
   
   begin
 
@@ -197,9 +203,12 @@ begin
       o_o_data_fifo_data <= (others => '0') ;
       o_o_info_fifo_data <= (others => '0') ;
       o_interrupt <= '0';
+      disconnect_flg <= '0';
+      frame_flg <= '0';
     else
       no_ack_flg <= '0';
       o_interrupt <= '0';
+      disconnect_flg <= '0';
       o_o_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
       data_ovf_flg <= '0';
@@ -208,14 +217,18 @@ begin
       o_i_info_fifo_next <= '0';
       i_data_vld <= '0';
       data_size_flg <= '0';
+      frame_flg <= '0';
+      flag_rst <= '0';
       case st_flow_ctrl is
         when st_flow_IDLE =>
           data_cnt <= 0;
+          flag_rst <= '1';
           if ((inf_reg(i_i_info_fifo_data) /= "00") and (i_i_info_fifo_empty = '0')) then -- register operation
             reg_op <= i_i_info_fifo_data;
             reg_op_rdy_strb <= '1';
             o_i_info_fifo_next <= '1';
-          elsif ((slave_mode = '0') and (i_i_info_fifo_empty = '0')) then --ANCHOR - start as master
+            st_flow_ctrl <= st_flow_REG_DELAY;
+          elsif ((slave_mode = '0') and (i_i_info_fifo_empty = '0') and (inf_reg(i_i_info_fifo_data) = "00")) then --ANCHOR - start as master
             reg_op <= i_i_info_fifo_data;
             st_flow_ctrl <= st_flow_MS_START;
             o_i_info_fifo_next <= '1';
@@ -227,18 +240,26 @@ begin
           if (to_integer(unsigned(inf_size(reg_op))) = 0) then
             data_size_flg <= '1';
             st_flow_ctrl <= st_flow_IDLE;
-          elsif (((to_integer(unsigned(inf_size(reg_op))) > 1) or (to_integer(unsigned(reg_op(MSG_W - 1 downto 0))) = 0)) and (i_i_data_fifo_data(0) /= '0') ) then
+          elsif ((to_integer(unsigned(inf_size(reg_op))) > 1) and (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0 ) ) then
             frame_flg <= '1';
             st_flow_ctrl <= st_flow_PURGE;
           else
+            if (i_data = i_i_data_fifo_data) then
+              i_data_vld <= '1';
+            end if;
             i_data <= i_i_data_fifo_data;
-            i_data_vld <= '1';
             if (o_running = '1') then
-              if (i_i_data_fifo_data(0) /= '0') then
-                o_i_data_fifo_next <= '1';
-                st_flow_ctrl <= st_flow_MS_REC;
-              else
-                st_flow_ctrl <= st_flow_MS_SND;
+              if(o_busy = '0') then
+                if (o_no_ack = '1') then
+                  disconnect_flg <= '1';
+                  no_ack_flg <= '1';
+                  st_flow_ctrl <= st_flow_PURGE;
+                elsif (i_i_data_fifo_data(0) /= '0') then
+                  o_i_data_fifo_next <= '1';
+                  st_flow_ctrl <= st_flow_MS_REC;
+                else
+                  st_flow_ctrl <= st_flow_MS_SND;
+                end if;
               end if;
             end if;
           end if;
@@ -278,14 +299,14 @@ begin
           end if;
 
         when st_flow_MS_TER =>
+          if (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) then
+            o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(data_cnt,MSG_W)) & r_registers(3) ;
+          elsif (to_integer(unsigned(flags)) /= 0) then
+            o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(0,MSG_W)) & r_registers(3) ;
+          end if;
           if (o_running = '0') then
-            flag_rst <= '1';
             st_flow_ctrl <= st_flow_IDLE;
-            if (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) then
-              o_o_info_fifo_next <= '1';
-              o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(data_cnt,MSG_W)) & r_registers(3) ;
-            elsif (to_integer(unsigned(flags)) /= 0) then
-              o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(0,MSG_W)) & r_registers(3) ;
+            if ((to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) or (to_integer(unsigned(flags)) /= 0)) then
               o_o_info_fifo_next <= '1';
             end if;
           end if;
@@ -293,6 +314,7 @@ begin
         when st_flow_PURGE =>
           if (data_cnt < to_integer(unsigned(inf_size(reg_op)))) then
             o_i_data_fifo_next <= '1';
+            data_cnt <= data_cnt + 1;
           else
             st_flow_ctrl <= st_flow_MS_TER;
           end if;

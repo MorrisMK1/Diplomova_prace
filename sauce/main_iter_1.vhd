@@ -13,8 +13,8 @@ entity main is
 
     i_settings    : in std_logic_array (1 to 2) (MSG_W -1 downto 0);
 
-    main_tx       : inout std_logic;
-    main_rx       : inout std_logic;
+    main_tx       : out std_logic;
+    main_rx       : in std_logic;
 
     slv1_tx       : inout std_logic;
     slv1_rx       : inout std_logic;

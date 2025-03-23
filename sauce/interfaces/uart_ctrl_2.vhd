@@ -377,29 +377,29 @@ end process p_upstream;
 --#SECTION - UART
 ----------------------------------------------------------------------------------------
 
-    p_clk_div_sel : process (clk_div_sel)
-    begin
-      case( to_integer(unsigned(clk_div_sel)) ) is  -- dividers for clk = 100 MHz
-        when 0 =>             -- 9600
-          clk_div <= x"0411";
-        when 1 =>             -- 19200
-          clk_div <= x"0208";
-        when 2 =>             -- 28800
-          clk_div <= x"015B";
-        when 3 =>             -- 57600
-          clk_div <= x"00AD";
-        when 4 =>             -- 76800
-          clk_div <= x"0082";
-        when 5 =>             -- 115200
-          clk_div <= x"0056";
-        when 6 =>             -- 460800
-          clk_div <= x"0015";
-        when 7 =>             -- 921600
-          clk_div <= x"000B";
-        when others =>
-          clk_div <= x"0411";
-      end case ;
-    end process;
+p_clk_div_sel : process (clk_div_sel)
+begin
+  case( to_integer(unsigned(clk_div_sel)) ) is  -- dividers for clk = 100 MHz
+    when 0 =>             -- 9600
+      clk_div <= x"0416";
+    when 1 =>             -- 19200
+      clk_div <= x"020A";
+    when 2 =>             -- 28800
+      clk_div <= x"015F";
+    when 3 =>             -- 57600
+      clk_div <= x"00B1";
+    when 4 =>             -- 76800
+      clk_div <= x"0086";
+    when 5 =>             -- 115200
+      clk_div <= x"005A";
+    when 6 =>             -- 460800
+      clk_div <= x"0017";
+    when 7 =>             -- 921600
+      clk_div <= x"000D";
+    when others =>
+      clk_div <= x"0416";
+  end case ;
+end process;
 
     uart_rx_inst : entity work.uart_rx
     generic map (

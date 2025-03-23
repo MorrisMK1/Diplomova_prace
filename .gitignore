@@ -4,3 +4,4 @@ scripts/**
 !scripts/transcript
 !scripts/vsim.wlf
 vunit_out
+test_dont_git.py
