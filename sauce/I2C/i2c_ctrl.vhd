@@ -97,7 +97,8 @@ library work;
       st_flow_SL_REC,
       st_flow_SL_TER,
       st_flow_PURGE,
-      st_flow_REG_DELAY
+      st_flow_REG_DELAY,
+      st_flow_REG_READ
     );
     
     signal st_flow_ctrl   : t_flow_ctrl_state;
@@ -205,10 +206,12 @@ begin
       o_interrupt <= '0';
       disconnect_flg <= '0';
       frame_flg <= '0';
+      info_ack <= '0';
     else
       no_ack_flg <= '0';
       o_interrupt <= '0';
       disconnect_flg <= '0';
+      info_ack <= '0';
       o_o_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
       data_ovf_flg <= '0';
@@ -318,6 +321,16 @@ begin
           else
             st_flow_ctrl <= st_flow_MS_TER;
           end if;
+
+          
+        when st_flow_REG_DELAY =>
+          st_flow_ctrl <= st_flow_REG_READ;
+        
+        when st_flow_REG_READ =>
+          o_o_info_fifo_data <= info_reg;
+          o_o_info_fifo_next <= info_rdy;
+          info_ack <= info_rdy;
+          st_flow_ctrl <= st_flow_IDLE;
 
       
         when others =>

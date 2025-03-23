@@ -429,105 +429,34 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
     comm_wire_1 => main_rx
   );
 
-----------------------------------------------------------------------------------------
---ANCHOR - FIFO from router to slave 1
-----------------------------------------------------------------------------------------
-module_fifo_INFO_SLV1_i : entity work.module_fifo_regs_no_flags
-  generic map (
-    g_WIDTH => 24,
-    g_DEPTH => 32
-  )
-  port map (
-    i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
-    i_wr_en =>  r_o_o_info_fifo_next_1,
-    i_wr_data =>r_o_o_info_fifo_data,
-    o_full =>   r_i_o_info_fifo_full_1,
-    i_rd_en =>  sl1_next_info,
-    o_rd_data =>sl1_info_in,
-    o_empty =>  sl1_emty_info
-  );
-
-module_fifo_DATA_SLV1_i : entity work.module_fifo_regs_no_flags
-  generic map (
-    g_WIDTH => 8,
-    g_DEPTH => 512
-  )
-  port map (
-    i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
-    i_wr_en =>  r_o_o_data_fifo_next_1,
-    i_wr_data =>r_o_o_data_fifo_data,
-    o_full =>   r_i_o_data_fifo_full_1,
-    i_rd_en =>  sl1_next_data,
-    o_rd_data =>sl1_data_in,
-    o_empty =>  sl1_emty_data
-  );
-
-----------------------------------------------------------------------------------------
---ANCHOR - FIFO from slave1 to collector
-----------------------------------------------------------------------------------------
-module_fifo_INFO_SLV1_o : entity work.module_fifo_regs_no_flags
-  generic map (
-    g_WIDTH => 24,
-    g_DEPTH => 32
-  )
-  port map (
-    i_rst_sync => (not i_rst_n),
-    i_clk =>      i_clk,
-    i_wr_en =>    sl1_push_info,
-    i_wr_data =>  sl1_info_out,
-    o_full =>     sl1_full_info,
-    i_rd_en =>    s_o_i_info_fifo_next_1,
-    o_rd_data =>  s_i_i_info_fifo_data_1,
-    o_empty =>    s_i_i_info_fifo_empty_1
-  );
-
-module_fifo_DATA_SLV1_o : entity work.module_fifo_regs_no_flags
-  generic map (
-    g_WIDTH => 8,
-    g_DEPTH => 512
-  )
-  port map (
-    i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
-    i_wr_en =>   sl1_push_data,
-    i_wr_data => sl1_data_out,
-    o_full =>    sl1_full_data,
-    i_rd_en =>   s_o_i_data_fifo_next_1,
-    o_rd_data => s_i_i_data_fifo_data_1,
-    o_empty =>   s_i_i_data_fifo_empty_1
-  );
 
   ----------------------------------------------------------------------------------------
   --ANCHOR - SLAVE INTERFACE 1
   ----------------------------------------------------------------------------------------
-  uart_ctrl_inst1 : entity work.uart_ctrl
-  generic map (
-    MSG_W => MSG_W,
-    SMPL_W => SMPL_W,
-    START_OFFSET => START_OFFSET,
-    MY_ID => "001"
+  uart_module_slv1 : entity work.uart_module
+  generic map(
+    ID => "001"
   )
   port map (
     i_clk => i_clk,
     i_rst_n => i_rst_n,
     i_en => '1',
-    i_i_data_fifo_data => sl1_data_in,
-    i_i_data_fifo_ready => (not sl1_emty_data),
-    o_i_data_fifo_next => sl1_next_data,
-    o_o_data_fifo_data => sl1_data_out,
-    i_o_data_fifo_ready => (not sl1_full_data),
-    o_o_data_fifo_next => sl1_push_data,
-    i_i_info_fifo_data => sl1_info_in,
-    i_i_info_fifo_ready => (not sl1_emty_info),
-    o_i_info_fifo_next => sl1_next_info,
-    o_o_info_fifo_data => sl1_info_out,
-    i_o_info_fifo_ready => (not sl1_full_info),
-    o_o_info_fifo_next => sl1_push_info,
-    comm_wire_0 => slv1_tx,
-    comm_wire_1 => slv1_rx
+    i_i_info_write => r_o_o_info_fifo_next_1,
+    i_i_info_data => r_o_o_info_fifo_data,
+    i_o_info_full => r_i_o_info_fifo_full_1,
+    i_i_data_write => r_o_o_data_fifo_next_1,
+    i_i_data_data => r_o_o_data_fifo_data,
+    i_o_data_full => r_i_o_data_fifo_full_1,
+    o_i_info_next => s_o_i_info_fifo_next_1,
+    o_o_info_data => s_i_i_info_fifo_data_1,
+    o_o_info_empty => s_i_i_info_fifo_empty_1,
+    o_i_data_next => s_o_i_data_fifo_next_1,
+    o_o_data_data => s_i_i_data_fifo_data_1,
+    o_o_data_empty => s_i_i_data_fifo_empty_1,
+    slv_tx => slv1_tx,
+    slv_rx => slv1_rx
   );
+
 
 ----------------------------------------------------------------------------------------
 --ANCHOR - SLAVE INTERFACE 2
