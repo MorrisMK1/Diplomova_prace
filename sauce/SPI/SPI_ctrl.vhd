@@ -45,7 +45,7 @@ end entity SPI_ctrl;
 
 architecture rtl of SPI_ctrl is
 
-  constant MISO_DEB_BUFF_SIZE : natural := 8;
+  constant MISO_DEB_BUFF_SIZE : natural := 5;
   signal clk_div : std_logic_vector((MSG_W * 2) - 1 downto 0);
   signal i_hold_active : std_logic;
   signal i_data : std_logic_vector(MSG_W - 1 downto 0);
