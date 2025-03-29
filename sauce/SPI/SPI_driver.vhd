@@ -108,7 +108,7 @@ o_busy <= sclk_run;
             sclk_cnt := 0;
           end if;
         else
-          SCLK <= '1';
+          SCLK <= not i_hold_active;
           sclk_cnt := 0;
         end if;
       end if;
@@ -120,7 +120,7 @@ o_busy <= sclk_run;
 ----------------------------------------------------------------------------------------
 
   p_flow_ctrl_MOSI : process(clk_100MHz)    --TODO - finish this
-    variable bits_to_snd  : natural range MSG_W-1 downto 0;
+    variable bits_to_snd  : natural range MSG_W downto 0;
     variable data_to_snd  : std_logic_vector(MSG_W-1 downto 0);
   begin
     if rising_edge(clk_100MHz) then
@@ -141,13 +141,15 @@ o_busy <= sclk_run;
           else
             data_to_snd := i_data;
           end if;
-          bits_to_snd := MSG_W - 1;
+          bits_to_snd := MSG_W ;
           o_data_read <= '1';
         elsif ((sclk_mid = '1') and (SCLK = '0')) then
           MOSI <= data_to_snd(0);
           data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
           if (bits_to_snd /= 0) then
             bits_to_snd := bits_to_snd - 1;
+          else
+            out_busy <= '0';
           end if ;
         elsif (bits_to_snd = 0) then
           out_busy <= '0';
@@ -163,7 +165,7 @@ o_busy <= sclk_run;
 ----------------------------------------------------------------------------------------
 
 p_flow_ctrl_MISO : process(clk_100MHz)    --TODO - finish this
-  variable bits_to_rec  : natural range MSG_W-1 downto 0;
+  variable bits_to_rec  : natural range MSG_W downto 0;
   variable data_to_rec  : std_logic_vector(MSG_W-1 downto 0);
 begin
   if rising_edge(clk_100MHz) then
@@ -176,10 +178,10 @@ begin
     else
       in_busy <= '1';
       o_data_vld <= '0';
-      if ((i_data_recieve = '1') and (bits_to_rec = 0)) then
+      if ((i_data_recieve = '1') and (bits_to_rec = 0) and (sclk_mid = '1') and (SCLK = '0')) then
         data_to_rec := (others => '0');
-        bits_to_rec := MSG_W - 1;
-      elsif ((sclk_mid = '1') and (SCLK = '1')) then
+        bits_to_rec := MSG_W ;
+      elsif ((sclk_mid = '1') and (SCLK = '1') and (i_data_recieve = '1')) then
         if (i_data_dir = '1') then
           data_to_rec := data_to_rec(MSG_W - 2 downto 0) & MISO_stable;
         else
@@ -187,11 +189,14 @@ begin
         end if;
         if (bits_to_rec /= 0) then
           bits_to_rec := bits_to_rec - 1;
+          if (bits_to_rec = 0) then
+            o_data_vld <= '1';
+            o_data <= data_to_rec;
+          end if;
         else
-          o_data_vld <= '1';
-          o_data <= data_to_rec;
+          in_busy <= '0';
         end if ;
-      elsif ((bits_to_rec = 0) and (SCLK = '0')) then
+      elsif ((bits_to_rec = 0) and (i_data_recieve = '0')) then
         in_busy <= '0';
       end if;
     end if;

@@ -299,11 +299,16 @@ begin
           end if;
 
         when st_flow_MS_TER =>
+          if (o_no_ack = '1') then
+            no_ack_flg <= '1';
+          end if;
           if (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) then
             o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(data_cnt,MSG_W)) & r_registers(3) ;
           elsif (to_integer(unsigned(flags)) /= 0) then
             o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(0,MSG_W)) & r_registers(3) ;
           end if;
+          i_data_vld <= '0';
+          i_recieve <= '0';
           if (o_running = '0') then
             st_flow_ctrl <= st_flow_IDLE;
             if ((to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) or (to_integer(unsigned(flags)) /= 0)) then

@@ -6,7 +6,7 @@ library work;
   use work.my_common.all;
 
 
-entity i2c_module is
+entity SPI_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE: string  := "DEFAULT" --NOTE - types: "DEFAULT", "XILINX"
@@ -32,18 +32,18 @@ entity i2c_module is
     o_o_data_data   : out data_bus;
     o_o_data_empty  : out std_logic;
 
-    scl             : inout std_logic := 'Z';
-    sda             : inout std_logic := 'Z';
-    i_interrupt     : in  std_logic;
-    o_interrupt     : out std_logic
+    MISO            : in std_logic;
+    MOSI            : out std_logic;
+    SCLK            : out std_logic;
+    o_CS            : out std_logic_vector(MSG_W - 1 downto 0)
 
   );
-end entity i2c_module;
+end entity SPI_module;
 
 ----------------------------------------------------------------------------------------
 --SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture behavioral of i2c_module is 
+architecture behavioral of SPI_module is 
 
 signal sl_next_info, sl_emty_info, sl_next_data, sl_push_info, sl_full_info, sl_push_data, sl_full_data, sl_empty_data : std_logic;
 
@@ -129,14 +129,14 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
   ----------------------------------------------------------------------------------------
   --ANCHOR - SLAVE INTERFACE
   ----------------------------------------------------------------------------------------
-  i2c_ctrl_inst1 : entity work.i2c_ctrl
+  SPI_ctrl_inst : entity work.SPI_ctrl
   generic map (
     SMPL_W => SMPL_W,
     START_OFFSET => START_OFFSET,
     MY_ID => ID
   )
   port map (
-    clk => i_clk,
+    clk_100MHz => i_clk,
     i_rst_n => i_rst_n,
     i_en => i_en,
     i_i_data_fifo_data => sl_data_in,
@@ -151,12 +151,12 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     o_o_info_fifo_data => sl_info_out,
     i_o_info_fifo_full => sl_full_info,
     o_o_info_fifo_next => sl_push_info,
-
-    scl                => scl,
-    sda                => sda,
-    i_interrupt        => i_interrupt,
-    o_interrupt        => o_interrupt
+    MISO => MISO,
+    MOSI => MOSI,
+    SCLK => SCLK,
+    o_CS => o_CS
   );
+
 
 
 end architecture; --!SECTION

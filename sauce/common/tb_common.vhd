@@ -26,6 +26,8 @@ package tb_common is
 
   function create_reg0_w ( id:std_logic_vector(1 downto 0);  target:std_logic_vector(2 downto 0);  send_bytes : std_logic_vector(7 downto 0); recieve_bytes : std_logic_vector(7 downto 0) )return info_bus;
 
+  function create_reg0_w ( id:std_logic_vector(1 downto 0);  spec:std_logic;  target:std_logic_vector(2 downto 0);  send_bytes : std_logic_vector(7 downto 0); recieve_bytes : std_logic_vector(7 downto 0) )return info_bus;
+
   function create_reg1_w (id:std_logic_vector(1 downto 0); target:std_logic_vector(2 downto 0); rst : std_logic; par_L  : std_logic; par_en : std_logic; report_flg : std_logic; bitrate : std_logic_vector(2 downto 0))return info_bus;
   
   function create_reg2_w (id:std_logic_vector(1 downto 0); target:std_logic_vector(2 downto 0); unex_en : std_logic; timeout_en : std_logic; timeout : std_logic_vector(4 downto 0))return info_bus;
@@ -126,6 +128,18 @@ begin
   resp := '1' when (unsigned(recieve_bytes) > 0) else '0';
 
   return id & resp & "00" & target & send_bytes & recieve_bytes;
+end function;
+
+function create_reg0_w (
+  id:std_logic_vector(1 downto 0); 
+  spec:std_logic;
+  target:std_logic_vector(2 downto 0); 
+  send_bytes : std_logic_vector(7 downto 0);
+  recieve_bytes : std_logic_vector(7 downto 0)
+  )return info_bus is
+begin
+
+  return id & spec & "00" & target & send_bytes & recieve_bytes;
 end function;
 
 function create_reg1_w (
