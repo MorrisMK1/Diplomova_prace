@@ -21,6 +21,7 @@ entity SPI_driver is
     i_clk_div     : in  std_logic_vector((MSG_W * 2) - 1 downto 0);  -- divider for baud_gen
     i_hold_active : in  std_logic;   -- if no data given and no data requested the communication will not be terminated but put on hold
     i_data_dir    : in  std_logic;   -- 1 for MSB first
+    i_CPHA        : in  std_logic := '0';-- clock phase: 0 => rising read, falling write; 1 => swapped
 
     i_data        : in  std_logic_vector(MSG_W - 1 downto 0);
     i_data_vld    : in  std_logic;
@@ -122,6 +123,7 @@ o_busy <= sclk_run;
   p_flow_ctrl_MOSI : process(clk_100MHz)    --TODO - finish this
     variable bits_to_snd  : natural range MSG_W downto 0;
     variable data_to_snd  : std_logic_vector(MSG_W-1 downto 0);
+    variable last_sclk    : std_logic;
   begin
     if rising_edge(clk_100MHz) then
       if (rst_n = '0') then
@@ -143,7 +145,7 @@ o_busy <= sclk_run;
           end if;
           bits_to_snd := MSG_W ;
           o_data_read <= '1';
-        elsif ((sclk_mid = '1') and (SCLK = '0')) then
+        elsif (((SCLK = '0') and (last_sclk = '1') and (i_CPHA = '0')) or ((SCLK = '1') and (last_sclk = '0') and (i_CPHA = '1'))) then
           MOSI <= data_to_snd(0);
           data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
           if (bits_to_snd /= 0) then
@@ -155,6 +157,7 @@ o_busy <= sclk_run;
           out_busy <= '0';
         end if;
       end if;
+      last_sclk := SCLK;
     end if;
   
   end process;
@@ -167,6 +170,7 @@ o_busy <= sclk_run;
 p_flow_ctrl_MISO : process(clk_100MHz)    --TODO - finish this
   variable bits_to_rec  : natural range MSG_W downto 0;
   variable data_to_rec  : std_logic_vector(MSG_W-1 downto 0);
+  variable last_sclk    : std_logic;
 begin
   if rising_edge(clk_100MHz) then
     if (rst_n = '0') then
@@ -181,7 +185,7 @@ begin
       if ((i_data_recieve = '1') and (bits_to_rec = 0) and (sclk_mid = '1') and (SCLK = '0')) then
         data_to_rec := (others => '0');
         bits_to_rec := MSG_W ;
-      elsif ((sclk_mid = '1') and (SCLK = '1') and (i_data_recieve = '1')) then
+      elsif ((((SCLK = '1') and (last_sclk = '0') and (i_CPHA = '0')) or ((SCLK = '0') and (last_sclk = '1') and (i_CPHA = '1'))) and (i_data_recieve = '1')) then
         if (i_data_dir = '1') then
           data_to_rec := data_to_rec(MSG_W - 2 downto 0) & MISO_stable;
         else
@@ -200,6 +204,7 @@ begin
         in_busy <= '0';
       end if;
     end if;
+    last_sclk := SCLK;
   end if;
 
 end process;

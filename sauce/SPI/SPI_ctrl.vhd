@@ -392,6 +392,7 @@ end process;
     i_clk_div => clk_div,
     i_hold_active => i_hold_active,
     i_data_dir => not data_dir,
+    i_CPHA => CPHA,
     i_data => i_data,
     i_data_vld => i_data_vld,
     o_data_read => o_data_read,

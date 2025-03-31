@@ -229,7 +229,7 @@ p_main  : process (i_clk) is
           end if;
 
         when st_selector_data =>
-          if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
+          if ((data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) and (inf_reg(header) = "00")) then
             if (i_o_data_fifo_ready = '1' and src_data_ready = '1') then
               o_o_data_fifo_next <= '1';
               src_data_next <= '1';
