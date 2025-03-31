@@ -87,6 +87,10 @@ begin
         i_rst_n <= '0';
         i_en <= '1';
         i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        i_i_data_write <= '0';
+        i_i_info_write <= '0';
         wait for clk_period * 1;
         i_rst_n <= '1';
         i_i_data_write <= '1';
@@ -115,6 +119,10 @@ begin
         i_rst_n <= '0';
         i_en <= '1';
         i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        i_i_data_write <= '0';
+        i_i_info_write <= '0';
         wait for clk_period * 1;
         i_rst_n <= '1';
         i_i_data_write <= '1';

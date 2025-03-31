@@ -185,27 +185,31 @@ end process p_cfg_manager;
 --#ANCHOR - Controller
 ----------------------------------------------------------------------------------------
 
-p_flow_ctrl : process(clk_en) --TODO - finish this
+p_flow_ctrl : process(clk_en)
   variable last_busy  : std_logic;
 begin
   if rising_edge(clk_en) then
     if (rst_n = '0') then
       st_flow_ctrl <= st_flow_IDLE;
       reg_op_rdy_strb <= '0';
-      o_i_info_fifo_next <= '0';
       i_data_vld <= '0';
       data_size_flg <= '0';
-      o_i_data_fifo_next <= '0';
       i_recieve <= '0';
+      i_ignore <= '0';
       data_ovf_flg <= '0';
       last_busy := '0';
       no_ack_flg <= '0';
       o_o_info_fifo_next <= '0';
+      o_i_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
+      o_i_data_fifo_next <= '0';
       o_o_data_fifo_data <= (others => '0') ;
       o_o_info_fifo_data <= (others => '0') ;
       o_interrupt <= '0';
       disconnect_flg <= '0';
+      blocked_flg <= '0';
+      noise_flg <= '0';
+      info_ovf_flg <= '0';
       frame_flg <= '0';
       info_ack <= '0';
     else

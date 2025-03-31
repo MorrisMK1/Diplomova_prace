@@ -137,13 +137,13 @@ begin
           
           when st_driver_ms_start       =>
             o_busy <= '1';
-            if ((scl = '0')) then
+            if ((scl_timer_mid = '1')) then
               st_driver <= st_driver_ms_addr;
             end if;
           when st_driver_ms_addr        =>
             o_busy <= '1';
             if (data_cnt < 8) then
-              if ((scl_timer_mid = '1') and (scl = '0')) then
+              if ((last_scl = '1') and (scl = '0')) then
                 if (msg(7) = '1') then
                   sda <= 'Z';
                 else
@@ -152,7 +152,7 @@ begin
                 msg := msg(6 downto 0) & '0';
                 data_cnt <= data_cnt + 1;
               end if;
-            elsif ((scl_timer_mid = '1') and (scl = '0')) then
+            elsif ((last_scl = '1') and (scl = '0')) then
               sda <= 'Z';
               st_driver <= st_driver_ms_addr_ack;
               data_cnt <= 0;
@@ -178,7 +178,7 @@ begin
           when st_driver_ms_snd_msg     =>
             o_busy <= '1';
             if (data_cnt < 8) then
-              if ((scl_timer_mid = '1') and (scl = '0')) then
+              if ((last_scl = '1') and (scl = '0')) then
                 if (msg(7) = '1') then
                   sda <= 'Z';
                 else
@@ -203,7 +203,7 @@ begin
             o_busy <= '1';
             sda <= 'Z';
             if (data_cnt < 8) then
-              if ((scl_timer_mid = '1') and (scl /= '0')) then
+              if ((last_scl = '0') and (scl /= '0')) then
                 if (sda = '0') then
                   msg := msg(6 downto 0) & '0';
                 else
@@ -218,8 +218,8 @@ begin
               data_cnt <= 0;
             end if;
 
-          when st_driver_ms_rec_ack     =>
-            if ((scl_timer_mid = '1')) then
+          when st_driver_ms_rec_ack     =>  --FIXME - terminates on 7th bit
+            if ((last_scl = '1')) then
               if (scl = '0') then
                 if (i_recieve = '1') then
                   sda <= '0';
