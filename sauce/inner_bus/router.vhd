@@ -180,10 +180,13 @@ architecture behavioral of router is
         when st_router_target =>
           header <= i_i_info_fifo_data;
           target <= std_ulogic_vector(inf_tg(i_i_info_fifo_data));
-          if (inf_ret(i_i_info_fifo_data) = '0' and i_i_info_fifo_data(MSG_W * 1 - 1 downto 0) /= 0) then
-            st_router <= st_router_report;
-          elsif  (inf_reg(i_i_info_fifo_data) /= "00") then
-            st_router <= st_router_head;
+          
+          if  (inf_reg(i_i_info_fifo_data) /= "00") then
+            if (inf_tg(i_i_info_fifo_data) = "000") then  -- reports from 0 send automatically 
+              st_router <= st_router_report;
+            else
+              st_router <= st_router_head;
+            end if;
           else
             st_router <= st_router_data;
             data_cnt <= to_unsigned(0,MSG_W);

@@ -73,6 +73,20 @@ begin
   wait for CLK_PERIOD*2;
   i_rst_n <= '1';
   for i in 1 to 2 loop
+    gen_header <= "000010110000001000000000";
+    wait for CLK_PERIOD*10;
+    msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+    wait for 0 ns;
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+    wait for 0 ns;
+    msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+    wait for 0 ns;
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+    wait for 0 ns;
+    msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+    wait for 0 ns;
+    uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+    wait for 0 ns;
     --ANCHOR - first message
     gen_header <= create_reg0_w("00",std_logic_vector(to_unsigned(i,3)),"00000010","00000010");
     wait for CLK_PERIOD*10;

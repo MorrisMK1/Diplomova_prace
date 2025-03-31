@@ -149,23 +149,23 @@ p_clk_div_sel : process (clk_div_sel)
 begin
   case( to_integer(unsigned(clk_div_sel)) ) is  -- dividers for clk = 100 MHz
     when 0 =>             -- 9600
-      clk_div <= x"0416";
+      clk_div <= x"0412";
     when 1 =>             -- 19200
-      clk_div <= x"020A";
+      clk_div <= x"0209";
     when 2 =>             -- 28800
-      clk_div <= x"015F";
+      clk_div <= x"015B";
     when 3 =>             -- 57600
-      clk_div <= x"00B1";
+      clk_div <= x"00AE";
     when 4 =>             -- 76800
-      clk_div <= x"0086";
+      clk_div <= x"0082";
     when 5 =>             -- 115200
-      clk_div <= x"005A";
+      clk_div <= x"0057";
     when 6 =>             -- 460800
-      clk_div <= x"0017";
+      clk_div <= x"0016";
     when 7 =>             -- 921600
-      clk_div <= x"000D";
+      clk_div <= x"000B";
     when others =>
-      clk_div <= x"0416";
+      clk_div <= x"0413";
   end case ;
 end process;
 ----------------------------------------------------------------------------------------
@@ -207,22 +207,22 @@ begin
             st_reciever := st_reciever_h_info;
           end if;
         when st_reciever_h_info =>
+          header := (o_msg & header(MSG_W * 2 - 1 downto 0));
           if o_msg_vld_strb = '1' then
-            header := (o_msg & header(MSG_W * 2 - 1 downto 0));
             st_reciever := st_reciever_h_data;
           end if;
         when st_reciever_h_data =>
+          header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
           if (o_msg_vld_strb = '1') then
-            header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
-            data_cnt := unsigned(o_msg);
             st_reciever := st_reciever_h_back;
           end if;
         when st_reciever_h_back =>
+          header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
           if (o_msg_vld_strb = '1') then
-            header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
             if (inf_reg(header) /= "00") then
               st_reciever := st_reciever_header;
             else
+              data_cnt := unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1));
               st_reciever := st_reciever_data;
             end if;
           end if;

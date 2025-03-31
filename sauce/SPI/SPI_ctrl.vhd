@@ -209,6 +209,7 @@ end process p_cfg_manager;
         i_data_recieve <= '0';
         flag_rst <= '1';
         i_hold_active <= '0';
+        st_flow <= st_flow_IDLE;
 
       else
         o_CS(to_integer(unsigned(CHIP_SEL))) <= SPOL;
