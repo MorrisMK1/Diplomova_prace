@@ -29,6 +29,9 @@ signal rx_sl1, rx_sl2 : std_logic;
 signal tx_ms          : std_logic;
 signal rx_ms          : std_logic;
 
+signal MISO_4, MOSI_4, SCLK_4 :std_logic;
+signal o_CS_4         : std_logic_vector(7 downto 0);
+
 signal i_settings     : std_logic_array (1 to 2) (MSG_W -1 downto 0);
 
 signal gen_header     : info_bus;
@@ -197,7 +200,11 @@ main_inst : entity work.main
     slv1_tx => tx_sl1,
     slv1_rx => rx_sl1,
     slv2_tx => tx_sl2,
-    slv2_rx => rx_sl2
+    slv2_rx => rx_sl2,
+    MISO_4  => MISO_4,
+    MOSI_4  => MOSI_4,
+    SCLK_4  => SCLK_4,
+    o_CS_4  => o_CS_4
   );
 
 
