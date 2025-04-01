@@ -48,6 +48,8 @@ architecture rtl of i2c_driver is
     st_driver_ms_rec_msg, 
     st_driver_ms_rec_ack, 
     st_driver_ms_rec_ter,
+    st_driver_ms_ter_del,
+    st_driver_ms_ter_del2,
     st_driver_sl_addr, 
     st_driver_sl_addr_ack, 
     st_driver_sl_snd_msg, 
@@ -159,7 +161,7 @@ begin
             end if;
 
           when st_driver_ms_addr_ack    =>
-            if ((scl_timer_mid = '1') and (scl /= '0')) then
+            if ((last_scl = '1') and (scl /= '0')) then
               if (sda = '0') then
                 if (i_recieve = '1') then
                   st_driver <= st_driver_ms_rec_msg;
@@ -238,7 +240,8 @@ begin
               sda <= 'Z';
             elsif ((scl_timer_mid = '1') and (scl /= '0')) then
               sda<= 'Z';
-              st_driver <= st_driver_IDLE;
+              scl_timer_en <= '0';
+              st_driver <= st_driver_ms_ter_del;
             end if;
 
           when st_driver_ms_snd_ter   =>
@@ -249,8 +252,24 @@ begin
               sda <= 'Z';
             elsif ((scl_timer_mid = '1') and (scl /= '0')) then
               sda<= 'Z';
-              st_driver <= st_driver_IDLE;
+              scl_timer_en <= '0';
+              st_driver <= st_driver_ms_ter_del;
             end if; 
+
+          when st_driver_ms_ter_del     =>
+            scl_timer_en <= '1';
+            sda<= 'Z';
+            if (scl_timer_mid = '1') then
+              scl_timer_en <= '0';
+              st_driver <= st_driver_ms_ter_del2;
+            end if;
+
+          when st_driver_ms_ter_del2    =>
+            scl_timer_en <= '1';
+            sda<= 'Z';
+            if (scl_timer_mid = '1') then
+              st_driver <= st_driver_IDLE;
+            end if;
 
           when st_driver_sl_addr        =>
 
