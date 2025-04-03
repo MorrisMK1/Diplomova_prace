@@ -32,6 +32,7 @@ entity SPI_driver is
     o_data_vld    : out std_logic;
 
     o_busy        : out std_logic;
+    o_noise_flg   : out std_logic;
 
     MISO          : in  std_logic;
     MOSI          : out std_logic;
@@ -42,7 +43,7 @@ end entity SPI_driver;
 architecture rtl of SPI_driver is
   signal sclk_run, sclk_mid  : std_logic;
   signal out_busy, in_busy: std_logic;
-  signal MISO_stable  : std_logic;
+  signal MISO_stable, MISO_unstable_flg  : std_logic;
   
 
     
@@ -58,6 +59,7 @@ o_busy <= sclk_run;
   p_MISO_debounce : process(clk_100MHz)
     variable MISO_buffer  : std_logic_vector (MISO_DEB_BUFF_SIZE-1 downto 0);
     variable MISO_1_cnt   : natural range MISO_DEB_BUFF_SIZE downto 0;
+    variable MISO_most_cnt: natural range MISO_DEB_BUFF_SIZE downto 0;
   begin
     if rising_edge(clk_100MHZ) then
       if (rst_n = '0') then
@@ -71,9 +73,16 @@ o_busy <= sclk_run;
         end loop;
         if (MISO_1_cnt > MISO_DEB_BUFF_SIZE/2) then
           MISO_stable <= '1';
+          MISO_most_cnt := MISO_1_cnt;
         else
           MISO_stable <= '0';
+          MISO_most_cnt := MISO_DEB_BUFF_SIZE - MISO_1_cnt;
         end if;
+        if (MISO_most_cnt < ((MISO_DEB_BUFF_SIZE * 3) / 4)) then
+          MISO_unstable_flg <= '1';
+        else
+          MISO_unstable_flg <= '0';
+        end if ;
         MISO_buffer := MISO_buffer(MISO_DEB_BUFF_SIZE-2 downto 0) & MISO;
       end if;
     end if;
@@ -182,6 +191,7 @@ begin
     else
       in_busy <= '1';
       o_data_vld <= '0';
+      o_noise_flg <= '0';
       if ((i_data_recieve = '1') and (bits_to_rec = 0) and (sclk_mid = '1') and (SCLK = '0')) then
         data_to_rec := (others => '0');
         bits_to_rec := MSG_W ;
@@ -190,6 +200,7 @@ begin
           data_to_rec := data_to_rec(MSG_W - 2 downto 0) & MISO_stable;
         else
           data_to_rec := MISO_stable & data_to_rec(MSG_W - 1 downto 1);
+          o_noise_flg <= MISO_unstable_flg;
         end if;
         if (bits_to_rec /= 0) then
           bits_to_rec := bits_to_rec - 1;

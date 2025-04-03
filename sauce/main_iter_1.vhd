@@ -41,17 +41,9 @@ architecture behavioral of main is
 
 constant CLK_PERIOD : TIME := 10 ns;
 
-signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf, sl1_info_in, sl1_info_out: info_bus;
-signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat, sl1_data_in, sl1_data_out: data_bus;
+signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf: info_bus;
+signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat: data_bus;
 
-signal sl1_push_info   : std_logic;
-signal sl1_push_data   : std_logic;
-signal sl1_next_info   : std_logic;
-signal sl1_next_data   : std_logic;
-signal sl1_emty_info   : std_logic;
-signal sl1_emty_data   : std_logic;
-signal sl1_full_info   : std_logic;
-signal sl1_full_data   : std_logic;
 
 signal ms_push_info, ms_push_data, ms_next_info, ms_next_data, ms_emty_info, ms_emty_data, ms_full_info, ms_full_data   : std_logic;
 

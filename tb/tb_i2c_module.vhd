@@ -49,6 +49,7 @@ architecture bench of tb_i2c_module is
   signal read_req, slave_write         : std_logic;
   signal slave_reg, slave_reg_i, slave_reg_o        : std_logic_vector(7 downto 0) := "00000000";
 
+  signal slv_force_rst, block_scl  : std_logic;
 begin
 
   i2c_module_inst : entity work.i2c_module
@@ -81,39 +82,8 @@ begin
   begin
     test_runner_setup(runner, runner_cfg);
     while test_suite loop
-      if run("test_wr") then
-        info("Starting send test");
-        wait for 0 fs;
-        i_rst_n <= '0';
-        i_en <= '1';
-        i_interrupt <= '0';
-        o_i_data_next <= '0';
-        o_i_info_next <= '0';
-        i_i_data_write <= '0';
-        i_i_info_write <= '0';
-        wait for clk_period * 1;
-        i_rst_n <= '1';
-        i_i_data_write <= '1';
-        i_i_data_data <= I2C_SLAVE_ADDR & "0";
-        wait for clk_period;
-        i_i_data_data <= "10011001";
-        wait for clk_period;
-        for i in 0 to 35 loop
-          i_i_data_data <= std_logic_vector(to_unsigned(i,MSG_W));
-          wait for clk_period;
-        end loop;
-        i_i_data_write <= '0';
-        i_i_info_write <= '1';
-        i_i_info_data <= create_reg0_w("00","000",x"25",x"00");
-        wait for clk_period;
-        i_i_info_write <= '0';
-
-        wait until scl'stable(1 ms);
-        
-        test_runner_cleanup(runner);
-        
-      elsif run("test_rd") then
-        info("Starting read test");
+      if run("test_wrong_addr") then
+        info("Starting wrong address test");
 
         wait for 0 fs;
         i_rst_n <= '0';
@@ -121,24 +91,70 @@ begin
         i_interrupt <= '0';
         o_i_data_next <= '0';
         o_i_info_next <= '0';
-        i_i_data_write <= '0';
-        i_i_info_write <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
         wait for clk_period * 1;
         i_rst_n <= '1';
         i_i_data_write <= '1';
-        i_i_data_data <= I2C_SLAVE_ADDR & "1";
-        wait for clk_period;
-        i_i_data_write <= '0';
+        i_i_data_data <= (I2C_SLAVE_ADDR xor "0010000") & "0";
+        wait for clk_period;        
+        i_i_data_data <= x"05";
+        wait for clk_period;        
+        i_i_data_data <= x"50";
+        wait for clk_period;   
+        i_i_data_write <= '0';           
         i_i_info_write <= '1';
-        i_i_info_data <= create_reg0_w("01","000",x"01",x"25");
+        i_i_info_data <= create_reg0_w("00","000",x"03",x"00");
         wait for clk_period;
-        i_i_info_write <= '0';
+        i_i_info_write <= '0'; 
+        
+        wait until scl'stable(5 ms);
+        check(o_o_info_data(1) = '1', "no_ack_flg should be set");
+        check(o_o_info_data(5) = '1', "disconnect_flg should be set");
+        check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
+        check(o_o_data_empty = '1', "o_o_data_empty should be set");
+        check(slave_reg = "00000000", "slave register was written");
+        
+        test_runner_cleanup(runner); 
+      
+      elsif run("test_blocked_scl") then
+        info("Starting blocked scl test");
 
-        wait until scl'stable(1 ms);
-
-        test_runner_cleanup(runner);
-      elsif run("test_comm") then
-        info("Starting read test");
+        wait for 0 fs;
+        i_rst_n <= '0';
+        i_en <= '1';
+        i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
+        wait for clk_period * 1;
+        i_rst_n <= '1';
+        i_i_data_write <= '1';
+        i_i_data_data <= (I2C_SLAVE_ADDR) & "0";
+        wait for clk_period;        
+        i_i_data_data <= x"05";
+        wait for clk_period;        
+        i_i_data_data <= x"50";
+        wait for clk_period;   
+        i_i_data_write <= '0';           
+        i_i_info_write <= '1';
+        i_i_info_data <= create_reg0_w("00","000",x"03",x"00");
+        wait for clk_period;
+        i_i_info_write <= '0'; 
+        block_scl <= '1';
+        wait for 100 ms;
+        check(o_o_info_data(1) = '1', "no_ack_flg should be set");
+        check(o_o_info_data(5) = '1', "disconnect_flg should be set");
+        check(o_o_info_data(6) = '1', "blocked_flg should be set");
+        check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
+        check(o_o_data_empty = '1', "o_o_data_empty should be set");
+        check(slave_reg = "00000000", "slave register was written");
+        
+        test_runner_cleanup(runner); 
+      
+      elsif run("test_data_no_ack_end") then
+        info("Starting no ack on data end test");
   
         wait for 0 fs;
         i_rst_n <= '0';
@@ -146,6 +162,87 @@ begin
         i_interrupt <= '0';
         o_i_data_next <= '0';
         o_i_info_next <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
+        wait for clk_period * 1;
+        i_rst_n <= '1';
+        i_i_data_write <= '1';
+        i_i_data_data <= I2C_SLAVE_ADDR & "0";
+        wait for clk_period;        
+        i_i_data_data <= x"05";
+        wait for clk_period;   
+        i_i_data_write <= '0';        wait for clk_period;   
+        i_i_data_write <= '0';           
+        i_i_info_write <= '1';
+        i_i_info_data <= create_reg0_w("00","000",x"02",x"00");
+        wait for clk_period;
+        i_i_info_write <= '0'; 
+           
+
+        for i in 9 downto 0 loop
+          wait until rising_edge(scl);
+        end loop;
+        slv_force_rst <= '1';
+
+        wait until scl'stable(5 ms);
+        check(o_o_info_data(1) = '1', "no_ack_flg should be set");
+        check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
+        check(o_o_data_empty = '1', "o_o_data_empty should be set");
+        check(slave_reg = "00000000", "slave register was written"); 
+        
+        test_runner_cleanup(runner); 
+  
+      elsif run("test_data_no_ack_mid") then
+        info("Starting no ack on data mid test");
+  
+        wait for 0 fs;
+        i_rst_n <= '0';
+        i_en <= '1';
+        i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
+        wait for clk_period * 1;
+        i_rst_n <= '1';
+        i_i_data_write <= '1';
+        i_i_data_data <= I2C_SLAVE_ADDR & "0";
+        wait for clk_period;        
+        i_i_data_data <= x"05";
+        wait for clk_period;       
+        i_i_data_data <= x"50";
+        wait for clk_period;   
+        i_i_data_write <= '0';        wait for clk_period;   
+        i_i_data_write <= '0';           
+        i_i_info_write <= '1';
+        i_i_info_data <= create_reg0_w("00","000",x"03",x"00");
+        wait for clk_period;
+        i_i_info_write <= '0'; 
+
+        for i in 9 downto 0 loop
+          wait until rising_edge(scl);
+        end loop;
+        slv_force_rst <= '1';
+
+        wait until scl'stable(5 ms);
+        check(o_o_info_data(1) = '1', "no_ack_flg should be set");
+        check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
+        check(o_o_data_empty = '1', "o_o_data_empty should be set");
+        check(slave_reg = "00000000", "slave register was written");  
+    
+        test_runner_cleanup(runner);
+
+      elsif run("test_comm") then
+        info("Starting communication test");
+  
+        wait for 0 fs;
+        i_rst_n <= '0';
+        i_en <= '1';
+        i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
         wait for clk_period * 1;
         i_rst_n <= '1';
         i_i_data_write <= '1';
@@ -173,15 +270,15 @@ begin
         wait for clk_period;
         i_i_info_write <= '0';
   
-        wait until scl'stable(1 ms);
+        wait until scl'stable(5 ms);
         wait until falling_edge(i_clk);
         o_i_data_next <= '1';
         for i in 5 to 14 loop
-          check(i = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(i) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+          check(i = unsigned(o_o_data_data), "Recieved invalid data(1). Expected: " & to_string(i) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
           wait for clk_period;
         end loop;
         for i in 25 to 39 loop
-          check(i = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(i) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+          check(i = unsigned(o_o_data_data), "Recieved invalid data(2). Expected: " & to_string(i) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
           wait for clk_period;
         end loop;
         o_i_data_next <= '0';
@@ -193,7 +290,7 @@ begin
 
   i_clk <= not i_clk after clk_period/2;
   sda <= 'H';
-  scl <= 'H';
+  scl <= 'H' when (block_scl = '0') else '0';
 
   
   ----------------------------------------------------------------------------------------
@@ -229,7 +326,7 @@ I2C_minion_inst : entity work.I2C_minion
     scl => scl,
     sda => sda,
     clk => i_clk,
-    rst => not (i_rst_n),
+    rst => ((not (i_rst_n)) or slv_force_rst),
     read_req => read_req,
     data_to_master => slave_reg,
     data_valid => slave_write,

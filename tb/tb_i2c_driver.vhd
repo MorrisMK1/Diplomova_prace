@@ -191,6 +191,7 @@ I2C_minion_inst : entity work.I2C_minion
     i_ignore => i_ignore,
     o_no_ack => o_no_ack,
     clk_div => clk_div,
+    i_slv_addr => "0000110",
     i_en_slave => i_en_slave,
     o_busy => o_busy,
     o_running => o_running

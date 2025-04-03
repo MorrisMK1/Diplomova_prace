@@ -113,6 +113,7 @@ library work;
 
     rst_n <= i_rst_n and not rst_r and not en_rst;
     clk_en <= clk and i_en;
+    no_ack_flg <= o_no_ack;
 
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable
@@ -187,7 +188,9 @@ end process p_cfg_manager;
 
 p_flow_ctrl : process(clk_en)
   variable last_busy  : std_logic;
+  variable data_cnt_next : natural range 0 to 255;
 begin
+  data_cnt_next := data_cnt + 1;
   if rising_edge(clk_en) then
     if (rst_n = '0') then
       st_flow_ctrl <= st_flow_IDLE;
@@ -198,22 +201,20 @@ begin
       i_ignore <= '0';
       data_ovf_flg <= '0';
       last_busy := '0';
-      no_ack_flg <= '0';
       o_o_info_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
       o_o_data_fifo_next <= '0';
       o_i_data_fifo_next <= '0';
       o_o_data_fifo_data <= (others => '0') ;
       o_o_info_fifo_data <= (others => '0') ;
+      reg_op <= (others => '0') ;
       o_interrupt <= '0';
       disconnect_flg <= '0';
-      blocked_flg <= '0';
       noise_flg <= '0';
       info_ovf_flg <= '0';
       frame_flg <= '0';
       info_ack <= '0';
     else
-      no_ack_flg <= '0';
       o_interrupt <= '0';
       disconnect_flg <= '0';
       info_ack <= '0';
@@ -258,11 +259,7 @@ begin
             i_data <= i_i_data_fifo_data;
             if (o_running = '1') then
               if(o_busy = '0') then
-                if (o_no_ack = '1') then
-                  disconnect_flg <= '1';
-                  no_ack_flg <= '1';
-                  st_flow_ctrl <= st_flow_PURGE;
-                elsif (i_i_data_fifo_data(0) /= '0') then
+                if (i_i_data_fifo_data(0) /= '0') then
                   o_i_data_fifo_next <= '1';
                   st_flow_ctrl <= st_flow_MS_REC;
                 else
@@ -273,10 +270,10 @@ begin
           end if;
 
         when st_flow_MS_REC =>
-          i_recieve <= '1';
+          i_recieve <= '0' when ((data_cnt_next = to_integer(unsigned(reg_op(MSG_W - 1 downto 0)))) and (o_busy = '1')) else '1';
           o_o_data_fifo_data <= o_data;
           o_o_data_fifo_next <= o_data_vld;
-          data_cnt <= data_cnt + 1 when (o_data_vld = '1') else data_cnt;
+          data_cnt <= data_cnt_next when (o_data_vld = '1') else data_cnt;
           if (data_cnt = to_integer(unsigned(reg_op(MSG_W - 1 downto 0)))) then
             st_flow_ctrl <= st_flow_MS_TER;
             i_recieve <= '0';
@@ -290,7 +287,7 @@ begin
           i_data_vld <= '1';
           i_data <= i_i_data_fifo_data;
           if (last_busy = '0' and o_busy = '1') then
-            data_cnt <= data_cnt + 1;
+            data_cnt <= data_cnt_next;
             o_i_data_fifo_next <= '1';
           end if;
           if (data_cnt = to_integer(unsigned(inf_size(reg_op)))) then
@@ -301,25 +298,22 @@ begin
             i_data_vld <= '0';
             data_size_flg <= '1';
           elsif (o_no_ack = '1') then
-            st_flow_ctrl <= st_flow_MS_TER;
+            st_flow_ctrl <= st_flow_PURGE;
+            disconnect_flg <= '1' when (data_cnt = 1) else '0';
             i_data_vld <= '0';
-            no_ack_flg <= '1';
           end if;
 
         when st_flow_MS_TER =>
-          if (o_no_ack = '1') then
-            no_ack_flg <= '1';
-          end if;
-          if (to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) then
+          if (reg_op(MSG_W-1 downto 0) /= x"00") then
             o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(data_cnt,MSG_W)) & r_registers(3) ;
-          elsif (to_integer(unsigned(flags)) /= 0) then
+          elsif (r_registers(3) /= x"00") then
             o_o_info_fifo_data <= reg_op(3 * MSG_W - 1 downto MSG_W * 2) & std_logic_vector(to_unsigned(0,MSG_W)) & r_registers(3) ;
           end if;
           i_data_vld <= '0';
           i_recieve <= '0';
           if (o_running = '0') then
             st_flow_ctrl <= st_flow_IDLE;
-            if ((to_integer(unsigned(reg_op(MSG_W-1 downto 0))) /= 0) or (to_integer(unsigned(flags)) /= 0)) then
+            if ((reg_op(MSG_W-1 downto 0) /= x"00") or (r_registers(3) /= x"00")) then
               o_o_info_fifo_next <= '1';
             end if;
           end if;
@@ -327,7 +321,7 @@ begin
         when st_flow_PURGE =>
           if (data_cnt < to_integer(unsigned(inf_size(reg_op)))) then
             o_i_data_fifo_next <= '1';
-            data_cnt <= data_cnt + 1;
+            data_cnt <= data_cnt_next;
           else
             st_flow_ctrl <= st_flow_MS_TER;
           end if;
@@ -360,25 +354,49 @@ end process;
 p_clk_div_sel : process (div_sel)
 begin
   case( to_integer(unsigned(div_sel)) ) is  -- dividers for clk = 100 MHz
-    when 0 =>             -- 20 Kbps
-      clk_div <= x"1388";
-    when 1 =>             -- 50 Kbps
+    when 0 =>             -- 1.5 Kbps
+      clk_div <= x"FFFF";
+    when 1 =>             -- 2   Kbps
+      clk_div <= x"C350";
+    when 2 =>             -- 5   Kbps
+      clk_div <= x"4E20";
+    when 3 =>             -- 10  Kbps
+      clk_div <= x"2710";
+    when 4 =>             -- 50  Kbps
       clk_div <= x"07D0";
-    when 2 =>             -- 100 Kbps
+    when 5 =>             -- 100 Kbps
       clk_div <= x"03E8";
-    when 3 =>             -- 200 Kbps
+    when 6 =>             -- 200 Kbps
       clk_div <= x"01F4";
-    when 4 =>             -- 400 Kbps
+    when 7 =>             -- 400 Kbps
       clk_div <= x"00FA";
-    when 5 =>             -- 1 Mbps
-      clk_div <= x"0064";
-    when 6 =>             -- 2 Mbps
-      clk_div <= x"0032";
-    when 7 =>             -- 4 Mbps
-      clk_div <= x"0019";
     when others =>
-      clk_div <= x"1388";
+      clk_div <= x"C350";
   end case ;
+end process;
+
+----------------------------------------------------------------------------------------
+--#ANCHOR - SCL block detection
+----------------------------------------------------------------------------------------
+p_scl_block_detect : process (clk_en)
+  variable ticks_held_low : natural range (65536*4-1) downto 0;
+  variable max_wait_ticks : STD_ULOGIC_VECTOR (MSG_W*2+1 downto 0);
+begin
+  if (rising_edge(clk_en)) then
+    max_wait_ticks := (clk_div & "00");
+    blocked_flg  <= '0';
+    if (rst_n = '0') then
+      ticks_held_low := 0;
+    elsif (scl = '0') then
+      if (ticks_held_low < to_integer(unsigned(max_wait_ticks))) then
+        ticks_held_low := ticks_held_low + 1;
+      else
+        blocked_flg  <= '1';
+      end if;
+    else
+      ticks_held_low := 0;
+    end if;
+  end if;
 end process;
 
 
@@ -399,6 +417,7 @@ end process;
     i_ignore => i_ignore,
     o_no_ack => o_no_ack,
     clk_div => clk_div,
+    i_slv_addr  => address,
     i_en_slave => slave_mode,
     o_busy => o_busy,
     o_running => o_running

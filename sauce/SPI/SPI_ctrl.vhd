@@ -81,13 +81,13 @@ architecture rtl of SPI_ctrl is
   alias  rst_r          : std_logic is r_registers(1)(7);
   alias  CHIP_SEL       : std_logic_vector (2 downto 0) is r_registers(2)(2 downto 0);
 
-  signal flags          : std_logic_vector (MSG_W-1 downto 0);
-  alias  frame_flg      : std_logic is flags(0);
+  signal flags          : std_logic_vector (MSG_W-1 downto 0);  -- what am I supposed to check here?
+  --alias  frame_flg      : std_logic is flags(0);
   alias  reg_w_blck_flg : std_logic is flags(1);
   alias  data_ovf_flg   : std_logic is flags(3);
-  alias  info_ovf_flg   : std_logic is flags(4);
-  alias  disconnect_flg : std_logic is flags(5);
-  alias  blocked_flg    : std_logic is flags(6);
+  --alias  info_ovf_flg   : std_logic is flags(4);
+  --alias  disconnect_flg : std_logic is flags(5);
+  --alias  blocked_flg    : std_logic is flags(6);
   alias  noise_flg      : std_logic is flags(7);
 
   signal en_rst         : std_logic;
@@ -191,11 +191,12 @@ end process p_cfg_manager;
     if rising_edge(clk_en) then
       if (rst_n = '0') then
         o_CS <= (others => not SPOL);
-        frame_flg     <= '0';
-        data_ovf_flg  <= '0';
-        info_ovf_flg  <= '0';
-        disconnect_flg<= '0';
-        blocked_flg   <= '0';
+        reg_op <= (others => '0') ;
+        --frame_flg     <= '0';
+        --data_ovf_flg  <= '0';
+        --info_ovf_flg  <= '0';
+        --disconnect_flg<= '0';
+        --blocked_flg   <= '0';
         reg_w_blck_flg<= '0';
         noise_flg     <= '0';
         flag_rst      <= '0';
@@ -221,11 +222,11 @@ end process p_cfg_manager;
         o_o_data_fifo_next <= '0';
         o_i_data_fifo_next <= '0';
         reg_w_blck_flg<= '0';
-        frame_flg     <= '0';
+        --frame_flg     <= '0';
         data_ovf_flg  <= '0';
-        info_ovf_flg  <= '0';
-        disconnect_flg<= '0';
-        blocked_flg   <= '0';
+        --info_ovf_flg  <= '0';
+        --disconnect_flg<= '0';
+        --blocked_flg   <= '0';
         noise_flg     <= '0';
         flag_rst      <= '0';
         reg_op_rdy_strb <= '0';
@@ -400,6 +401,7 @@ end process;
     o_data => o_data,
     o_data_vld => o_data_vld,
     o_busy => o_busy,
+    o_noise_flg => noise_flg,
     MISO => MISO_in,
     MOSI => MOSI_in,
     SCLK => SCLK_in
