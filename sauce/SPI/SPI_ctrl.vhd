@@ -45,7 +45,7 @@ end entity SPI_ctrl;
 
 architecture rtl of SPI_ctrl is
 
-  constant MISO_DEB_BUFF_SIZE : natural := 5;
+  constant MISO_DEB_BUFF_SIZE : natural := 7;
   signal clk_div : std_logic_vector((MSG_W * 2) - 1 downto 0);
   signal i_hold_active : std_logic;
   signal i_data : std_logic_vector(MSG_W - 1 downto 0);
@@ -198,7 +198,6 @@ end process p_cfg_manager;
         --disconnect_flg<= '0';
         --blocked_flg   <= '0';
         reg_w_blck_flg<= '0';
-        noise_flg     <= '0';
         flag_rst      <= '0';
         reg_op_rdy_strb <= '0';
         info_ack <= '0';
@@ -227,7 +226,6 @@ end process p_cfg_manager;
         --info_ovf_flg  <= '0';
         --disconnect_flg<= '0';
         --blocked_flg   <= '0';
-        noise_flg     <= '0';
         flag_rst      <= '0';
         reg_op_rdy_strb <= '0';
         flag_rst <= '0';
@@ -295,7 +293,7 @@ end process p_cfg_manager;
             end if;
             
           when st_flow_MS_TRANSFER_CHCK =>
-            i_hold_active <= reg_op(MSG_W * 2 + 5);
+            --i_hold_active <= reg_op(MSG_W * 2 + 5);
             if (o_busy = '0') then
               if (reg_op(MSG_W * 2 + 5) = '1') then
                 st_flow <= st_flow_MS_HOLD;

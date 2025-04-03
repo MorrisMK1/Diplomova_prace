@@ -47,6 +47,8 @@ architecture bench of tb_SPI_module is
   signal slv_reg_i, slv_reg_o :std_logic_vector(MSG_W-1 downto 0);
   signal slv_data : std_logic_array(3 downto 0)(MSG_W-1 downto 0);
 
+  signal noise_gen  : std_logic;
+
 ----------------------------------------------------------------------------------------
 --ANCHOR - SPI SLAVE DEF
 ----------------------------------------------------------------------------------------
@@ -145,6 +147,7 @@ SPI_module_DUT : entity work.SPI_module
 p_slave : process
   variable slv_state, slv_reg_pos : natural := 0;
   variable slv_tg                 : std_logic_vector(3 downto 0);
+  variable first                  : boolean;
 begin
   if TRUE then
     wait for clk_period;
@@ -155,16 +158,19 @@ begin
       slv_data(1) <= x"BE";
       slv_data(0) <= x"EF";
       slv_reg_i <= x"00";
+      MISO <= '0';
     elsif (o_CS(1) = '0') then
+      if (noise_gen = '1') then
+        slv_state := 10;
+      end if;
       case slv_state is
       
         when 0 =>
-          for i in MSG_W * 2 - 1 downto 0 loop
-            wait until SCLK'event;
+
+          for i in MSG_W * 1 - 1 downto 0 loop
+            wait until rising_edge(SCLK);
             if (SCLK = '1') then
-              slv_reg_o(i/2) <= MOSI;
-            else
-              MISO <= slv_reg_i(i/2);
+              slv_reg_o(i) <= MOSI;
             end if;
             
           end loop;
@@ -177,19 +183,24 @@ begin
           end if;
 
         when 1 =>
+          first := true;
           for i in 3 downto 0 loop
             if (slv_tg(i) = '1') then
               for x in MSG_W * 2 - 1 downto 0 loop
-                wait until SCLK'event;
-                if (SCLK = '1') then
+                if (not first) then
+                  wait until (SCLK'event);
+                end if;
+                if (SCLK = '1') then  
                   slv_reg_o(x/2) <= MOSI;
                 else
                   MISO <= slv_data(i)(x/2);
                 end if;
-                
+                first := false;
               end loop;
             end if;
           end loop;
+          wait until falling_edge(SCLK);
+          MISO <= '0';
           slv_state := 0;
 
         when 2 =>
@@ -208,10 +219,19 @@ begin
               slv_data(i) <= slv_reg_o;
             end if;
           end loop;
+          wait until falling_edge(SCLK);
+          MISO <= '0';
           slv_state := 0;
-        
+
+        when 10 =>
+          MISO <= not MISO;
+          if (noise_gen = '0') then
+            slv_state := 0;
+          end if;
+
         when others =>
           slv_state := 0;
+          
 
       end case;
     end if;
@@ -237,6 +257,7 @@ end process;
         i_i_info_data   <= (others => '0');
         i_rst_n <= '0';
         i_en <= '1';
+        noise_gen <= '0';
         wait for clk_period * 2;
         i_rst_n <= '1';
         i_i_data_data <= x"9F";
@@ -253,7 +274,9 @@ end process;
         wait for clk_period;
         i_i_info_write <= '0';
         wait until (o_o_info_empty = '0');
+        info("First read queued");
         wait for clk_period * 100000;
+        info("First read check");
         o_i_data_next <= '1';
         check(0 = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & "0" & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
         wait for clk_period;
@@ -273,7 +296,9 @@ end process;
         wait for clk_period;
         i_i_info_write <= '0';
         wait until (o_o_info_empty = '0');
+        info("Second read queued");
         wait for clk_period * 10000;
+        info("Second read check");
         o_i_data_next <= '1';
         check(0 = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & "0" & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
         wait for clk_period;
@@ -302,7 +327,9 @@ end process;
         wait for clk_period;
         i_i_info_write <= '0';
         wait until (o_o_info_empty = '0');
+        info("Write then read queued");
         wait for clk_period * 10000;
+        info("Write then read check");
         o_i_data_next <= '1';
         check(0 = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & "0" & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
         wait for clk_period;
@@ -321,9 +348,101 @@ end process;
 
         test_runner_cleanup(runner);
         
-      elsif run("test_0") then
-        info("Hello world test_0");
-        wait for 100 * clk_period;
+      elsif run("test_noise") then
+        info("Running noise test");
+        wait for 0 fs;
+        o_i_data_next   <= '0';
+        o_i_info_next   <= '0';
+        i_i_data_write  <= '0';
+        i_i_info_write  <= '0';
+        i_i_data_data   <= (others => '0');
+        i_i_info_data   <= (others => '0');
+        i_rst_n <= '0';
+        i_en <= '1';
+        noise_gen <= '1';
+        wait for clk_period * 2;
+        i_rst_n <= '1';
+        i_i_data_data <= x"9F";
+        wait for clk_period;
+        i_i_data_write <= '1';
+        wait for clk_period;
+        i_i_data_data <= x"99";
+        wait for clk_period;
+        i_i_data_write <= '0';
+        i_i_info_write <= '1';
+        i_i_info_data  <= "000100000000000100000000";
+        wait for clk_period;
+        i_i_info_data  <= create_reg0_w("01",'0',"000",x"01",x"05");
+        wait for clk_period;
+        i_i_info_write <= '0';
+        wait until (o_o_info_empty = '0');
+        info("First read queued");
+        wait for clk_period * 100000;
+        info("First read check");
+        o_i_data_next <= '1';
+        check(x"80" = o_o_info_data(MSG_W-1 downto 0), "Recieved invalid data. Expected: " & "x'xxxx80'" & " Recieved: " & to_string(o_o_info_data));
+        wait for clk_period;
+        o_i_info_next <= '1';
+        wait for clk_period;
+        o_i_info_next <= '0';
+        test_runner_cleanup(runner);
+      elsif run("test_CLK_HOLD") then
+        info("Running hold clk test");
+        wait for 0 fs;
+        o_i_data_next   <= '0';
+        o_i_info_next   <= '0';
+        i_i_data_write  <= '0';
+        i_i_info_write  <= '0';
+        i_i_data_data   <= (others => '0');
+        i_i_info_data   <= (others => '0');
+        i_rst_n <= '0';
+        i_en <= '1';
+        noise_gen <= '0';
+        wait for clk_period * 2;
+        i_rst_n <= '1';
+        i_i_data_data <= "01101100";
+        wait for clk_period;
+        i_i_data_write <= '1';
+        wait for clk_period;
+        i_i_data_data <= x"DE";
+        wait for clk_period;
+        i_i_data_data <= x"AF";
+        wait for clk_period;
+        i_i_data_data <= x"9F";
+        wait for clk_period;
+        i_i_data_write <= '0';
+        i_i_info_write <= '1'; 
+        i_i_info_data  <= "000100000000000100000000"; -- setting correct CS
+        wait for clk_period;
+        i_i_info_data  <= create_reg0_w("11",'1',"000",x"03",x"00");
+        wait for clk_period;
+        info("Write with hold queued");
+        i_i_info_write <= '0';
+        wait until SCLK'stable(2 ms);
+        info("Write with hold send");
+        info("Read without hold queued");
+        i_i_info_write <= '1'; 
+        i_i_info_data  <= create_reg0_w("00",'0',"000",x"01",x"05");
+        wait for clk_period;
+        i_i_info_write <= '0';
+        wait until (o_o_info_empty = '0');
+        wait for clk_period * 10000;
+        info("Write then read check");
+        o_i_data_next <= '1';
+        check(0 = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & "0" & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+        wait for clk_period;
+        check(unsigned(slv_data(3)) = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(to_integer(unsigned(slv_data(3)))) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+        wait for clk_period;        
+        check(unsigned(slv_data(2)) = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(to_integer(unsigned(slv_data(2)))) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+        wait for clk_period;
+        check(unsigned(slv_data(1)) = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(to_integer(unsigned(slv_data(1)))) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+        wait for clk_period;
+        check(unsigned(slv_data(0)) = unsigned(o_o_data_data), "Recieved invalid data. Expected: " & to_string(to_integer(unsigned(slv_data(0)))) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));
+        o_i_info_next <= '1';
+        wait for clk_period;
+        o_i_info_next <= '0';
+        o_i_data_next <= '0';
+
         test_runner_cleanup(runner);
       end if;
     end loop;

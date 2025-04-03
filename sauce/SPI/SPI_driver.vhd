@@ -118,7 +118,7 @@ o_busy <= sclk_run;
             sclk_cnt := 0;
           end if;
         else
-          SCLK <= not i_hold_active;
+          SCLK <= '0';
           sclk_cnt := 0;
         end if;
       end if;
@@ -144,26 +144,30 @@ o_busy <= sclk_run;
       else
         out_busy <= '1';
         o_data_read <= '0';
-        if ((i_data_vld = '1') and (bits_to_snd = 0)) then
-          if (i_data_dir = '1') then
-            for i in i_data'range loop
-              data_to_snd(MSG_W - 1 - i) := i_data(i);
-            end loop;
-          else
-            data_to_snd := i_data;
+        if ( (bits_to_snd = 0)) then
+          if (i_data_vld = '1') then
+            if (i_data_dir = '1') then
+              for i in i_data'range loop
+                data_to_snd(MSG_W - 1 - i) := i_data(i);
+              end loop;
+            else
+              data_to_snd := i_data;
+            end if;
+            if (i_CPHA = '0') then
+              MOSI <= data_to_snd(0);
+              data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
+            end if;
+            bits_to_snd := MSG_W;
+            o_data_read <= '1';
+          elsif (sclk_mid = '1') then
+            out_busy <= '0';
           end if;
-          bits_to_snd := MSG_W ;
-          o_data_read <= '1';
         elsif (((SCLK = '0') and (last_sclk = '1') and (i_CPHA = '0')) or ((SCLK = '1') and (last_sclk = '0') and (i_CPHA = '1'))) then
           MOSI <= data_to_snd(0);
           data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
           if (bits_to_snd /= 0) then
             bits_to_snd := bits_to_snd - 1;
-          else
-            out_busy <= '0';
           end if ;
-        elsif (bits_to_snd = 0) then
-          out_busy <= '0';
         end if;
       end if;
       last_sclk := SCLK;
@@ -200,8 +204,8 @@ begin
           data_to_rec := data_to_rec(MSG_W - 2 downto 0) & MISO_stable;
         else
           data_to_rec := MISO_stable & data_to_rec(MSG_W - 1 downto 1);
-          o_noise_flg <= MISO_unstable_flg;
         end if;
+        o_noise_flg <= MISO_unstable_flg;
         if (bits_to_rec /= 0) then
           bits_to_rec := bits_to_rec - 1;
           if (bits_to_rec = 0) then
