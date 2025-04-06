@@ -6,6 +6,9 @@ library ieee;
 library work;
   use work.my_common.all;
 
+LIBRARY VUNIT_LIB;
+  CONTEXT VUNIT_LIB.VUNIT_CONTEXT;
+
 package tb_common is
 
   function std_logic_vector_to_string(signal_in: std_logic_vector)return string;
@@ -18,7 +21,9 @@ package tb_common is
 
   procedure sim_fifo_in ( signal data_fifo : in  STD_LOGIC_VECTOR; signal ready : in in_pulse; signal ack : out out_ready; signal received_data : out std_logic_vector; constant CLK_PER : in time);
 
-  procedure uart_tx ( signal tx : out std_logic; signal clk : in std_logic; signal data : in std_logic_vector(7 downto 0); constant baud_period : time);
+  procedure uart_tx ( signal tx : out std_logic; variable data : in std_logic_vector(7 downto 0); constant baud_period : time);
+
+  procedure uart_tx_message ( signal tx : out std_logic; constant baud_period : time; constant header : info_bus; constant data : std_logic_array);
 
   procedure uart_rx ( signal rx : in std_logic; variable data : out std_logic_vector(7 downto 0); constant bit_time : time);
 
@@ -179,14 +184,10 @@ end function;
 
 procedure uart_tx (
     signal tx        : out std_logic; -- UART transmit line
-    signal clk       : in std_logic;  -- Clock signal
-    signal data    : in std_logic_vector(7 downto 0); -- Data to transmit
+    variable data    : in std_logic_vector(7 downto 0); -- Data to transmit
     constant baud_period : time       -- Bit period for the desired baud rate
 ) is
 begin
-    -- Ensure the line is idle before transmission
-    tx <= '1';
-    wait until rising_edge(clk);
 
     -- Transmit start bit
     tx <= '0';
@@ -206,6 +207,33 @@ begin
     tx <= '1'; -- Return to idle state
 end procedure;
 
+procedure uart_tx_message ( 
+  signal tx : out std_logic; 
+  constant baud_period : time; 
+  constant header : info_bus; 
+  constant data : std_logic_array
+  ) is
+  variable data_byte : std_logic_vector (MSG_W - 1 downto 0);
+  variable msg_size  : natural;
+begin
+  msg_size := to_integer(unsigned(inf_size(header)));
+  info("Sending message:");
+  for i in 2 downto 0 loop
+    data_byte := header((MSG_W * (i+1) - 1) downto (MSG_W * i));
+    uart_tx(tx,data_byte,baud_period);
+    info("- Header: " & to_string(3-i) & " / 3");
+  end loop;
+  if (inf_reg(header) = "00") then
+    for msg_pointer in 0 to msg_size - 1 loop
+      data_byte := data(msg_pointer);
+      uart_tx(tx,data_byte,baud_period);
+      info("- Data: " & to_string(msg_pointer+1) & " / " & to_string(msg_size));
+    end loop;
+  end if;
+  info("- Done");
+
+end procedure;
+
 procedure uart_rx (
     signal rx         : in std_logic;           -- UART RX line
     variable data : out std_logic_vector(7 downto 0);
@@ -216,7 +244,7 @@ procedure uart_rx (
 begin
     -- Wait for start bit (falling edge)
     wait until rx = '0';  
-    report "Start bit detected" severity note;
+    --report "Start bit detected" severity note;
     
     -- Wait for the middle of the start bit
     wait for bit_time / 2;
@@ -235,7 +263,7 @@ begin
     end if;
     
     -- Print received byte
-    report "Received: " & integer'image(to_integer(unsigned(received_data)));
+    info("Received: " & to_string(to_integer(unsigned(received_data))) & " : " & to_string(received_data));
     data := received_data;
 
 end procedure;

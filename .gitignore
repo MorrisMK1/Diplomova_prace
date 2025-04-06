@@ -5,3 +5,4 @@ scripts/**
 !scripts/vsim.wlf
 vunit_out
 test_dont_git.py
+.VSCodeCounter

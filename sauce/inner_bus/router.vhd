@@ -181,8 +181,8 @@ architecture behavioral of router is
           header <= i_i_info_fifo_data;
           target <= std_ulogic_vector(inf_tg(i_i_info_fifo_data));
           
-          if  (inf_reg(i_i_info_fifo_data) /= "00") then
-            if (inf_tg(i_i_info_fifo_data) = "000") then  -- reports from 0 send automatically 
+          if  (inf_reg(i_i_info_fifo_data) /= "00") then --TODO - NEEDS A CONFIG SETUP FOR MAIN DESIGN
+            if ((inf_tg(i_i_info_fifo_data) = "000") and (i_i_info_fifo_data(MSG_W-1 downto 0) /= x"00")) then  -- reports from 0 send automatically 
               st_router <= st_router_report;
             else
               st_router <= st_router_head;

@@ -58,7 +58,6 @@ signal i_settings     : std_logic_array (1 to 2) (MSG_W -1 downto 0);
 signal o_ready        : std_logic;
 
 signal gen_header     : info_bus;
-signal msg_to_ms      : data_bus;
 
 begin
 ----------------------------------------------------------------------------------------
@@ -72,6 +71,7 @@ end process;
 --SECTION - TESTCASE
 ----------------------------------------------------------------------------------------
 p_test  : process
+ variable msg_to_ms      : data_bus;
 begin
   --ANCHOR - init
   wait for 1 ns;
@@ -85,104 +85,104 @@ begin
   --ANCHOR - first message
   gen_header <= create_reg0_w("00","000","00000010","00000010");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+  msg_to_ms := gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= "01011010";
+  msg_to_ms := "01011010";
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= "11001001";
+  msg_to_ms := "11001001";
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
   --ANCHOR - second message
   gen_header <= create_reg0_w("01","000","00000001","00000001");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+  msg_to_ms := gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= "01100110";
+  msg_to_ms := "01100110";
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
 
   --ANCHOR - third message - set new parameters
   gen_header <= create_reg1_w("10","000",'0','0','1','0',"001");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   
   --ANCHOR - fourth message - repeat of second
   gen_header <= create_reg0_w("01","000","00000001","00000001");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+  msg_to_ms := gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= "01100110";
+  msg_to_ms := "01100110";
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   
   --ANCHOR - 5 message - set new parameters
   gen_header <= create_reg1_w("10","000",'0','1','1','0',"001");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   
   --ANCHOR - 6 message - repeat of second
   gen_header <= create_reg0_w("01","000","00000001","00000001");
   wait for CLK_PERIOD*10;
-  msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+  msg_to_ms := gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+  msg_to_ms := gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+  msg_to_ms := gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
   wait for 0 ns;
-  msg_to_ms <= "01100110";
+  msg_to_ms := "01100110";
   wait for 0 ns;
-  uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*260));
+  uart_tx(rx_ms,msg_to_ms,(CLK_PERIOD*260));
 
   wait for CLK_PERIOD * 100_000_000;
 
