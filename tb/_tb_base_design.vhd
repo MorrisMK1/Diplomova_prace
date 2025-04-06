@@ -25,7 +25,6 @@ signal i_clk          : std_logic;
 signal i_rst_n        : std_logic;
 
 signal tx_sl1, tx_sl2 : std_logic;
-signal rx_sl1, rx_sl2 : std_logic;
 signal tx_ms          : std_logic;
 signal rx_ms          : std_logic;
 
@@ -80,6 +79,7 @@ begin
       wait for CLK_PERIOD*2;
       i_rst_n <= '1';
       for i in 1 to 2 loop
+        info("Starting loop " & to_string(i));
         gen_header <= "000010110000001000000000";
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -95,6 +95,7 @@ begin
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
         wait for 0 ns;
         --ANCHOR - first message
+        info("Uart test - send and recieve message start");
         gen_header <= create_reg0_w("00",std_logic_vector(to_unsigned(i,3)),"00000010","00000010");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -117,7 +118,9 @@ begin
         wait for 0 ns;
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
         wait for 0 ns;
+        info("Uart test - send and recieve message sent");
         --ANCHOR - second message
+        info("Uart test 2 - send and recieve message start");
         gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00000001","00000001");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -135,8 +138,10 @@ begin
         msg_to_ms <= "01100110";
         wait for 0 ns;
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        info("Uart test 2 - send and recieve message sent");
       
         --ANCHOR - third message - set new parameters
+        info("Uart test 3 - change settings start");
         gen_header <= create_reg1_w("10",std_logic_vector(to_unsigned(i,3)),'0','0','1','0',"001");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -146,8 +151,14 @@ begin
         msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
         wait for 0 ns;
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        wait for 0 ns;
+        msg_to_ms <= x"00";
+        wait for 0 ns;
+        uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        info("Uart test 3 - change settings sent");
 
         --ANCHOR - fourth message - repeat of second
+        info("Uart test 4 - send and recieve message start");
         gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00000001","00000001");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -165,8 +176,10 @@ begin
         msg_to_ms <= "01100110";
         wait for 0 ns;
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        info("Uart test 4 - send and recieve message sent");
 
         --ANCHOR - 5 message - set new parameters
+        info("Uart test 5 - change settings start");
         gen_header <= create_reg1_w("10",std_logic_vector(to_unsigned(i,3)),'0','1','1','0',"111");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -176,8 +189,14 @@ begin
         msg_to_ms <= gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
         wait for 0 ns;
         uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        wait for 0 ns;
+        msg_to_ms <= x"00";
+        wait for 0 ns;
+        uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+        info("Uart test 5 - change settings sent");
 
         --ANCHOR - 6 message - repeat of second
+        info("Uart test 6 - large message start");
         gen_header <= create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00010100","00010100");
         wait for CLK_PERIOD*10;
         msg_to_ms <= gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -200,10 +219,13 @@ begin
           msg_to_ms <= std_logic_vector(to_unsigned(loop_cnt,MSG_W));
           wait for 0 ns;
           uart_tx(rx_ms,i_clk,msg_to_ms,(CLK_PERIOD*110));
+          info("Sent packet: " & to_string(loop_cnt) & "/20");
         end loop;
       end loop;
         
-      wait for  60 ms; --CLK_PERIOD * 100_000_000;
+      --wait for  60 ms; --CLK_PERIOD * 100_000_000;
+      wait until ((tx_sl1'stable(1.2 ms)) and (tx_sl2'stable(1.2 ms)));
+      test_runner_cleanup(runner);
     elsif run("overfill_info") then --SECTION - overfill info test
       wait for 1 ns;
       i_rst_n <= '0';
@@ -237,9 +259,10 @@ begin
         end loop; 
       end loop;
       --!SECTION
+      
+      test_runner_cleanup(runner);
     end if;
   end loop;
-  test_runner_cleanup(runner);
 
 end process;--!SECTION
 ----------------------------------------------------------------------------------------

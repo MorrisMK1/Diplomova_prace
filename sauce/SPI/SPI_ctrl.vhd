@@ -112,9 +112,9 @@ begin
   rst_n <= i_rst_n and not rst_r and not en_rst;
   clk_en <= clk_100MHz and i_en;
 
-  MOSI <= MOSI_in when (CPOL = '0') else not MOSI_in;
+  MOSI <= MOSI_in ;--when (CPOL = '0') else not MOSI_in;
   SCLK <= SCLK_in when (CPOL = '0') else not SCLK_in;
-  MISO_in <= MISO when (CPOL = '0') else not MISO;
+  MISO_in <= MISO ;--when (CPOL = '0') else not MISO;
 
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable

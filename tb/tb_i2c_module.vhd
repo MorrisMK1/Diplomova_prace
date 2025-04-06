@@ -107,8 +107,10 @@ begin
         i_i_info_data <= create_reg0_w("00","000",x"03",x"00");
         wait for clk_period;
         i_i_info_write <= '0'; 
+        info("Data queued. Waiting for transfer.");
         
         wait until scl'stable(5 ms);
+        info("Checking results");
         check(o_o_info_data(1) = '1', "no_ack_flg should be set");
         check(o_o_info_data(5) = '1', "disconnect_flg should be set");
         check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
@@ -143,7 +145,9 @@ begin
         wait for clk_period;
         i_i_info_write <= '0'; 
         block_scl <= '1';
+        info("Started communication with blocked scl");
         wait for 100 ms;
+        info("Checking results");
         check(o_o_info_data(1) = '1', "no_ack_flg should be set");
         check(o_o_info_data(5) = '1', "disconnect_flg should be set");
         check(o_o_info_data(6) = '1', "blocked_flg should be set");
@@ -177,14 +181,16 @@ begin
         i_i_info_data <= create_reg0_w("00","000",x"02",x"00");
         wait for clk_period;
         i_i_info_write <= '0'; 
-           
+        info("Message queued");
 
         for i in 9 downto 0 loop
           wait until rising_edge(scl);
         end loop;
+        info("Slave reset mid last byte trasfer");
         slv_force_rst <= '1';
 
         wait until scl'stable(5 ms);
+        info("Checking results");
         check(o_o_info_data(1) = '1', "no_ack_flg should be set");
         check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
         check(o_o_data_empty = '1', "o_o_data_empty should be set");
@@ -218,13 +224,16 @@ begin
         i_i_info_data <= create_reg0_w("00","000",x"03",x"00");
         wait for clk_period;
         i_i_info_write <= '0'; 
+        info("Message queued");
 
         for i in 9 downto 0 loop
           wait until rising_edge(scl);
         end loop;
+        info("Slave reset during middle byte transfer");
         slv_force_rst <= '1';
 
         wait until scl'stable(5 ms);
+        info("Checking results");
         check(o_o_info_data(1) = '1', "no_ack_flg should be set");
         check(o_o_info_data(MSG_W*2-1 downto MSG_W) = x"00", "data_cnt should be 0");
         check(o_o_data_empty = '1', "o_o_data_empty should be set");
@@ -269,9 +278,11 @@ begin
         i_i_info_data <= create_reg0_w("11","000",x"01",x"0F");
         wait for clk_period;
         i_i_info_write <= '0';
+        info("Messages queued (4)");
   
         wait until scl'stable(5 ms);
         wait until falling_edge(i_clk);
+        info("Checking results");
         o_i_data_next <= '1';
         for i in 5 to 14 loop
           check(i = unsigned(o_o_data_data), "Recieved invalid data(1). Expected: " & to_string(i) & " Recieved: " & to_string(to_integer(unsigned(o_o_data_data))));

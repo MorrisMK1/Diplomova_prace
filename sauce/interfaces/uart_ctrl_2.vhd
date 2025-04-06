@@ -199,7 +199,7 @@ end process p_cfg_manager;
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
 p_timeout : process (clk_en)
-  variable step : natural range 0 to (8333*10*32);
+  variable step : natural range 0 to (65535*10*32);
   variable actual_msg_len : natural range 0 to 9;
 begin
   -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
@@ -214,7 +214,7 @@ begin
         actual_msg_len := 5;
       end if;
       actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
-      if (step = to_integer(unsigned(clk_div))*(actual_msg_len)*10) then
+      if (step >= to_integer(unsigned(clk_div))*(actual_msg_len)*(to_integer(unsigned(timeout_val))+1)) then
         timeout_s <= '1';
       else
         step := step + 1;

@@ -16,8 +16,8 @@ entity main is
     main_tx       : out std_logic;
     main_rx       : in std_logic;
 
-    slv1_tx       : inout std_logic;
-    slv1_rx       : inout std_logic;
+    slv1_tx       : out std_logic;
+    slv1_rx       : in std_logic;
     
     slv2_tx       : out std_logic;
     slv2_rx       : in std_logic;
