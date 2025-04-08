@@ -182,14 +182,14 @@ architecture behavioral of router is
           target <= std_ulogic_vector(inf_tg(i_i_info_fifo_data));
           
           if  (inf_reg(i_i_info_fifo_data) /= "00") then --TODO - NEEDS A CONFIG SETUP FOR MAIN DESIGN
+            st_router <= st_router_head;
+          else
             if ((inf_tg(i_i_info_fifo_data) = "000") and (i_i_info_fifo_data(MSG_W-1 downto 0) /= x"00")) then  -- reports from 0 send automatically 
               st_router <= st_router_report;
             else
-              st_router <= st_router_head;
+              st_router <= st_router_data;
+              data_cnt <= to_unsigned(0,MSG_W);
             end if;
-          else
-            st_router <= st_router_data;
-            data_cnt <= to_unsigned(0,MSG_W);
           end if;
         when st_router_data =>
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
