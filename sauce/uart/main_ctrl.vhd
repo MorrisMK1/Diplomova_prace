@@ -93,7 +93,9 @@ architecture behavioral of main_ctrl is
 
   attribute MARK_DEBUG : string;
 
-
+  attribute MARK_DEBUG of o_i_data_fifo_next : signal is "TRUE";
+  attribute MARK_DEBUG of o_i_info_fifo_next : signal is "TRUE";
+  attribute MARK_DEBUG of i_i_info_fifo_ready : signal is "TRUE";
 begin
 
 ----------------------------------------------------------------------------------------
@@ -174,7 +176,7 @@ end process;
 ----------------------------------------------------------------------------------------
 --ANCHOR - Data input logic
 ----------------------------------------------------------------------------------------
-p_reciever : process (i_clk)
+p_reciever : process (i_clk) --FIXME - gets stuck in state 5 sometimes. FIX IT
   variable st_reciever : fsm_reciever := st_reciever_idle;
   variable header      : info_bus;
   variable data_cnt    : unsigned(MSG_W - 1 downto 0);
@@ -267,6 +269,8 @@ end process;
     variable data_cnt     : unsigned(MSG_W - 1 downto 0);
     variable header       : info_bus;
     variable last_out_st  : std_logic;
+    
+    attribute MARK_DEBUG of st_sender : variable is "TRUE";
   begin
     if rising_edge(i_clk) then
       if(i_rst_n = '0') then

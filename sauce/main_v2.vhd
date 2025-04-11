@@ -6,12 +6,10 @@ library work;
 use work.my_common.all;
 
 
-entity main_v1 is
+entity main_v2 is
   port(
-    i_clk         : in std_logic  ;
+    i_clk_100MHz  : in std_logic  ;
     i_rst_n       : in std_logic;
-
-    i_settings    : in std_logic_array (1 to 2) (MSG_W -1 downto 0);
 
     main_tx       : out std_logic;
     main_rx       : in std_logic;
@@ -32,12 +30,12 @@ entity main_v1 is
     o_CS_4        : out std_logic_vector(7 downto 0)
 
   );
-end entity main_v1;
+end entity main_v2;
 
 ----------------------------------------------------------------------------------------
 --SECTION - ARCHITECTURE
 ----------------------------------------------------------------------------------------
-architecture behavioral of main_v1 is 
+architecture behavioral of main_v2 is 
 
 constant CLK_PERIOD : TIME := 10 ns;
 
@@ -50,6 +48,9 @@ signal ms_push_info, ms_push_data, ms_next_info, ms_next_data, ms_emty_info, ms_
 signal rt_next_info, rt_next_data, rt_emty_info, rt_emty_data   : std_logic;
 
 signal o_ready        : std_logic;
+
+signal settings_main : std_logic_array (1 to 2) (MSG_W-1 downto 0);
+signal enable_interfaces  : data_bus;
 
 signal r_i_bypass : std_logic;
 signal r_o_err_rep : std_logic;
@@ -160,34 +161,28 @@ signal i2c_3_inter_inner    : std_logic;
 
 begin
 
-  r_i_o_data_fifo_full_0 <= ZERO_BIT;
   r_i_o_data_fifo_full_5 <= ZERO_BIT;
   r_i_o_data_fifo_full_6 <= ZERO_BIT;
   r_i_o_data_fifo_full_7 <= ZERO_BIT;
   r_i_o_data_fifo_full_X <= ZERO_BIT;
-  r_i_o_info_fifo_full_0 <= ZERO_BIT;
   r_i_o_info_fifo_full_5 <= ZERO_BIT;
   r_i_o_info_fifo_full_6 <= ZERO_BIT;
   r_i_o_info_fifo_full_7 <= ZERO_BIT;
   r_i_o_info_fifo_full_X <= ZERO_BIT;
 
   s_i_i_data_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_data_fifo_data_0 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_7 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_info_fifo_data_0 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_7 <= (others => ZERO_BIT); 
 
-  s_i_i_data_fifo_empty_0 <= HIGH_BIT;
   s_i_i_data_fifo_empty_5 <= HIGH_BIT;
   s_i_i_data_fifo_empty_6 <= HIGH_BIT;
   s_i_i_data_fifo_empty_7 <= HIGH_BIT;
   s_i_i_data_fifo_empty_X <= HIGH_BIT;
-  s_i_i_info_fifo_empty_0 <= HIGH_BIT;
   s_i_i_info_fifo_empty_5 <= HIGH_BIT;
   s_i_i_info_fifo_empty_6 <= HIGH_BIT;
   s_i_i_info_fifo_empty_7 <= HIGH_BIT;
@@ -203,7 +198,7 @@ begin
 ----------------------------------------------------------------------------------------
   router_inst : entity work.router
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
     i_out_en =>               (others =>'1'),
     i_bypass =>               r_i_bypass,
@@ -259,7 +254,7 @@ begin
 ----------------------------------------------------------------------------------------
   collector_inst : entity work.collector
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
     o_bypass =>               r_i_bypass,
     i_err_rep =>              r_o_err_rep,
@@ -335,7 +330,7 @@ module_fifo_INFO_MtoF : entity work.module_fifo_regs_no_flags
   )
   port map (
     i_rst_sync => (not i_rst_n),
-    i_clk =>      i_clk,
+    i_clk =>      i_clk_100MHz,
     i_wr_en =>    ms_push_info,
     i_wr_data =>  o_m_i_f_inf,
     o_full =>     ms_full_info,
@@ -351,7 +346,7 @@ module_fifo_DATA_MtoF : entity work.module_fifo_regs_no_flags
   )
   port map (
     i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_wr_en => ms_push_data,
     i_wr_data => o_m_i_f_dat,
     o_full => ms_full_data,
@@ -370,7 +365,7 @@ module_fifo_INFO_FtoM : entity work.module_fifo_regs_no_flags
   )
   port map (
     i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_wr_en => s_o_o_info_fifo_next,
     i_wr_data => s_o_o_info_fifo_data,
     o_full => s_i_o_info_fifo_ready,
@@ -386,7 +381,7 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
   )
   port map (
     i_rst_sync => (not i_rst_n),
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_wr_en => s_o_o_data_fifo_next,
     i_wr_data => s_o_o_data_fifo_data,
     o_full => s_i_o_data_fifo_ready,
@@ -398,9 +393,9 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
   ----------------------------------------------------------------------------------------
   --ANCHOR - MAIN INTERFACE
   ----------------------------------------------------------------------------------------
-  main_ctrl_inst : entity work.main_ctrl
+  main_ctrl_inst : entity work.main_ctrl_2
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
     i_i_data_fifo_data => i_m_o_f_dat,
     i_i_data_fifo_ready => (not ms_emty_data),
@@ -414,10 +409,34 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
     o_o_info_fifo_data => o_m_i_f_inf,
     i_o_info_fifo_ready => (not ms_full_info),
     o_o_info_fifo_next => ms_push_info,
-    i_settings => i_settings,
+    i_settings => settings_main,
     o_ready => o_ready,
-    comm_wire_0 => main_tx,
-    comm_wire_1 => main_rx
+    tx => main_tx,
+    rx => main_rx
+  );
+
+  
+  ----------------------------------------------------------------------------------------
+  --ANCHOR - Design Config
+  ----------------------------------------------------------------------------------------
+  design_config_inst : entity work.design_config
+  port map (
+    clk => i_clk_100MHz,
+    rst_n => i_rst_n,
+    i_i_data_fifo_data =>  r_o_o_data_fifo_data,
+    i_i_data_fifo_write => r_o_o_data_fifo_next_0,
+    o_i_data_fifo_blck =>  r_i_o_data_fifo_full_0,
+    o_o_data_fifo_data =>  s_i_i_data_fifo_data_0,
+    i_o_data_fifo_read =>  s_o_i_data_fifo_next_0,
+    o_o_data_fifo_blck =>  s_i_i_data_fifo_empty_0,
+    i_i_info_fifo_data =>  r_o_o_info_fifo_data,
+    i_i_info_fifo_write => r_o_o_info_fifo_next_0,
+    o_i_info_fifo_blck =>  r_i_o_info_fifo_full_0,
+    o_o_info_fifo_data =>  s_i_i_info_fifo_data_0,
+    i_o_info_fifo_read =>  s_o_i_info_fifo_next_0,
+    o_o_info_fifo_blck =>  s_i_i_info_fifo_empty_0,
+    o_settings_main => settings_main,
+    o_enable_interfaces => enable_interfaces
   );
 
 
@@ -429,7 +448,7 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
     ID => "001"
   )
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
     i_en => '1',
     i_i_info_write => r_o_o_info_fifo_next_1,
@@ -457,9 +476,9 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
     ID => "010"
   )
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => i_settings(2)(7 downto 6),
+    i_en => enable_interfaces(7 downto 6),
     i_i_info_write => r_o_o_info_fifo_next_2,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_2,
@@ -486,7 +505,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
     GEN_TYPE => "DEFAULT"
   )
   port map (
-    i_clk => i_clk,
+    i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
     i_en => '1',
     i_i_info_write => r_o_o_info_fifo_next_3,
@@ -517,7 +536,7 @@ generic map (
   GEN_TYPE => "DEFAULT"
 )
 port map (
-  i_clk => i_clk,
+  i_clk => i_clk_100MHz,
   i_rst_n => i_rst_n,
   i_en => '1',
   i_i_info_write => r_o_o_info_fifo_next_4,

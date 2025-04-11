@@ -115,6 +115,18 @@ architecture behavioral of collector is
   signal header           : info_bus;
   signal data_cnt         : unsigned(MSG_W - 1 downto 0);
 
+  
+  attribute MARK_DEBUG : string;
+
+  --attribute MARK_DEBUG of src_data_data : signal is "TRUE";
+  --attribute MARK_DEBUG of src_info_data : signal is "TRUE";
+  --attribute MARK_DEBUG of st_selector : signal is "TRUE";
+  --attribute MARK_DEBUG of src_data_ready : signal is "TRUE";
+  --attribute MARK_DEBUG of src_info_ready : signal is "TRUE";
+  --attribute MARK_DEBUG of src_data_next : signal is "TRUE";
+  --attribute MARK_DEBUG of src_info_next : signal is "TRUE";
+  --attribute MARK_DEBUG of o_o_info_fifo_next : signal is "TRUE";
+  --attribute MARK_DEBUG of o_o_data_fifo_next : signal is "TRUE";
 
 begin
   ----------------------------------------------------------------------------------------
@@ -217,8 +229,10 @@ p_main  : process (i_clk) is
           else
             if (unsigned(target) = 7) then
               st_selector <= st_selector_start;  
+              target <= (others => '0');
+            else
+              target <= STD_ULOGIC_VECTOR(unsigned(target) + 1);
             end if;
-            target <= STD_ULOGIC_VECTOR(unsigned(target) + 1);
           end if;
 
         when st_selector_head =>

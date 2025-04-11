@@ -50,6 +50,8 @@ begin
   o_i_data_fifo_blck <= '0';   -- just sink any incoming data (they are ignored)
   o_o_data_fifo_blck <= '0';   -- output data just zeros in case of fault
   o_o_data_fifo_data <= (others => '0') ;
+  o_enable_interfaces <= r_registers(3);
+  o_settings_main <= r_registers (1 to 2);
 
   
 ----------------------------------------------------------------------------------------
@@ -68,11 +70,12 @@ if rising_edge(clk) then
     o_o_info_fifo_blck <= '1';
   elsif (o_o_info_fifo_blck = '1') then
     if i_i_info_fifo_write = '1' then
-      r_registers(register_selection) <= inf_size(i_i_info_fifo_data);
-      if inf_ret(i_i_info_fifo_data) = '1' then
+      if inf_ret(i_i_info_fifo_data) = '1' then -- this is reading do not write
         o_o_info_fifo_data <= inf_id(i_i_info_fifo_data) & "0" & inf_reg(i_i_info_fifo_data) & "000" & r_registers(register_selection) & x"00";
         o_o_info_fifo_blck <= '0';
         o_i_info_fifo_blck <= '1';
+      else
+        r_registers(register_selection) <= inf_size(i_i_info_fifo_data);
       end if;
     end if;
   else

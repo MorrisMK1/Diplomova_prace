@@ -295,6 +295,50 @@ begin
         o_i_data_next <= '0';
   
         test_runner_cleanup(runner);
+
+      elsif run("test_interrupt_in") then
+        info("Starting incoming interrupt test");
+
+        wait for 0 fs;
+        i_rst_n <= '0';
+        i_en <= '1';
+        i_interrupt <= '0';
+        o_i_data_next <= '0';
+        o_i_info_next <= '0';
+        slv_force_rst <= '0';
+        block_scl <= '0';
+        wait for clk_period * 1;
+        i_rst_n <= '1';
+        i_i_info_write <= '1';
+        i_i_info_data <= "000010000001000000000000";
+        wait for clk_period;
+        i_i_info_write <= '0';
+        info("Enabled Interrupts");
+        wait for clk_period*10;
+        i_interrupt <= '1';
+        wait for clk_period*10;
+        check(o_o_info_empty = '0', "o_o_data_empty should not be set");
+        check(o_o_info_data = "000110000000000000010000", "wrong report :" & to_string(o_o_info_data));
+        o_i_info_next <= '1';
+        wait for clk_period;
+        o_i_info_next <= '0';
+        check(o_o_info_empty = '1', "o_o_data_empty should be set");
+        i_interrupt <= '0';
+        info("First check done");
+        wait for clk_period*10;
+        check(o_o_info_empty = '1', "o_o_data_empty should be set");
+        i_interrupt <= '1';
+        info("Second check done");
+        wait for clk_period*10;
+        check(o_o_info_empty = '0', "o_o_data_empty should not be set");
+        check(o_o_info_data = "000110000000000000010000", "wrong report :" & to_string(o_o_info_data));
+        o_i_info_next <= '1';
+        wait for clk_period;
+        o_i_info_next <= '0';
+        check(o_o_info_empty = '1', "o_o_data_empty should be set");
+        info("Third check done");
+  
+        test_runner_cleanup(runner);
       end if;
     end loop;
   end process main;

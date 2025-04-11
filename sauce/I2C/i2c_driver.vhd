@@ -14,8 +14,11 @@ entity i2c_driver is
         clk         : in std_logic;
         rst_n       : in std_logic;
 
-        scl         : inout  std_logic;
-        sda         : inout  std_logic;
+        scl         : in  std_logic;
+        sda         : in  std_logic;
+
+        o_scl       : out    std_logic; -- desired outputs on the bus
+        o_sda       : out    std_logic; -- desired outputs on the bus
 
         i_data_vld  : in     std_logic;
         i_data      : in     data_bus;
@@ -75,6 +78,10 @@ architecture rtl of i2c_driver is
   
   signal last_scl, last_sda, fall_scl, rise_scl : std_logic;
 
+  attribute MARK_DEBUG : string;
+
+  attribute MARK_DEBUG of st_driver : signal is "TRUE";
+
 begin
 ----------------------------------------------------------------------------------------
 --#ANCHOR - SCL switch
@@ -83,11 +90,6 @@ begin
   begin
   if (scl_timer_en = '1')then
     scl_internal <= scl_timer;
-    if (scl_timer = '1') then
-      scl <= 'Z';
-    else
-      scl <= '0';
-    end if;
   else
     if (scl = '0') then
       scl_internal <= '0';
@@ -163,7 +165,8 @@ begin
   end if;
 end process;
 
-  sda <= 'Z' when (sda_output = '1') else '0';
+  o_sda <= sda_output;
+  o_scl <= scl_timer;
   fall_scl  <= '1' when ((last_scl = '1') and (scl_internal = '0')) else '0';
   rise_scl  <= '1' when ((last_scl = '0') and (scl_internal = '1')) else '0';
   start_sig <= '1' when ((i_en_slave = '1') and (sda_debnc = '0') and (last_sda = '1') and (scl_internal = '1') and (last_scl = '1')) else '0';

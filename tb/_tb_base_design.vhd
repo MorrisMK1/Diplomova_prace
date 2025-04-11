@@ -73,7 +73,7 @@ begin
       wait for 1 ns;
       i_rst_n <= '0';
       i_settings(1) <= "00000111";
-      i_settings(2) <= "00000000";
+      i_settings(2) <= "10000000";
       rx_ms <= '1';
       scl_3 <= 'H';
       sda_3 <= 'H';
@@ -140,7 +140,7 @@ begin
       wait for 1 ns;
       i_rst_n <= '0';
       i_settings(1) <= "00000111";
-      i_settings(2) <= "00000000";
+      i_settings(2) <= "10000000";
       rx_ms <= '1';
       scl_3 <= 'H';
       sda_3 <= 'H';
@@ -182,7 +182,7 @@ end process;--!SECTION
 --ANCHOR - DUT
 ----------------------------------------------------------------------------------------
 
-main_inst : entity work.main
+main_inst : entity work.main_v1
   port map (
     i_clk => i_clk,
     i_rst_n => i_rst_n,

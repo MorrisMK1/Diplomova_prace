@@ -126,6 +126,8 @@ begin
 ----------------------------------------------------------------------------------------
 rst_n <= i_rst_n and not rst_r and not en_rst;
 clk_en <= i_clk and i_en;
+flg_undef_2 <= '0';
+flg_undef_5 <= '0';
 --tx <= not internal_tx when (polarity = '1') else internal_tx ;
 --internal_rx <= not rx when (polarity = '1') else rx ;
 ----------------------------------------------------------------------------------------
@@ -199,7 +201,8 @@ end process p_cfg_manager;
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
 p_timeout : process (clk_en)
-  variable step : natural range 0 to (65535*10*32*10);
+  variable step : natural range 0 to (10*32*10);
+  variable divider : natural range 0 to 65535;
   variable actual_msg_len : natural range 0 to 9;
 begin
   -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
@@ -214,12 +217,16 @@ begin
         actual_msg_len := 5;
       end if;
       actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
-      if (step >= to_integer(unsigned(clk_div))*(actual_msg_len)*(to_integer(unsigned(timeout_val))+1)*10) then
+      if (step >= (to_integer(unsigned(timeout_val))+1)*10*(actual_msg_len)) then -- 
         timeout_s <= '1';
-      else
+      elsif (divider >= to_integer(unsigned(clk_div))) then
         step := step + 1;
+        divider := 0;
+      else
+        divider := divider + 1;
       end if;
     else
+      divider := 0; 
       step := 0;
       timeout_s <= '0';
     end if;

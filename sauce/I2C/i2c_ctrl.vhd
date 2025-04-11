@@ -9,9 +9,8 @@ library work;
 
   entity i2c_ctrl is
     generic (
-      constant  SMPL_W        : natural := 8;             -- rx line sample width
-      constant  START_OFFSET  : natural := 10;            -- offset in clks between start and first bit
-      constant  MY_ID         : STD_LOGIC_VECTOR(BUS_ID_W-1 downto 0) := "000"
+      constant  MY_ID         : STD_LOGIC_VECTOR(BUS_ID_W-1 downto 0) := "000";
+      constant  INTERNAL_I2C  : boolean := false
     );
     port (
       clk                     : in std_logic;
@@ -36,6 +35,8 @@ library work;
 
       scl                     : inout std_logic := 'Z';
       sda                     : inout std_logic := 'Z';
+      o_scl                   : out   std_logic;
+      o_sda                   : out   std_logic;
       i_interrupt             : in  std_logic;
       o_interrupt             : out std_logic
     );
@@ -52,6 +53,7 @@ library work;
     signal clk_div : std_logic_vector(MSG_W * 2 - 1 downto 0);
     signal o_busy : std_logic;
     signal o_running : std_logic;
+    signal i_sda    : std_logic;
 
     
     signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
@@ -67,7 +69,7 @@ library work;
     alias  no_ack_flg     : std_logic is flags(1);
     alias  data_size_flg  : std_logic is flags(2);
     alias  data_ovf_flg   : std_logic is flags(3);
-    alias  info_ovf_flg   : std_logic is flags(4);
+    alias  interrupt_flg  : std_logic is flags(4);
     alias  disconnect_flg : std_logic is flags(5);
     alias  blocked_flg    : std_logic is flags(6);
     alias  noise_flg      : std_logic is flags(7);
@@ -108,12 +110,23 @@ library work;
     attribute MARK_DEBUG of st_flow_ctrl : signal is "TRUE";
     attribute MARK_DEBUG of reg_op : signal is "TRUE";
     attribute MARK_DEBUG of r_registers : signal is "TRUE";
+    attribute MARK_DEBUG of i_data : signal is "TRUE";
+    attribute MARK_DEBUG of i_data_vld : signal is "TRUE";
   
   begin
 
     rst_n <= i_rst_n and not rst_r and not en_rst;
     clk_en <= clk and i_en;
     no_ack_flg <= o_no_ack;
+
+    i_sda <= '0' when (sda = '0')   else '1'; -- force it to synthetize
+    g_tristate : if (INTERNAL_I2C = false) generate
+      sda <=   'Z' when (o_sda = '1') else '0';
+      scl <=   'Z' when (o_scl = '1') else '0';
+    else generate
+      sda <=   'Z';
+      scl <=   'Z';
+    end generate;
 
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable
@@ -183,6 +196,28 @@ end if;
 end process p_cfg_manager;
 
 ----------------------------------------------------------------------------------------
+--#ANCHOR - Interrupt handler
+----------------------------------------------------------------------------------------
+
+p_interrupt : process (clk_en)
+  variable latch : std_logic;
+begin
+  if (rising_edge(clk_en)) then
+    interrupt_flg <= '0';
+    if (rst_n = '0') then
+      latch := '0';
+    elsif ((i_interrupt = '1') and (interrupt_en = '1')) then
+      if (latch = '0') then
+        interrupt_flg <= '1';
+        latch := r_registers(3)(4);
+      end if;
+    elsif (i_interrupt = '0') then
+      latch := '0';
+    end if;
+  end if;
+end process;
+
+----------------------------------------------------------------------------------------
 --#ANCHOR - Controller
 ----------------------------------------------------------------------------------------
 
@@ -211,7 +246,6 @@ begin
       o_interrupt <= '0';
       disconnect_flg <= '0';
       noise_flg <= '0';
-      info_ovf_flg <= '0';
       frame_flg <= '0';
       info_ack <= '0';
     else
@@ -243,6 +277,10 @@ begin
             o_i_info_fifo_next <= '1';
           elsif ((o_running = '1')) then  --ANCHOR - start as slave
             st_flow_ctrl <= st_flow_SL_ADR;
+          elsif (interrupt_flg = '1') then
+            flag_rst <= '0';
+            reg_op  <= "00011" & MY_ID & x"0000";
+            st_flow_ctrl <= st_flow_MS_TER;
           end if;
 
         when st_flow_MS_START =>
@@ -408,7 +446,9 @@ end process;
     clk => clk_en,
     rst_n => rst_n,
     scl => scl,
-    sda => sda,
+    sda => i_sda,
+    o_scl => o_scl,
+    o_sda => o_sda,
     i_data_vld => i_data_vld,
     i_data => i_data,
     i_recieve => i_recieve,
