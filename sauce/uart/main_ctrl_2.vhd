@@ -89,6 +89,7 @@ architecture behavioral of main_ctrl_2 is
   alias err_timeout_strb  : std_logic is flags(1);
   alias err_par_strb      : std_logic is flags(2);
   alias err_data_size_strb: std_logic is flags(3);
+  alias err_msg_timeout   : std_logic is flags(5);
 
   
   attribute MARK_DEBUG : string;
@@ -202,6 +203,7 @@ begin
       o_o_data_fifo_next <= '0';
       o_o_info_fifo_next <= '0';
       err_data_size_strb <= '0';
+      err_msg_timeout <= '0';
       timeout_rst <= '0';
       case( st_reciever ) is
         when st_reciever_idle =>
@@ -219,6 +221,11 @@ begin
           header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
           if (o_msg_vld_strb = '1') then
             st_reciever := st_reciever_h_back;
+            if (inf_reg(header) = "00") then
+              data_cnt := unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1));
+            else
+              data_cnt := (others => '0');
+            end if;
           end if;
         when st_reciever_h_back =>
           header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
@@ -226,7 +233,6 @@ begin
             if (inf_reg(header) /= "00") then
               st_reciever := st_reciever_header;
             else
-              data_cnt := unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1));
               st_reciever := st_reciever_data;
             end if;
           end if;
@@ -246,10 +252,12 @@ begin
           end if;
         when st_reciever_header =>
           if (i_o_info_fifo_ready = '1') then
-            if (data_cnt > 0) then
-              -- says that wants no response but gives flags as response size  => its error message
-              -- given size of data to be transfered will be erased from data output
-              o_o_info_fifo_data <= (header((MSG_W * 3 - 1) downto (MSG_W * 2 + 6)) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2) & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
+            if (flags_reg /= x"00") then
+              -- redirects output to main
+              o_o_info_fifo_data <= (x"00" & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
+            elsif (data_cnt > 0) then
+              -- redirects output to main
+              o_o_info_fifo_data <= (header((MSG_W * 3 - 1) downto (MSG_W * 2 + 6)) & '0' & header(MSG_W * 2 + 4 downto MSG_W * 2 + 3) & "000" & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
             else
               o_o_info_fifo_data <= header;
             end if;
@@ -259,6 +267,10 @@ begin
         when others =>
           st_reciever := st_reciever_idle;
       end case ;
+      if ((timeout_s = '1') and (st_reciever /= st_reciever_idle)) then
+        err_msg_timeout <= '1';
+        st_reciever := st_reciever_header;
+      end if;
     end if;
   end if;
 end process; 
