@@ -412,7 +412,7 @@ end process;
     generic map (
       MSG_W => MSG_W,
       SMPL_W => SMPL_W,
-      START_OFFSET => START_OFFSET
+      START_OFFSET => 50
     )
     port map (
       i_clk => clk_en,
