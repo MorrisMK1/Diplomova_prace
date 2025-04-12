@@ -372,8 +372,7 @@ end process;
 uart_rx_inst : entity work.uart_rx
 generic map (
   MSG_W => MSG_W,
-  SMPL_W => SMPL_W,
-  START_OFFSET => START_OFFSET
+  SMPL_W => SMPL_W
 )
 port map (
   i_clk => i_clk,

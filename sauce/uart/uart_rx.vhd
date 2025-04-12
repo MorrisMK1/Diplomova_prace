@@ -14,8 +14,7 @@ use ieee.numeric_std.all;
 entity uart_rx is 
   generic (
     constant  MSG_W         : natural := 8;           -- message width
-    constant  SMPL_W        : natural := 8;           -- rx line sample width
-    constant  START_OFFSET  : natural := 10           -- offset in clks between start and first bit
+    constant  SMPL_W        : natural := 8            -- rx line sample width
   );
   port(
     i_clk         : in  std_logic;                -- clk pin (100MHz)
@@ -143,7 +142,7 @@ end process p_clk_div;
 ----------------------------------------------------------------------------------------
 p_main  : process (i_clk)
   variable msg_buffer : STD_LOGIC_VECTOR(MSG_W-1 downto 0);
-  variable delay_cnt  : natural range 1 to START_OFFSET;
+  variable delay_cnt  : natural range 1 to 32767;
   variable stab_cnt   : natural range 0 to MSG_W;
   variable parity_chck: std_logic;
   variable parity_res : boolean;
@@ -171,7 +170,7 @@ begin
             s_rx <= s_rx_DELAY;
           end if;
         when s_rx_DELAY =>
-          if delay_cnt <START_OFFSET then
+          if delay_cnt <to_integer(unsigned(i_clk_div & "00")) then
             delay_cnt := delay_cnt + 1;
           else
             counter_start <= '1';
