@@ -133,9 +133,9 @@ begin
   -- #ANCHOR - PIN ASSIGMENT
   ----------------------------------------------------------------------------------------
 
-  o_o_data_fifo_data <= i_i_data_fifo_data_X when (st_selector = st_selector_bypass) else
+  o_o_data_fifo_data <= i_i_data_fifo_data_X when (o_bypass = '1') else
                         src_data_data;
-  o_o_info_fifo_data <= i_i_info_fifo_data_X when (st_selector = st_selector_bypass) else
+  o_o_info_fifo_data <= i_i_info_fifo_data_X when (o_bypass = '1') else
                         src_info_data;
 
   src_data_data <=  i_i_data_fifo_data_0 when (unsigned(target) = 0) else
@@ -213,6 +213,8 @@ p_main  : process (i_clk) is
       src_data_next <= '0';
       src_info_next <= '0';
       o_o_info_fifo_next <= '0';
+      o_i_data_fifo_next_X <= '0';
+      o_i_info_fifo_next_X <= '0';
       case st_selector is
 
         when st_selector_start =>
@@ -258,19 +260,22 @@ p_main  : process (i_clk) is
 
         when st_selector_report =>
           o_bypass <= '1';
-          header <= src_info_data;
-          src_info_next <= '1';
+          header <= i_i_info_fifo_data_X;
           data_cnt <= to_unsigned(0,MSG_W);
-          st_selector <= st_selector_data;  
+          st_selector <= st_selector_bypass;  
 
         when st_selector_bypass =>
-          o_bypass <= '1';
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (i_o_data_fifo_ready = '1' and i_i_data_fifo_empty_X = '1') then
               o_i_data_fifo_next_X <= '1';
               data_cnt <= data_cnt + 1;
             end if;
-          else
+            o_bypass <= '1';
+          elsif(o_o_info_fifo_next = '0')then
+            o_bypass <= '1';
+            o_o_info_fifo_next <= '1';
+          else 
+            o_bypass <= '0';
             data_cnt <= to_unsigned(0,MSG_W);
             o_i_info_fifo_next_X <= '1';
             st_selector <= st_selector_start;  

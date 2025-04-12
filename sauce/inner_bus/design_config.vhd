@@ -68,6 +68,7 @@ if rising_edge(clk) then
     end loop;
     o_o_info_fifo_data <= (others => '0');
     o_o_info_fifo_blck <= '1';
+    o_i_info_fifo_blck <= '0';
   elsif (o_o_info_fifo_blck = '1') then
     if i_i_info_fifo_write = '1' then
       if inf_ret(i_i_info_fifo_data) = '1' then -- this is reading do not write

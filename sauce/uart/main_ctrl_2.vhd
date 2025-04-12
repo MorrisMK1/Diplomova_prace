@@ -204,36 +204,33 @@ begin
       o_o_info_fifo_next <= '0';
       err_data_size_strb <= '0';
       err_msg_timeout <= '0';
-      timeout_rst <= '0';
-      if ((timeout_s = '1') and (st_reciever /= st_reciever_idle) and (st_reciever /= st_reciever_header)) then
-        err_msg_timeout <= '1';
-        st_reciever := st_reciever_header;
-      end if;
+      timeout_rst <= '0';      
       case( st_reciever ) is
         when st_reciever_idle =>
           header := (others => '0');
+          flag_rst <= '1';
           data_cnt := to_unsigned(0,MSG_W);
           if o_busy_rx = '1' then
             st_reciever := st_reciever_h_info;
           end if;
         when st_reciever_h_info =>
-          header := (o_msg & header(MSG_W * 2 - 1 downto 0));
           if o_msg_vld_strb = '1' then
             st_reciever := st_reciever_h_data;
+            header := (o_msg & header(MSG_W * 2 - 1 downto 0));
           end if;
         when st_reciever_h_data =>
-          header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
           if (o_msg_vld_strb = '1') then
             st_reciever := st_reciever_h_back;
+            header := (header(MSG_W * 3 - 1 downto MSG_W * 2) & o_msg & header(MSG_W * 1 - 1 downto 0));
             if (inf_reg(header) = "00") then
-              data_cnt := unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1));
+              data_cnt := unsigned(o_msg);
             else
               data_cnt := (others => '0');
             end if;
           end if;
         when st_reciever_h_back =>
-          header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
           if (o_msg_vld_strb = '1') then
+            header := (header(MSG_W * 3 - 1 downto MSG_W * 1) & o_msg);
             if (inf_reg(header) /= "00") then
               st_reciever := st_reciever_header;
             else
@@ -256,7 +253,7 @@ begin
           end if;
         when st_reciever_header =>
           if (i_o_info_fifo_ready = '1') then
-            if (flags_reg /= x"00") then
+            if ((flags_reg and x"FE") /= x"00") then
               -- redirects output to main
               o_o_info_fifo_data <= (x"00" & std_logic_vector(unsigned(header(MSG_W * 2 - 1 downto MSG_W * 1)) - data_cnt) & flags_reg);
             elsif (data_cnt > 0) then
@@ -270,7 +267,12 @@ begin
           end if;
         when others =>
           st_reciever := st_reciever_idle;
-      end case ;
+      end case ;      
+      if (err_msg_timeout = '1')then
+        st_reciever := st_reciever_header;
+      elsif ((timeout_s = '1') and (st_reciever /= st_reciever_idle) and (st_reciever /= st_reciever_h_info) and (st_reciever /= st_reciever_header)) then
+        err_msg_timeout <= '1';
+      end if;
     end if;
   end if;
 end process; 

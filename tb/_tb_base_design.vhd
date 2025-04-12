@@ -82,6 +82,12 @@ begin
       end loop;
       wait for CLK_PERIOD*2;
       i_rst_n <= '1';
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(104.167 us),"00001000" & i_settings(1) & x"00",message);
+      info("Uart test - main config 1");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
+      info("Uart test - main config 2");
       for i in 1 to 2 loop
         info("Starting loop " & to_string(i));
         uart_tx_message(rx_ms,(1.085 us),"000010110000001000000000",message);
@@ -149,6 +155,12 @@ begin
       end loop;
       wait for CLK_PERIOD*2;
       i_rst_n <= '1';
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(104.167 us),"00001000" & i_settings(1) & x"00",message);
+      info("Uart test - main config 1");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
+      info("Uart test - main config 2");
       gen_header <= create_reg0_w("00",'0',"011","00001010","00000000");
       for i in 70 downto 0 loop
         wait for 0 ns;
@@ -174,6 +186,27 @@ begin
       --!SECTION
       
       test_runner_cleanup(runner);
+      
+    elsif run("timeout") then --SECTION - overfill info test
+      wait for 1 ns;
+      i_rst_n <= '0';
+      i_settings(1) <= "00000111";
+      i_settings(2) <= "10000000";
+      rx_ms <= '1';
+      scl_3 <= 'H';
+      sda_3 <= 'H';
+      for i in 0 to 255 loop
+        message(i) <= (others => '0');
+      end loop;
+      wait for CLK_PERIOD*2;
+      i_rst_n <= '1';
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(104.167 us),"00001000" & i_settings(1) & x"00",message);
+      msg_val := "01010110";
+      wait for CLK_PERIOD*1;
+      uart_tx(rx_ms,msg_val,(1.085 us));
+      wait for 2 us;
+      wait until tx_ms'stable(10 us);
     end if;
   end loop;
 
@@ -182,11 +215,11 @@ end process;--!SECTION
 --ANCHOR - DUT
 ----------------------------------------------------------------------------------------
 
-main_inst : entity work.main_v1
+main_inst : entity work.main_v2
   port map (
-    i_clk => i_clk,
+    i_clk_100MHz => i_clk,
     i_rst_n => i_rst_n,
-    i_settings => i_settings,
+    --i_settings => i_settings,
     main_tx => tx_ms,
     main_rx => rx_ms,
     slv1_tx => tx_sl1,

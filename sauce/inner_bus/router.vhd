@@ -42,8 +42,8 @@ entity router is
     o_o_data_fifo_next_6    : out   in_pulse;
     i_o_data_fifo_full_7   : in    out_ready;
     o_o_data_fifo_next_7    : out   in_pulse;
-    i_o_data_fifo_full_X   : in    out_ready;
-    o_o_data_fifo_next_X    : out   in_pulse;
+    o_o_data_fifo_full_X   : out    out_ready;
+    i_o_data_fifo_next_X    : in   in_pulse;
 
     i_i_info_fifo_data      : in    info_bus;
     i_i_info_fifo_ready     : in    out_ready;
@@ -66,8 +66,8 @@ entity router is
     o_o_info_fifo_next_6    : out   in_pulse;
     i_o_info_fifo_full_7   : in    out_ready;
     o_o_info_fifo_next_7    : out   in_pulse;
-    i_o_info_fifo_full_X   : in    out_ready;
-    o_o_info_fifo_next_X    : out   in_pulse
+    o_o_info_fifo_full_X   : out    out_ready;
+    i_o_info_fifo_next_X    : in   in_pulse
 
   );
 end entity router;
@@ -105,11 +105,11 @@ architecture behavioral of router is
 -- #ANCHOR - PIN ASSIGMENT
 ----------------------------------------------------------------------------------------
 
-  o_o_info_fifo_next_X <= i_i_info_fifo_ready;
-  o_i_info_fifo_next <= not(i_o_info_fifo_full_X) when (bypass = '1') else next_info;
+  o_o_info_fifo_full_X <= not(i_i_info_fifo_ready);
+  o_i_info_fifo_next <= i_o_info_fifo_next_X when (bypass = '1') else next_info;
 
-  o_o_data_fifo_next_X <= i_i_data_fifo_ready;
-  o_i_data_fifo_next <= not(i_o_data_fifo_full_X) when (bypass = '1') else next_data;
+  o_o_data_fifo_full_X <= not(i_i_data_fifo_ready);
+  o_i_data_fifo_next <= i_o_data_fifo_next_X when (bypass = '1') else next_data;
 
   o_o_data_fifo_data <= i_i_data_fifo_data;
   o_o_info_fifo_data <= i_i_info_fifo_data;
@@ -215,8 +215,9 @@ architecture behavioral of router is
           end if;
         when st_router_bypass =>
           bypass <= '1';
+          o_err_rep <= '0';
           if (i_bypass = '0') then
-            st_router <= st_router_idle;
+            st_router <= st_router_delay;
           end if;
         when others =>
           st_router <= st_router_idle; 

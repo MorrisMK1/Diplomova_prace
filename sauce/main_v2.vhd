@@ -223,8 +223,8 @@ begin
     o_o_data_fifo_next_6 =>   r_o_o_data_fifo_next_6,
     i_o_data_fifo_full_7 =>  r_i_o_data_fifo_full_7,
     o_o_data_fifo_next_7 =>   r_o_o_data_fifo_next_7,
-    i_o_data_fifo_full_X =>  r_i_o_data_fifo_full_X,
-    o_o_data_fifo_next_X =>   r_o_o_data_fifo_next_X,
+    o_o_data_fifo_full_X =>  r_i_o_data_fifo_full_X,
+    i_o_data_fifo_next_X =>   s_o_i_data_fifo_next_X,
     i_i_info_fifo_data =>     i_r_o_f_inf,
     i_i_info_fifo_ready =>    not(rt_emty_info),
     o_i_info_fifo_next =>     rt_next_info,
@@ -245,8 +245,8 @@ begin
     o_o_info_fifo_next_6 =>   r_o_o_info_fifo_next_6,
     i_o_info_fifo_full_7 =>  r_i_o_info_fifo_full_7,
     o_o_info_fifo_next_7 =>   r_o_o_info_fifo_next_7,
-    i_o_info_fifo_full_X =>  r_i_o_info_fifo_full_X,
-    o_o_info_fifo_next_X =>   r_o_o_info_fifo_next_X
+    o_o_info_fifo_full_X =>  r_i_o_info_fifo_full_X,
+    i_o_info_fifo_next_X =>   s_o_i_info_fifo_next_X
   );
 
 ----------------------------------------------------------------------------------------
@@ -258,7 +258,7 @@ begin
     i_rst_n => i_rst_n,
     o_bypass =>               r_i_bypass,
     i_err_rep =>              r_o_err_rep,
-    i_i_data_fifo_data_X =>   s_i_i_data_fifo_data_X,
+    i_i_data_fifo_data_X =>   r_o_o_data_fifo_data,
     i_i_data_fifo_data_0 =>   s_i_i_data_fifo_data_0,
     i_i_data_fifo_data_1 =>   s_i_i_data_fifo_data_1,
     i_i_data_fifo_data_2 =>   s_i_i_data_fifo_data_2,
@@ -288,7 +288,7 @@ begin
     o_o_data_fifo_data =>     s_o_o_data_fifo_data,
     i_o_data_fifo_ready =>    not(s_i_o_data_fifo_ready),
     o_o_data_fifo_next =>     s_o_o_data_fifo_next,
-    i_i_info_fifo_data_X =>   s_i_i_info_fifo_data_X,
+    i_i_info_fifo_data_X =>   r_o_o_info_fifo_data,
     i_i_info_fifo_data_0 =>   s_i_i_info_fifo_data_0,
     i_i_info_fifo_data_1 =>   s_i_i_info_fifo_data_1,
     i_i_info_fifo_data_2 =>   s_i_i_info_fifo_data_2,
