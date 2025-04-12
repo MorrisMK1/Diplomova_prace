@@ -98,6 +98,7 @@ architecture behavioral of main_ctrl_2 is
   attribute MARK_DEBUG of o_i_info_fifo_next : signal is "TRUE";
   attribute MARK_DEBUG of i_i_info_fifo_ready : signal is "TRUE";
   attribute MARK_DEBUG of o_busy_tx : signal is "TRUE";
+  attribute MARK_DEBUG of o_busy_rx : signal is "TRUE";
 
 begin
 
@@ -128,21 +129,20 @@ begin
     -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
     if rising_edge (i_clk) then
       offset := ("0" & clk_div) when parity_en = '1' else (clk_div & "0");
-      if to_integer(unsigned(timeout_val)) = timeout_reg + 1 then
-        timeout_s <= timeout_en;
+      if ((to_integer(unsigned(timeout_val)) + 1 = timeout_reg)) then
+        timeout_s <= '1';
       else
         timeout_s <= '0';
       end if;
-      if (timeout_rst = '1') then
+      if ((timeout_rst = '1')or(o_busy_rx = '1')) then
         timeout_reg <= (others => '0');
         step := 0;
+        timeout_s <= '0';
       elsif (timeout_s = '0') then
         step := step + 1;
       end if;
       if (step = (clk_div & "000" + offset)) then
-        if (o_busy_rx = '1') then
-          timeout_reg <= timeout_reg + 1; -- this way it will wait till all data is send before starting timeout on recieved data
-        end if;
+        timeout_reg <= timeout_reg + 1; -- this way it will wait till all data is send before starting timeout on recieved data
         step := 0;
       end if;
     end if;
@@ -205,6 +205,10 @@ begin
       err_data_size_strb <= '0';
       err_msg_timeout <= '0';
       timeout_rst <= '0';
+      if ((timeout_s = '1') and (st_reciever /= st_reciever_idle) and (st_reciever /= st_reciever_header)) then
+        err_msg_timeout <= '1';
+        st_reciever := st_reciever_header;
+      end if;
       case( st_reciever ) is
         when st_reciever_idle =>
           header := (others => '0');
@@ -267,10 +271,6 @@ begin
         when others =>
           st_reciever := st_reciever_idle;
       end case ;
-      if ((timeout_s = '1') and (st_reciever /= st_reciever_idle)) then
-        err_msg_timeout <= '1';
-        st_reciever := st_reciever_header;
-      end if;
     end if;
   end if;
 end process; 
