@@ -64,6 +64,16 @@ architecture behavioral of uart_rx is
   signal rx_sample      : std_logic_vector(SMPL_W-1 downto 0);  -- sample buffer of rx
   signal rx_sample_val  : std_logic;                            -- average value of rx
   signal rx_sample_stb  : std_logic;                            -- stability of rx
+
+  attribute MARK_DEBUG : string;
+
+  attribute MARK_DEBUG of counter_done : signal is "TRUE";
+  attribute MARK_DEBUG of rx_sample_val : signal is "TRUE";
+  attribute MARK_DEBUG of rx_sample_stb : signal is "TRUE";
+  attribute MARK_DEBUG of o_msg_vld_strb : signal is "TRUE";
+  attribute MARK_DEBUG of i_clk_div : signal is "TRUE";
+  attribute MARK_DEBUG of counter_start : signal is "TRUE";
+  attribute MARK_DEBUG of s_rx : signal is "TRUE";
 begin
 
   o_busy <= '1' when s_rx /= s_rx_IDLE else '0';
@@ -169,15 +179,19 @@ begin
           if i_rx = i_start_pol then
             s_rx <= s_rx_DELAY;
           end if;
+
         when s_rx_DELAY =>
           if delay_cnt <to_integer(unsigned(i_clk_div & "00")) then
             delay_cnt := delay_cnt + 1;
           else
+            bit_cnt <= 0;
             counter_start <= '1';
             s_rx <= s_rx_RECIEVE;
           end if;
+
         when s_rx_RECIEVE =>
           parity_res := TRUE;
+          counter_start <= '1';
           if bit_cnt < (5 + to_integer(unsigned(i_char_len))) then
             if counter_done = '1' then
               msg_buffer := rx_sample_val & msg_buffer(MSG_W-1 downto 1);
@@ -198,11 +212,13 @@ begin
               s_rx <= s_rx_TERMINATE;
             end if;
           end if;
+
         when s_rx_PARITY =>
           if counter_done = '1' then
             parity_res := rx_sample_val = parity_chck;
             s_rx <= s_rx_TERMINATE;
           end if;
+
         when s_rx_TERMINATE =>
           counter_start <= '0';
           if counter_done = '1' then
@@ -218,6 +234,7 @@ begin
             o_msg_vld_strb <= '1';
             s_rx <= s_rx_IDLE;
           end if;
+
         when others =>
           s_rx <= s_rx_IDLE;
       end case;

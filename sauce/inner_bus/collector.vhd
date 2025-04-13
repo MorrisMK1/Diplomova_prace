@@ -118,15 +118,17 @@ architecture behavioral of collector is
   
   attribute MARK_DEBUG : string;
 
-  --attribute MARK_DEBUG of src_data_data : signal is "TRUE";
-  --attribute MARK_DEBUG of src_info_data : signal is "TRUE";
-  --attribute MARK_DEBUG of st_selector : signal is "TRUE";
-  --attribute MARK_DEBUG of src_data_ready : signal is "TRUE";
-  --attribute MARK_DEBUG of src_info_ready : signal is "TRUE";
-  --attribute MARK_DEBUG of src_data_next : signal is "TRUE";
-  --attribute MARK_DEBUG of src_info_next : signal is "TRUE";
-  --attribute MARK_DEBUG of o_o_info_fifo_next : signal is "TRUE";
-  --attribute MARK_DEBUG of o_o_data_fifo_next : signal is "TRUE";
+  attribute MARK_DEBUG of src_data_data : signal is "TRUE";
+  attribute MARK_DEBUG of src_info_data : signal is "TRUE";
+  attribute MARK_DEBUG of st_selector : signal is "TRUE";
+  attribute MARK_DEBUG of src_data_ready : signal is "TRUE";
+  attribute MARK_DEBUG of src_info_ready : signal is "TRUE";
+  attribute MARK_DEBUG of src_data_next : signal is "TRUE";
+  attribute MARK_DEBUG of src_info_next : signal is "TRUE";
+  attribute MARK_DEBUG of o_o_info_fifo_next : signal is "TRUE";
+  attribute MARK_DEBUG of o_o_data_fifo_next : signal is "TRUE";
+  attribute MARK_DEBUG of o_o_info_fifo_data : signal is "TRUE";
+  attribute MARK_DEBUG of o_o_data_fifo_data : signal is "TRUE";
 
 begin
   ----------------------------------------------------------------------------------------

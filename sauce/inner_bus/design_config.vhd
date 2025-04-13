@@ -44,6 +44,11 @@ architecture rtl of design_config is
   
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
 
+  
+  attribute MARK_DEBUG : string;
+
+  attribute MARK_DEBUG of r_registers : signal is "TRUE";
+
 begin
   
   -- data are to be ignored 

@@ -99,6 +99,8 @@ architecture behavioral of main_ctrl_2 is
   attribute MARK_DEBUG of i_i_info_fifo_ready : signal is "TRUE";
   attribute MARK_DEBUG of o_busy_tx : signal is "TRUE";
   attribute MARK_DEBUG of o_busy_rx : signal is "TRUE";
+  attribute MARK_DEBUG of flags_reg : signal is "TRUE";
+  attribute MARK_DEBUG of flag_rst : signal is "TRUE";
 
 begin
 
@@ -141,7 +143,7 @@ begin
       elsif (timeout_s = '0') then
         step := step + 1;
       end if;
-      if (step = (clk_div & "000" + offset)) then
+      if (step = ((clk_div & "0000") + offset)) then
         timeout_reg <= timeout_reg + 1; -- this way it will wait till all data is send before starting timeout on recieved data
         step := 0;
       end if;
