@@ -338,14 +338,16 @@ end process;
                   data_cnt := data_cnt + 1;
                   i_msg_vld <= '1';
                 end if;
-              else -- this shouldnt be possible but oh well
+              elsif (o_busy_tx = '0') then -- this shouldnt be possible but oh well
                 st_sender := st_sender_term;
               end if;
             elsif (o_busy_tx = '0') then
               st_sender := st_sender_term;
             end if;
           when st_sender_term =>
-            st_sender := st_sender_idle;
+            if (o_busy_tx = '0') then
+              st_sender := st_sender_idle;
+            end if;
           when others =>
             st_sender := st_sender_idle;
         end case ;

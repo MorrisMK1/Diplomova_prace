@@ -268,6 +268,7 @@ p_main  : process (i_clk) is
           if (data_cnt < unsigned(header(MSG_W * 2 -1 downto MSG_W * 1))) then
             if (i_o_data_fifo_ready = '1' and i_i_data_fifo_empty_X = '1') then
               o_i_data_fifo_next_X <= '1';
+              o_o_data_fifo_next <= '1';
               data_cnt <= data_cnt + 1;
             end if;
             o_bypass <= '1';

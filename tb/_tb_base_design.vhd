@@ -88,6 +88,9 @@ begin
       wait for CLK_PERIOD*1;
       uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
       info("Uart test - main config 2");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"80" & x"00",message);
+      info("Uart test - main config 3");
       for i in 1 to 2 loop
         info("Starting loop " & to_string(i));
         uart_tx_message(rx_ms,(1.085 us),"000010110000001000000000",message);
@@ -138,10 +141,10 @@ begin
         wait for CLK_PERIOD;
         uart_tx_message(rx_ms,(1.085 us),create_reg0_w("01",std_logic_vector(to_unsigned(i,3)),"00010100","00010100"),message);
       end loop;
-        
       --wait for  60 ms; --CLK_PERIOD * 100_000_000;
       wait until ((tx_sl1'stable(1.2 ms)) and (tx_sl2'stable(1.2 ms)));
       test_runner_cleanup(runner);
+      --!SECTION
     elsif run("overfill_info") then --SECTION - overfill info test
       wait for 1 ns;
       i_rst_n <= '0';
@@ -163,6 +166,7 @@ begin
       info("Uart test - main config 2");
       gen_header <= create_reg0_w("00",'0',"011","00001010","00000000");
       for i in 70 downto 0 loop
+        info("Sending msg: "& to_string(71 - i) & "/71");
         wait for 0 ns;
         msg_val :=  gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
         wait for 0 ns;
@@ -187,7 +191,7 @@ begin
       
       test_runner_cleanup(runner);
       
-    elsif run("timeout") then --SECTION - overfill info test
+    elsif run("timeout") then --SECTION - timeout
       wait for 1 ns;
       i_rst_n <= '0';
       i_settings(1) <= "00000111";
@@ -206,7 +210,55 @@ begin
       wait for CLK_PERIOD*1;
       uart_tx(rx_ms,msg_val,(1.085 us));
       wait for 2 us;
-      wait until tx_ms'stable(10 us);
+      wait until tx_ms'stable(20 us);
+      test_runner_cleanup(runner);--!SECTION
+
+    
+    elsif run("data_fail") then --SECTION - data trasfer failed
+      wait for 1 ns;
+      i_rst_n <= '0';
+      i_settings(1) <= "00000111";
+      i_settings(2) <= "10000000";
+      rx_ms <= '1';
+      scl_3 <= 'H';
+      sda_3 <= 'H';
+      for i in 0 to 255 loop
+        message(i) <= (others => '0');
+      end loop;
+      wait for CLK_PERIOD*2;
+      i_rst_n <= '1';
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(104.167 us),"00001000" & i_settings(1) & x"00",message);
+      info("Uart test - main config 1");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
+      info("Uart test - main config 2");
+      gen_header <= create_reg0_w("00",'0',"011","00001010","00000000");
+        wait for 0 ns;
+        msg_val :=  gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
+        wait for 0 ns;
+        uart_tx(rx_ms,msg_val,(1.085 us));
+        wait for 0 ns;
+        msg_val :=  gen_header(MSG_W * 2 - 1 downto MSG_W * 1);
+        wait for 0 ns;
+        uart_tx(rx_ms,msg_val,(1.085 us));
+        wait for 0 ns;
+        msg_val :=  gen_header(MSG_W * 1 - 1 downto MSG_W * 0);
+        wait for 0 ns;
+        uart_tx(rx_ms,msg_val,(1.085 us));
+        wait for 0 ns;
+        for x in 0 to 7 loop
+          msg_val :=  std_logic_vector(to_unsigned(x+16*x,8));
+          wait for 0 ns;
+          uart_tx(rx_ms,msg_val,(1.085 us));
+          wait for 0 ns;
+        end loop; 
+      --!SECTION
+      wait for 2 us;
+      wait until tx_ms'stable(50 us);
+      
+      test_runner_cleanup(runner);
+      
     end if;
   end loop;
 
