@@ -50,7 +50,12 @@ signal sl_next_info, sl_emty_info, sl_next_data, sl_push_info, sl_full_info, sl_
 signal sl_info_in, sl_info_out : info_bus;
 signal sl_data_in, sl_data_out : data_bus;
 
+signal rst : std_logic;
+signal last_en : std_logic_vector (1 downto 0);
+
 begin
+rst <= (not i_rst_n) when last_en = i_en else '1';
+last_en <= i_en;
 
 ----------------------------------------------------------------------------------------
 --ANCHOR - FIFO from router to slave
@@ -62,7 +67,7 @@ module_fifo_INFO_SLV1_i : entity work.FIFO_wrapper
     GEN_TYPE => GEN_TYPE
   )
   port map (
-    i_rst_sync => (not i_rst_n),
+    i_rst_sync => rst,
     i_clk => i_clk,
     i_wr_en =>  i_i_info_write,
     i_wr_data =>i_i_info_data,
@@ -79,7 +84,7 @@ module_fifo_DATA_SLV1_i : entity work.FIFO_wrapper
     GEN_TYPE => GEN_TYPE
   )
   port map (
-    i_rst_sync => (not i_rst_n),
+    i_rst_sync => rst,
     i_clk => i_clk,
     i_wr_en =>  i_i_data_write,
     i_wr_data =>i_i_data_data,
@@ -99,7 +104,7 @@ module_fifo_INFO_SLV1_o : entity work.FIFO_wrapper
     GEN_TYPE => GEN_TYPE
   )
   port map (
-    i_rst_sync => (not i_rst_n),
+    i_rst_sync => rst,
     i_clk =>      i_clk,
     i_wr_en =>    sl_push_info,
     i_wr_data =>  sl_info_out,
@@ -116,7 +121,7 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     GEN_TYPE => GEN_TYPE
   )
   port map (
-    i_rst_sync => (not i_rst_n),
+    i_rst_sync => rst,
     i_clk => i_clk,
     i_wr_en =>   sl_push_data,
     i_wr_data => sl_data_out,
