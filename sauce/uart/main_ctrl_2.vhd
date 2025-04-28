@@ -86,8 +86,8 @@ architecture behavioral of main_ctrl_2 is
   
   alias err_noise_strb    : std_logic is flags(7);
   alias err_frame_strb    : std_logic is flags(0);
-  alias err_timeout_strb  : std_logic is flags(1);
-  alias err_par_strb      : std_logic is flags(2);
+  --alias err_timeout_strb  : std_logic is flags(1);
+  alias err_par_strb      : std_logic is flags(1);
   alias err_data_size_strb: std_logic is flags(3);
   alias err_msg_timeout   : std_logic is flags(5);
 

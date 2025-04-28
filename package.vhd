@@ -9,7 +9,7 @@ library ieee;
 
   package im_package is
 
-    component main_v2
+  component main_v2 is
   port (
     i_clk_100MHz : in std_logic;
     i_rst_n : in std_logic;
@@ -29,9 +29,9 @@ library ieee;
   );
 end component;
 
-component uart_tx
+component uart_tx is
   generic (
-    MSG_W : natural;
+    8: natural;
     SMPL_W : natural
   );
   port (
@@ -49,9 +49,9 @@ component uart_tx
   );
 end component;
 
-component uart_rx
+component uart_rx is
   generic (
-    MSG_W : natural;
+    8: natural;
     SMPL_W : natural
   );
   port (
@@ -72,7 +72,7 @@ component uart_rx
   );
 end component;
 
-component uart_module
+component uart_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE : string
@@ -100,7 +100,7 @@ component uart_module
   );
 end component;
 
-component uart_ctrl2
+component uart_ctrl2 is
   generic (
     SMPL_W : natural;
     START_OFFSET : natural;
@@ -129,7 +129,7 @@ component uart_ctrl2
   );
 end component;
 
-component main_ctrl_2
+component main_ctrl_2 is
   port (
     i_clk : in std_logic;
     i_rst_n : in std_logic;
@@ -145,14 +145,14 @@ component main_ctrl_2
     o_o_info_fifo_data : out info_bus;
     i_o_info_fifo_ready : in out_ready;
     o_o_info_fifo_next : out in_pulse;
-    i_settings : in std_logic_array (1 to 2) (MSG_W-1 downto 0);
+    i_settings : in std_logic_array (15 downto 0);
     o_ready : out std_logic;
     tx : out std_logic;
     rx : in std_logic
   );
 end component;
 
-component SPI_module
+component SPI_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE : string
@@ -176,26 +176,26 @@ component SPI_module
     MISO : in std_logic;
     MOSI : out std_logic;
     SCLK : out std_logic;
-    o_CS : out std_logic_vector(MSG_W - 1 downto 0)
+    o_CS : out std_logic_vector(8- 1 downto 0)
   );
 end component;
 
-component SPI_driver
+component SPI_driver is
   generic (
     MISO_DEB_BUFF_SIZE : natural
   );
   port (
     clk_100MHz : in std_logic;
     rst_n : in std_logic;
-    i_clk_div : in std_logic_vector((MSG_W * 2) - 1 downto 0);
+    i_clk_div : in std_logic_vector((8* 2) - 1 downto 0);
     i_hold_active : in std_logic;
     i_data_dir : in std_logic;
     i_CPHA : in std_logic;
-    i_data : in std_logic_vector(MSG_W - 1 downto 0);
+    i_data : in std_logic_vector(8- 1 downto 0);
     i_data_vld : in std_logic;
     o_data_read : out std_logic;
     i_data_recieve : in std_logic;
-    o_data : out std_logic_vector(MSG_W - 1 downto 0);
+    o_data : out std_logic_vector(8- 1 downto 0);
     o_data_vld : out std_logic;
     o_busy : out std_logic;
     o_noise_flg : out std_logic;
@@ -205,7 +205,7 @@ component SPI_driver
   );
 end component;
 
-component SPI_ctrl
+component SPI_ctrl is
   generic (
     SMPL_W : natural;
     START_OFFSET : natural;
@@ -234,7 +234,7 @@ component SPI_ctrl
   );
 end component;
 
-component UART_I2C
+component UART_I2C is
   generic (
     SMPL_W : natural;
     START_OFFSET : natural;
@@ -263,7 +263,7 @@ component UART_I2C
   );
 end component;
 
-component uart_i2c_module
+component uart_i2c_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE : string
@@ -291,11 +291,11 @@ component uart_i2c_module
   );
 end component;
 
-component router
+component router is
   port (
     i_clk : in std_logic;
     i_rst_n : in std_logic;
-    i_out_en : in std_logic_vector(MSG_W -1 downto 0);
+    i_out_en : in std_logic_vector(8-1 downto 0);
     i_bypass : in std_logic;
     o_err_rep : out std_logic;
     i_i_data_fifo_data : in data_bus;
@@ -345,7 +345,7 @@ component router
   );
 end component;
 
-component design_config
+component design_config is
   port (
     clk : in std_logic;
     rst_n : in std_logic;
@@ -361,12 +361,12 @@ component design_config
     o_o_info_fifo_data : out info_bus;
     i_o_info_fifo_read : in out_ready;
     o_o_info_fifo_blck : out in_pulse;
-    o_settings_main : out std_logic_array (1 to 2) (MSG_W-1 downto 0);
+    o_settings_main : out std_logic_array (15 downto 0);
     o_enable_interfaces : out std_logic_vector (MSG_W-1 downto 0)
   );
 end component;
 
-component collector
+component collector is
   port (
     i_clk : in std_logic;
     i_rst_n : in std_logic;
@@ -435,7 +435,7 @@ component collector
   );
 end component;
 
-component i2c_module
+component i2c_module is
   generic (
     ID : std_logic_vector(2 downto 0);
     GEN_TYPE : string
@@ -463,7 +463,7 @@ component i2c_module
   );
 end component;
 
-component i2c_driver
+component i2c_driver is
   port (
     clk : in std_logic;
     rst_n : in std_logic;
@@ -478,7 +478,7 @@ component i2c_driver
     o_data : out data_bus;
     i_ignore : in std_logic;
     o_no_ack : out std_logic;
-    clk_div : in std_logic_vector(MSG_W * 2 - 1 downto 0);
+    clk_div : in std_logic_vector(8* 2 - 1 downto 0);
     i_slv_addr : in std_logic_vector(6 downto 0);
     i_en_slave : in std_logic;
     o_busy : out std_logic;
@@ -486,7 +486,7 @@ component i2c_driver
   );
 end component;
 
-component i2c_ctrl
+component i2c_ctrl is
   generic (
     MY_ID : STD_LOGIC_VECTOR(BUS_ID_W-1 downto 0);
     INTERNAL_I2C : boolean
@@ -516,7 +516,7 @@ component i2c_ctrl
   );
 end component;
 
-component FIFO_wrapper
+component FIFO_wrapper is
   generic (
     g_WIDTH : natural;
     g_DEPTH : integer;

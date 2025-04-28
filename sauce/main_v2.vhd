@@ -450,7 +450,7 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => '1',
+    i_en => enable_interfaces(0),
     i_i_info_write => r_o_o_info_fifo_next_1,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_1,
@@ -478,7 +478,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => enable_interfaces(7 downto 6),
+    i_en => enable_interfaces(2 downto 1),
     i_i_info_write => r_o_o_info_fifo_next_2,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_2,
@@ -507,7 +507,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => '1',
+    i_en => enable_interfaces(3),
     i_i_info_write => r_o_o_info_fifo_next_3,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_3,
@@ -538,7 +538,7 @@ generic map (
 port map (
   i_clk => i_clk_100MHz,
   i_rst_n => i_rst_n,
-  i_en => '1',
+  i_en => enable_interfaces(4),
   i_i_info_write => r_o_o_info_fifo_next_4,
   i_i_info_data => r_o_o_info_fifo_data,
   i_o_info_full => r_i_o_info_fifo_full_4,

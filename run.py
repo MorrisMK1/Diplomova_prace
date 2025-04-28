@@ -4,6 +4,8 @@ import os
 from vunit import VUnit
 from pathlib import Path
 
+from subprocess import call
+
 # Create VUnit instance by parsing command line arguments
 VU = VUnit.from_argv()  # Do not use compile_builtins.
 VU.add_vhdl_builtins()  # Add the VHDL builtins explicitly!
@@ -16,6 +18,8 @@ lib.add_source_files("sauce/*.vhd")
 lib.add_source_files("sauce/*/*.vhd")
 lib.add_source_files("tb/*.vhd")
 
+#lib.set_sim_option("enable_coverage", True)
+
 # Ensure wave file contains "run -all"
 def ensure_run_all(wave_file_path):
     if not wave_file_path.exists():
@@ -27,6 +31,14 @@ def ensure_run_all(wave_file_path):
             lines = wave_file.readlines()
             if not any(line.strip() == "run -all" for line in lines):
                 wave_file.write("run -all\n")
+
+#def post_run(results):
+#    results.merge_coverage(file_name="coverage_data")
+#    if VU.get_simulator_name() == "ghdl":
+#        if results._simulator_if._backend == "gcc":
+#            call(["gcovr", "coverage_data"])
+#        else:
+#            call(["gcovr", "-a", "coverage_data/gcovr.json"])
 
 # Add waveform automatically when running in GUI mode.
 for tb in lib.get_test_benches():

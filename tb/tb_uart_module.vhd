@@ -226,7 +226,7 @@ uart_module_inst : entity work.uart_module
         slv_tx_rdy <= '0';
         info("Enable ready signals");
         i_i_info_write <= '1';
-        i_i_info_data <= "000100000010000000000000"; -- set ready singnals to enabled
+        i_i_info_data <= "000100000110000000000000"; -- set ready singnals to enabled
         wait for clk_period;
         info("Inserting info");
         i_i_info_data <= create_reg0_w("00",'0',"000",x"10",x"00");

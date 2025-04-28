@@ -101,6 +101,8 @@ architecture behavioral of uart_ctrl2 is
 
   signal timeout_s      : std_logic;
 
+  signal rts_in, rts_out, cts_in, cts_out : std_logic;
+
   alias clk_div_sel     : std_logic_vector(2 downto 0) is r_registers(1)(2 downto 0);
   alias word_len        : std_logic_vector(1 downto 0) is r_registers(1)(4 downto 3);
   alias parity_en       : std_logic is r_registers(1)(5);
@@ -109,7 +111,8 @@ architecture behavioral of uart_ctrl2 is
 
   alias timeout_val     : std_logic_vector(4 downto 0) is r_registers(2)(4 downto 0);
   alias ready_en        : std_logic is r_registers(2)(5);
-  alias polarity        : std_logic is r_registers(2)(6);
+  alias ready_dir       : std_logic is r_registers(2)(6);   -- '0' => rts in, cts out
+  alias polarity        : std_logic is r_registers(2)(7);
 
   alias flg_frame       : std_logic is flags(0);
   alias flg_parity      : std_logic is flags(1);
@@ -128,6 +131,11 @@ rst_n <= i_rst_n and not rst_r and not en_rst;
 clk_en <= i_clk and i_en;
 flg_undef_2 <= '0';
 flg_undef_5 <= '0';
+rts_in <= tx_ready  when ready_dir = '0' else '1';
+cts_in <= tx_ready  when ready_dir = '1' else '1';
+rx_ready <= '0'     when ready_en = '0' else
+            cts_out when ready_dir = '0' else
+            rts_out;
 --tx <= not internal_tx when (polarity = '1') else internal_tx ;
 --internal_rx <= not rx when (polarity = '1') else rx ;
 ----------------------------------------------------------------------------------------
@@ -253,16 +261,20 @@ begin
       o_i_data_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
       msg_i_vld <= '0';
+      rts_out <= '0';
     else
       reg_op_rdy_strb <= '0';
       o_i_data_fifo_next <= '0';
       o_i_info_fifo_next <= '0';
       case( st_downstr ) is
         when st_downstr_IDLE =>
-          if (i_i_info_fifo_empty = '0' and (tx_ready = '1' or ready_en = '0')) then
-            st_downstr := st_downstr_CHECK;
-            reg_op <= i_i_info_fifo_data;
-            o_i_info_fifo_next <= '1';
+          if (i_i_info_fifo_empty = '0') then
+            rts_out <= '1';
+            if(cts_in = '1') then
+              st_downstr := st_downstr_CHECK;
+              reg_op <= i_i_info_fifo_data;
+              o_i_info_fifo_next <= '1';
+            end if;
           end if;
         when st_downstr_CHECK =>
           if (to_integer(unsigned(inf_reg(reg_op))) = 0) then
@@ -278,7 +290,7 @@ begin
           end if;
         when st_downstr_DATA =>
           if (data_cnt < to_integer(unsigned(inf_size(reg_op)))) then 
-            if ((tx_ready = '1' or ready_en = '0') and (out_busy = '0') and (msg_i_vld = '0')) then
+            if ((cts_in = '1') and (out_busy = '0') and (msg_i_vld = '0')) then
               msg_i_dat <= i_i_data_fifo_data;
               o_i_data_fifo_next <= '1';
               msg_i_vld <= '1';
@@ -322,23 +334,26 @@ begin
       info_ack <= '0';
       cur_ID := 0;
       flg_data_size <= '0';
+      cts_out <= '0';
     else
       flg_data_size <= '0';
       o_o_data_fifo_next <= '0';
       o_o_info_fifo_next <= '0';
       info_ack <= '0';
-      rx_ready <= '1';
+      if (rts_in = '1') then
+        cts_out <= '1' when ((i_o_data_fifo_full = '0') and (i_o_info_fifo_full = '0')) else '0';
+      else
+        cts_out <= '0';
+      end if;
       case st_upstr is
         when st_upstr_IDLE =>
           if (info_rdy = '1') then
             st_upstr := st_upstr_REGS;
-            rx_ready <= '0';
           elsif (rx_busy = '1') then
             st_upstr := st_upstr_DATA; 
             data_cnt := 0;
           end if;
         when st_upstr_REGS =>
-          rx_ready <= '0';
           if (i_o_info_fifo_full = '0') then
             o_o_info_fifo_data <= info_reg;
             o_o_info_fifo_next <= '1';
@@ -360,7 +375,6 @@ begin
             st_upstr := st_upstr_CHECK; 
           end if;
         when st_upstr_CHECK =>
-        rx_ready <= '0';
         if (timeout_s = '1'and i_o_info_fifo_full = '0') then
           o_o_info_fifo_data <= std_logic_vector(to_unsigned(cur_ID,2)) & '0' & "00" & MY_ID & std_logic_vector(to_unsigned(data_cnt,8)) & r_registers(3);
           if (cur_ID = 3) then

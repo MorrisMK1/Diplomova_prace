@@ -74,8 +74,7 @@ architecture rtl of SPI_ctrl is
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
   alias  div_sel        : std_logic_vector (2 downto 0) is r_registers(1)(2 downto 0);
   alias  data_dir       : std_logic is r_registers(1)(3);
-  alias  slave_mode_en  : std_logic is r_registers(1)(4);
-  alias  SPOL           : std_logic is r_registers(1)(5); -- invert polarity of chip select, 0 = 0 active
+  alias  SPOL           : std_logic is r_registers(1)(4); -- invert polarity of chip select, 0 = 0 active
   alias  CPOL           : std_logic is r_registers(1)(5); -- invert polarity of BUS, 0 = 1 active
   alias  CPHA           : std_logic is r_registers(1)(6); -- set second edge as reading edge, 0 = first edge (for slave)
   alias  rst_r          : std_logic is r_registers(1)(7);

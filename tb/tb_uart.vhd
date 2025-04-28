@@ -6,8 +6,8 @@ use work.tb_common.all;
 use work.my_common.all;
 
 
-LIBRARY VUNIT_LIB;
-CONTEXT VUNIT_LIB.VUNIT_CONTEXT;
+--LIBRARY VUNIT_LIB;
+--CONTEXT VUNIT_LIB.VUNIT_CONTEXT;
 
 entity tb_uart is
   generic (runner_cfg : string);
@@ -104,7 +104,7 @@ begin
   -- UART transmission test
   p_uart_tx : process
   begin
-    test_runner_setup(runner, runner_cfg);
+    --test_runner_setup(runner, runner_cfg);
     wait for 10 us;
     rst_n <= '1';
     msg_i_dat <= "01010101";
@@ -130,7 +130,7 @@ begin
     wait for 1 ms; -- Wait some time
     
     -- Ukončení simulace        test_runner_cleanup(runner);
-    test_runner_cleanup(runner);
+    --test_runner_cleanup(runner);
   end process p_uart_tx;
 
 ----------------------------------------------------------------------------------------
