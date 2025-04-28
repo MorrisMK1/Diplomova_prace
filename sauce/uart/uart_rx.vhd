@@ -67,13 +67,13 @@ architecture behavioral of uart_rx is
 
   attribute MARK_DEBUG : string;
 
-  attribute MARK_DEBUG of counter_done : signal is "TRUE";
-  attribute MARK_DEBUG of rx_sample_val : signal is "TRUE";
-  attribute MARK_DEBUG of rx_sample_stb : signal is "TRUE";
-  attribute MARK_DEBUG of o_msg_vld_strb : signal is "TRUE";
-  attribute MARK_DEBUG of i_clk_div : signal is "TRUE";
-  attribute MARK_DEBUG of counter_start : signal is "TRUE";
-  attribute MARK_DEBUG of s_rx : signal is "TRUE";
+  --attribute MARK_DEBUG of counter_done : signal is "TRUE";
+  --attribute MARK_DEBUG of rx_sample_val : signal is "TRUE";
+  --attribute MARK_DEBUG of rx_sample_stb : signal is "TRUE";
+  --attribute MARK_DEBUG of o_msg_vld_strb : signal is "TRUE";
+  --attribute MARK_DEBUG of i_clk_div : signal is "TRUE";
+  --attribute MARK_DEBUG of counter_start : signal is "TRUE";
+  --attribute MARK_DEBUG of s_rx : signal is "TRUE";
 begin
 
   o_busy <= '1' when s_rx /= s_rx_IDLE else '0';

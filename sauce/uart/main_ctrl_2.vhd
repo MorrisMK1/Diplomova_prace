@@ -94,13 +94,13 @@ architecture behavioral of main_ctrl_2 is
   
   attribute MARK_DEBUG : string;
 
-  attribute MARK_DEBUG of o_i_data_fifo_next : signal is "TRUE";
-  attribute MARK_DEBUG of o_i_info_fifo_next : signal is "TRUE";
-  attribute MARK_DEBUG of i_i_info_fifo_ready : signal is "TRUE";
-  attribute MARK_DEBUG of o_busy_tx : signal is "TRUE";
-  attribute MARK_DEBUG of o_busy_rx : signal is "TRUE";
-  attribute MARK_DEBUG of flags_reg : signal is "TRUE";
-  attribute MARK_DEBUG of flag_rst : signal is "TRUE";
+  --attribute MARK_DEBUG of o_i_data_fifo_next : signal is "TRUE";
+  --attribute MARK_DEBUG of o_i_info_fifo_next : signal is "TRUE";
+  --attribute MARK_DEBUG of i_i_info_fifo_ready : signal is "TRUE";
+  --attribute MARK_DEBUG of o_busy_tx : signal is "TRUE";
+  --attribute MARK_DEBUG of o_busy_rx : signal is "TRUE";
+  --attribute MARK_DEBUG of flags_reg : signal is "TRUE";
+  --attribute MARK_DEBUG of flag_rst : signal is "TRUE";
 
 begin
 
@@ -185,7 +185,7 @@ p_reciever : process (i_clk)
   variable st_reciever : fsm_reciever := st_reciever_idle;
   variable header      : info_bus;
   variable data_cnt    : unsigned(MSG_W - 1 downto 0);
-  attribute MARK_DEBUG of st_reciever : variable is "TRUE";
+  --attribute MARK_DEBUG of st_reciever : variable is "TRUE";
 begin
   if (rising_edge(i_clk)) then
     if (i_rst_n = '0') then
@@ -288,7 +288,7 @@ end process;
     variable header       : info_bus;
     variable last_out_st  : std_logic;
     
-  attribute MARK_DEBUG of st_sender : variable is "TRUE";
+  --attribute MARK_DEBUG of st_sender : variable is "TRUE";
   begin
     if rising_edge(i_clk) then
       if(i_rst_n = '0') then

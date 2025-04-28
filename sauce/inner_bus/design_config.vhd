@@ -47,7 +47,7 @@ architecture rtl of design_config is
   
   attribute MARK_DEBUG : string;
 
-  attribute MARK_DEBUG of r_registers : signal is "TRUE";
+  --attribute MARK_DEBUG of r_registers : signal is "TRUE";
 
 begin
   

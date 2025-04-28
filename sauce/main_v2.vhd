@@ -37,7 +37,7 @@ end entity main_v2;
 ----------------------------------------------------------------------------------------
 architecture behavioral of main_v2 is 
 
-constant CLK_PERIOD : TIME := 10 ns;
+constant FIFO_MODE : STRING := "DEFAULT"; -- "XILINX" "DEFAULT"
 
 signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf: info_bus;
 signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat: data_bus;
@@ -323,10 +323,11 @@ begin
 ----------------------------------------------------------------------------------------
 --ANCHOR - FIFO from master to router
 ----------------------------------------------------------------------------------------
-module_fifo_INFO_MtoF : entity work.module_fifo_regs_no_flags
+module_fifo_INFO_MtoF : entity work.FIFO_wrapper
   generic map (
     g_WIDTH => 24,
-    g_DEPTH => 32
+    g_DEPTH => 32,
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_rst_sync => (not i_rst_n),
@@ -339,10 +340,11 @@ module_fifo_INFO_MtoF : entity work.module_fifo_regs_no_flags
     o_empty =>    rt_emty_info
   );
 
-module_fifo_DATA_MtoF : entity work.module_fifo_regs_no_flags
+module_fifo_DATA_MtoF : entity work.FIFO_wrapper
   generic map (
     g_WIDTH => 8,
-    g_DEPTH => 512
+    g_DEPTH => 512,
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_rst_sync => (not i_rst_n),
@@ -358,10 +360,11 @@ module_fifo_DATA_MtoF : entity work.module_fifo_regs_no_flags
 ----------------------------------------------------------------------------------------
 --ANCHOR - FIFO from collector to master
 ----------------------------------------------------------------------------------------
-module_fifo_INFO_FtoM : entity work.module_fifo_regs_no_flags
+module_fifo_INFO_FtoM : entity work.FIFO_wrapper
   generic map (
     g_WIDTH => 24,
-    g_DEPTH => 32
+    g_DEPTH => 32,
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_rst_sync => (not i_rst_n),
@@ -374,10 +377,11 @@ module_fifo_INFO_FtoM : entity work.module_fifo_regs_no_flags
     o_empty => ms_emty_info
   );
 
-module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
+module_fifo_DATA_FtoM : entity work.FIFO_wrapper
   generic map (
     g_WIDTH => 8,
-    g_DEPTH => 512
+    g_DEPTH => 512,
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_rst_sync => (not i_rst_n),
@@ -445,7 +449,8 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
   ----------------------------------------------------------------------------------------
   uart_module_slv1 : entity work.uart_module
   generic map(
-    ID => "001"
+    ID => "001",
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_clk => i_clk_100MHz,
@@ -473,7 +478,8 @@ module_fifo_DATA_FtoM : entity work.module_fifo_regs_no_flags
 ----------------------------------------------------------------------------------------
 uart_i2c_module_slv2 : entity work.uart_i2c_module
   generic map(
-    ID => "010"
+    ID => "010",
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_clk => i_clk_100MHz,
@@ -502,7 +508,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
   i2c_module_3 : entity work.i2c_module
   generic map (
     ID => "011",
-    GEN_TYPE => "DEFAULT"
+    GEN_TYPE => FIFO_MODE
   )
   port map (
     i_clk => i_clk_100MHz,
@@ -533,7 +539,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
 SPI_module_4 : entity work.SPI_module
 generic map (
   ID => "100",
-  GEN_TYPE => "DEFAULT"
+  GEN_TYPE => FIFO_MODE
 )
 port map (
   i_clk => i_clk_100MHz,

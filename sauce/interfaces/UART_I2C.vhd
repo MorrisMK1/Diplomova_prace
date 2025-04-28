@@ -48,7 +48,7 @@ end entity;
 ----------------------------------------------------------------------------------------
 --ANCHOR - architecture
 ----------------------------------------------------------------------------------------
-architecture rtl of UART_I2C is			--FIXME - Needs a finish
+architecture rtl of UART_I2C is	
 
 	signal tx,	rx,	i_sda,	i_scl,	o_sda,	o_scl,	tx_ready,	rx_ready,	i_interrupt,	o_interrupt, en_i2c, en_uart	: std_logic;
 

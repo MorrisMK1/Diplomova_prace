@@ -107,11 +107,11 @@ library work;
 
     attribute MARK_DEBUG : string;
 
-    attribute MARK_DEBUG of st_flow_ctrl : signal is "TRUE";
-    attribute MARK_DEBUG of reg_op : signal is "TRUE";
-    attribute MARK_DEBUG of r_registers : signal is "TRUE";
-    attribute MARK_DEBUG of i_data : signal is "TRUE";
-    attribute MARK_DEBUG of i_data_vld : signal is "TRUE";
+    --attribute MARK_DEBUG of st_flow_ctrl : signal is "TRUE";
+    --attribute MARK_DEBUG of reg_op : signal is "TRUE";
+    --attribute MARK_DEBUG of r_registers : signal is "TRUE";
+    --attribute MARK_DEBUG of i_data : signal is "TRUE";
+    --attribute MARK_DEBUG of i_data_vld : signal is "TRUE";
   
   begin
 

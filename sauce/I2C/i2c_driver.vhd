@@ -80,7 +80,7 @@ architecture rtl of i2c_driver is
 
   attribute MARK_DEBUG : string;
 
-  attribute MARK_DEBUG of st_driver : signal is "TRUE";
+  --attribute MARK_DEBUG of st_driver : signal is "TRUE";
 
 begin
 ----------------------------------------------------------------------------------------
