@@ -103,7 +103,7 @@ o_busy <= sclk_run;
         sclk_mid <= '0';
       else
         sclk_mid <= '0';
-        if (sclk_run = '1') then
+        if ((sclk_run = '1') or (SCLK = '1')) then
           if ((i_hold_active = '0') or (SCLK = '1')) then
             if (sclk_cnt < unsigned(i_clk_div)) then
               sclk_cnt := sclk_cnt + 1;
@@ -140,7 +140,7 @@ o_busy <= sclk_run;
         data_to_snd := (others => '0');
         o_data_read <= '0';
         out_busy <= '0';
-        MOSI <= '0';
+        MOSI <= '1';
       else
         out_busy <= '1';
         o_data_read <= '0';
@@ -155,7 +155,7 @@ o_busy <= sclk_run;
             end if;
             if (i_CPHA = '0') then
               MOSI <= data_to_snd(0);
-              data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
+              data_to_snd := '1' & data_to_snd(MSG_W - 1 downto 1);
             end if;
             bits_to_snd := MSG_W;
             o_data_read <= '1';
@@ -164,7 +164,7 @@ o_busy <= sclk_run;
           end if;
         elsif (((SCLK = '0') and (last_sclk = '1') and (i_CPHA = '0')) or ((SCLK = '1') and (last_sclk = '0') and (i_CPHA = '1'))) then
           MOSI <= data_to_snd(0);
-          data_to_snd := '0' & data_to_snd(MSG_W - 1 downto 1);
+          data_to_snd := '1' & data_to_snd(MSG_W - 1 downto 1);
           if (bits_to_snd /= 0) then
             bits_to_snd := bits_to_snd - 1;
           end if ;

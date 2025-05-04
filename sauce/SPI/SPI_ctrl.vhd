@@ -102,8 +102,17 @@ architecture rtl of SPI_ctrl is
 
   signal data_cnt_i     : natural range 0 to 255;
   signal data_cnt_o     : natural range 0 to 255;
+  signal delay_cnt      : natural range 0 to 32767;
 
   signal MISO_in, MOSI_in, SCLK_in  : std_logic;
+
+  
+  attribute MARK_DEBUG : string;
+
+  --attribute MARK_DEBUG of MOSI : signal is "TRUE";
+  --attribute MARK_DEBUG of SCLK : signal is "TRUE";
+  --attribute MARK_DEBUG of MISO_in : signal is "TRUE";
+  --attribute MARK_DEBUG of o_CS : signal is "TRUE";
 
 begin
 
@@ -235,6 +244,7 @@ end process p_cfg_manager;
               reg_op <= i_i_info_fifo_data;
               o_i_info_fifo_next <= '1';
               if (inf_reg(i_i_info_fifo_data) = "00") then
+                delay_cnt <= to_integer(unsigned(clk_div((MSG_W * 2) - 1 downto 1)));
                 st_flow <= st_flow_MS_START;
               else
                 st_flow <= st_flow_MS_DELAY;
@@ -262,7 +272,11 @@ end process p_cfg_manager;
           when st_flow_MS_START =>
             data_cnt_i <= 0;
             data_cnt_o <= 0;
-            st_flow <= st_flow_MS_TRANSFER_NEXT;
+            if (delay_cnt = 0) then
+              st_flow <= st_flow_MS_TRANSFER_NEXT;
+            else
+              delay_cnt <= delay_cnt - 1;
+            end if;
             
           when st_flow_MS_TRANSFER_NEXT =>
             i_hold_active <= '0';

@@ -74,6 +74,7 @@ architecture behavioral of uart_rx is
   --attribute MARK_DEBUG of i_clk_div : signal is "TRUE";
   --attribute MARK_DEBUG of counter_start : signal is "TRUE";
   --attribute MARK_DEBUG of s_rx : signal is "TRUE";
+  --attribute MARK_DEBUG of i_rx : signal is "TRUE";
 begin
 
   o_busy <= '1' when s_rx /= s_rx_IDLE else '0';
