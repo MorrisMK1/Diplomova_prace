@@ -14,20 +14,30 @@ entity main_v2 is
     main_tx       : out std_logic;
     main_rx       : in std_logic;
 
-    slv1_tx       : out std_logic;
-    slv1_rx       : in std_logic;
+    slv1_tx       : inout std_logic;
+    slv1_rx       : inout std_logic;
+    slv1_sup_in   : in   std_logic;
+    slv1_sup_out  : out  std_logic;
     
     slv2_tx       : inout std_logic;
     slv2_rx       : inout std_logic;
+    slv2_sup_in   : in   std_logic;
+    slv2_sup_out  : out  std_logic;
     
-    scl_3         : inout std_logic;
-    sda_3         : inout std_logic;
-    i2c_3_inter   : inout std_logic := '0';
+    slv3_tx       : inout std_logic;
+    slv3_rx       : inout std_logic;
+    slv3_sup_in   : in   std_logic;
+    slv3_sup_out  : out  std_logic;
   
     MISO_4        : in std_logic;
     MOSI_4        : out std_logic;
     SCLK_4        : out std_logic;
-    o_CS_4        : out std_logic_vector(7 downto 0)
+    o_CS_4        : out std_logic_vector(7 downto 0);
+
+    MISO_5        : in std_logic;
+    MOSI_5        : out std_logic;
+    SCLK_5        : out std_logic;
+    o_CS_5        : out std_logic_vector(7 downto 0)
 
   );
 end entity main_v2;
@@ -447,7 +457,7 @@ module_fifo_DATA_FtoM : entity work.FIFO_wrapper
   ----------------------------------------------------------------------------------------
   --ANCHOR - SLAVE INTERFACE 1
   ----------------------------------------------------------------------------------------
-  uart_module_slv1 : entity work.uart_module
+  uart_i2c_module_slv1 : entity work.uart_i2c_module
   generic map(
     ID => "001",
     GEN_TYPE => FIFO_MODE
@@ -455,7 +465,7 @@ module_fifo_DATA_FtoM : entity work.FIFO_wrapper
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => enable_interfaces(0),
+    i_en => enable_interfaces(1 downto 0),
     i_i_info_write => r_o_o_info_fifo_next_1,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_1,
@@ -468,8 +478,10 @@ module_fifo_DATA_FtoM : entity work.FIFO_wrapper
     o_i_data_next => s_o_i_data_fifo_next_1,
     o_o_data_data => s_i_i_data_fifo_data_1,
     o_o_data_empty => s_i_i_data_fifo_empty_1,
-    slv_tx => slv1_tx,
-    slv_rx => slv1_rx
+    tx_scl => slv1_tx,
+    rx_sda => slv1_rx,
+    i_interrupt_tx_rdy => slv1_sup_in,
+    o_interrupt_rx_rdy => slv1_sup_out
   );
 
 
@@ -484,7 +496,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => enable_interfaces(2 downto 1),
+    i_en => enable_interfaces(3 downto 2),
     i_i_info_write => r_o_o_info_fifo_next_2,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_2,
@@ -499,13 +511,14 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
     o_o_data_empty => s_i_i_data_fifo_empty_2,
     tx_scl => slv2_tx,
     rx_sda => slv2_rx,
-    i_interrupt_tx_rdy => '1'
+    i_interrupt_tx_rdy => slv2_sup_in,
+    o_interrupt_rx_rdy => slv2_sup_out
   );
 
 ----------------------------------------------------------------------------------------
 --ANCHOR - SLAVE INTERFACE 3
 ----------------------------------------------------------------------------------------
-  i2c_module_3 : entity work.i2c_module
+uart_i2c_module_slv3 : entity work.uart_i2c_module
   generic map (
     ID => "011",
     GEN_TYPE => FIFO_MODE
@@ -513,7 +526,7 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
   port map (
     i_clk => i_clk_100MHz,
     i_rst_n => i_rst_n,
-    i_en => enable_interfaces(3),
+    i_en => enable_interfaces(5 downto 4),
     i_i_info_write => r_o_o_info_fifo_next_3,
     i_i_info_data => r_o_o_info_fifo_data,
     i_o_info_full => r_i_o_info_fifo_full_3,
@@ -526,10 +539,10 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
     o_i_data_next => s_o_i_data_fifo_next_3,
     o_o_data_data => s_i_i_data_fifo_data_3,
     o_o_data_empty => s_i_i_data_fifo_empty_3,
-    scl => scl_3,
-    sda => sda_3,
-    i_interrupt => i2c_3_inter,
-    o_interrupt => i2c_3_inter_inner
+    tx_scl => slv3_tx,
+    rx_sda => slv3_rx,
+    i_interrupt_tx_rdy => slv3_sup_in,
+    o_interrupt_rx_rdy => slv3_sup_out
   );
 
 
@@ -544,7 +557,7 @@ generic map (
 port map (
   i_clk => i_clk_100MHz,
   i_rst_n => i_rst_n,
-  i_en => enable_interfaces(4),
+  i_en => enable_interfaces(6),
   i_i_info_write => r_o_o_info_fifo_next_4,
   i_i_info_data => r_o_o_info_fifo_data,
   i_o_info_full => r_i_o_info_fifo_full_4,
@@ -561,6 +574,36 @@ port map (
   MOSI => MOSI_4,
   SCLK => SCLK_4,
   o_CS => o_CS_4
+);
+
+----------------------------------------------------------------------------------------
+--ANCHOR - SLAVE INTERFACE 5
+----------------------------------------------------------------------------------------
+SPI_module_5 : entity work.SPI_module
+generic map (
+  ID => "101",
+  GEN_TYPE => FIFO_MODE
+)
+port map (
+  i_clk => i_clk_100MHz,
+  i_rst_n => i_rst_n,
+  i_en => enable_interfaces(7),
+  i_i_info_write => r_o_o_info_fifo_next_5,
+  i_i_info_data => r_o_o_info_fifo_data,
+  i_o_info_full => r_i_o_info_fifo_full_5,
+  i_i_data_write => r_o_o_data_fifo_next_5,
+  i_i_data_data => r_o_o_data_fifo_data,
+  i_o_data_full => r_i_o_data_fifo_full_5,
+  o_i_info_next => s_o_i_info_fifo_next_5,
+  o_o_info_data => s_i_i_info_fifo_data_5,
+  o_o_info_empty => s_i_i_info_fifo_empty_5,
+  o_i_data_next => s_o_i_data_fifo_next_5,
+  o_o_data_data => s_i_i_data_fifo_data_5,
+  o_o_data_empty => s_i_i_data_fifo_empty_5,
+  MISO => MISO_5,
+  MOSI => MOSI_5,
+  SCLK => SCLK_5,
+  o_CS => o_CS_5
 );
 
 

@@ -44,30 +44,30 @@ begin
       o_rd_data => o_rd_data,
       o_empty => o_empty
     );
-  elsif (GEN_TYPE = "XILINX" and g_WIDTH = 8) generate   --NOTE - xilinx cases might need to be commented in sim to let it run
-    module_fifo : entity work.fifo_generator_8b
-      PORT MAP (
-        clk   => i_clk,
-        rst  => i_rst_sync,
-        din   => i_wr_data,
-        wr_en => i_wr_en,
-        rd_en => i_rd_en,
-        dout  => o_rd_data,
-        full  => o_full,
-        empty => o_empty
-      );
-  elsif (GEN_TYPE = "XILINX" and g_WIDTH = 24) generate
-    module_fifo : entity work.fifo_generator_24b
-      PORT MAP (
-        clk   => i_clk,
-        srst  => i_rst_sync,
-        din   => i_wr_data,
-        wr_en => i_wr_en,
-        rd_en => i_rd_en,
-        dout  => o_rd_data,
-        full  => o_full,
-        empty => o_empty
-      );
+  --elsif (GEN_TYPE = "XILINX" and g_WIDTH = 8) generate   --NOTE - xilinx cases might need to be commented in sim to let it run
+  --  module_fifo : entity work.fifo_generator_8b
+  --    PORT MAP (
+  --      clk   => i_clk,
+  --      rst  => i_rst_sync,
+  --      din   => i_wr_data,
+  --      wr_en => i_wr_en,
+  --      rd_en => i_rd_en,
+  --      dout  => o_rd_data,
+  --      full  => o_full,
+  --      empty => o_empty
+  --    );
+  --elsif (GEN_TYPE = "XILINX" and g_WIDTH = 24) generate
+  --  module_fifo : entity work.fifo_generator_24b
+  --    PORT MAP (
+  --      clk   => i_clk,
+  --      srst  => i_rst_sync,
+  --      din   => i_wr_data,
+  --      wr_en => i_wr_en,
+  --      rd_en => i_rd_en,
+  --      dout  => o_rd_data,
+  --      full  => o_full,
+  --      empty => o_empty
+  --    );
   else generate
       p_err : process (i_clk)
     begin

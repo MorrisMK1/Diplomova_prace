@@ -30,6 +30,9 @@ signal rx_ms          : std_logic;
 
 signal MISO_4, MOSI_4, SCLK_4 :std_logic;
 signal o_CS_4         : std_logic_vector(7 downto 0);
+signal MISO_5, MOSI_5, SCLK_5 :std_logic;
+signal o_CS_5         : std_logic_vector(7 downto 0);
+
 signal scl_3, sda_3, i2c_3_inter:std_logic;
 
 signal i_settings     : std_logic_array (1 to 2) (MSG_W -1 downto 0);
@@ -89,7 +92,7 @@ begin
       uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
       info("Uart test - main config 2");
       wait for CLK_PERIOD*1;
-      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"80" & x"00",message);
+      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"D5" & x"00",message);
       info("Uart test - main config 3");
       for i in 1 to 2 loop
         info("Starting loop " & to_string(i));
@@ -164,6 +167,9 @@ begin
       wait for CLK_PERIOD*1;
       uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
       info("Uart test - main config 2");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"DD" & x"00",message);
+      info("Uart test - main config 3");
       gen_header <= create_reg0_w("00",'0',"011","00001010","00000000");
       for i in 70 downto 0 loop
         info("Sending msg: "& to_string(71 - i) & "/71");
@@ -233,6 +239,9 @@ begin
       wait for CLK_PERIOD*1;
       uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
       info("Uart test - main config 2");
+      wait for CLK_PERIOD*1;
+      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"DD" & x"00",message);
+      info("Uart test - main config 3");
       gen_header <= create_reg0_w("00",'0',"011","00001010","00000000");
         wait for 0 ns;
         msg_val :=  gen_header(MSG_W * 3 - 1 downto MSG_W * 2);
@@ -282,9 +291,15 @@ main_inst : entity work.main_v2
     MOSI_4  => MOSI_4,
     SCLK_4  => SCLK_4,
     o_CS_4  => o_CS_4,
-    scl_3       =>scl_3,      
-    sda_3       =>sda_3,      
-    i2c_3_inter =>i2c_3_inter
+    MISO_5  => MISO_5,
+    MOSI_5  => MOSI_5,
+    SCLK_5  => SCLK_5,
+    o_CS_5  => o_CS_5,
+    slv3_tx => scl_3,      
+    slv3_rx => sda_3,      
+    slv3_sup_in =>i2c_3_inter,
+    slv2_sup_in =>'0',
+    slv1_sup_in =>'0'
   );
 
     ----------------------------------------------------------------------------------------
