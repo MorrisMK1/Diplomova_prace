@@ -47,7 +47,7 @@ end entity main_v2;
 ----------------------------------------------------------------------------------------
 architecture behavioral of main_v2 is 
 
-constant FIFO_MODE : STRING := "DEFAULT"; -- "XILINX" "DEFAULT"
+constant FIFO_MODE : STRING := "XILINX"; -- "XILINX" "DEFAULT"
 
 signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf: info_bus;
 signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat: data_bus;
@@ -171,29 +171,23 @@ signal i2c_3_inter_inner    : std_logic;
 
 begin
 
-  r_i_o_data_fifo_full_5 <= ZERO_BIT;
   r_i_o_data_fifo_full_6 <= ZERO_BIT;
   r_i_o_data_fifo_full_7 <= ZERO_BIT;
   r_i_o_data_fifo_full_X <= ZERO_BIT;
-  r_i_o_info_fifo_full_5 <= ZERO_BIT;
   r_i_o_info_fifo_full_6 <= ZERO_BIT;
   r_i_o_info_fifo_full_7 <= ZERO_BIT;
   r_i_o_info_fifo_full_X <= ZERO_BIT;
 
   s_i_i_data_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_data_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_7 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_info_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_7 <= (others => ZERO_BIT); 
 
-  s_i_i_data_fifo_empty_5 <= HIGH_BIT;
   s_i_i_data_fifo_empty_6 <= HIGH_BIT;
   s_i_i_data_fifo_empty_7 <= HIGH_BIT;
   s_i_i_data_fifo_empty_X <= HIGH_BIT;
-  s_i_i_info_fifo_empty_5 <= HIGH_BIT;
   s_i_i_info_fifo_empty_6 <= HIGH_BIT;
   s_i_i_info_fifo_empty_7 <= HIGH_BIT;
   s_i_i_info_fifo_empty_X <= HIGH_BIT;

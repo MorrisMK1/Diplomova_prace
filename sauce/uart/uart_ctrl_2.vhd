@@ -210,6 +210,8 @@ end process p_cfg_manager;
 ----------------------------------------------------------------------------------------
 p_timeout : process (clk_en)
   variable step : natural range 0 to (10*32*10);
+  variable step_inter : natural range 0 to (10*32);
+  variable step_max : natural range 0 to (10*32*10);
   variable divider : natural range 0 to 65535;
   variable actual_msg_len : natural range 0 to 9;
 begin
@@ -225,9 +227,9 @@ begin
         actual_msg_len := 5;
       end if;
       actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
-      if (step >= (to_integer(unsigned(timeout_val))+1)*10*(actual_msg_len)) then -- 
+      if (step >= step_max) then -- 
         timeout_s <= '1';
-      elsif (divider >= to_integer(unsigned(clk_div))) then
+      elsif (to_unsigned(divider,16) >= unsigned(clk_div)) then
         step := step + 1;
         divider := 0;
       else
@@ -238,6 +240,8 @@ begin
       step := 0;
       timeout_s <= '0';
     end if;
+    step_max := (step_inter)*(actual_msg_len);
+    step_inter := (to_integer(unsigned(timeout_val))+1)*(10);
   end if;
 end process;
 ----------------------------------------------------------------------------------------
