@@ -146,11 +146,11 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Config manager
 ----------------------------------------------------------------------------------------
-p_cfg_manager : process (clk_en)
+p_cfg_manager : process (clk_100MHz)
 variable register_selection : natural range 0 to 3;
 begin
 register_selection := to_integer(unsigned(inf_reg(reg_op)));
-if rising_edge(clk_en) then 
+if rising_edge(clk_100MHz) and (i_en = '1') then 
   -- internal reset from registr should not reset registers
   if (i_rst_n = '0' or en_rst = '1') then
     for i in 1 to 3 loop
@@ -194,9 +194,9 @@ end process p_cfg_manager;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Controller
 ----------------------------------------------------------------------------------------
-  p_controller : process(clk_en)
+  p_controller : process(clk_100MHz)
   begin
-    if rising_edge(clk_en) then
+    if rising_edge(clk_100MHz) and (i_en = '1') then
       if (rst_n = '0') then
         o_CS <= (others => not SPOL);
         reg_op <= (others => '0') ;

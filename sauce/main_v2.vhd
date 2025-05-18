@@ -47,7 +47,7 @@ end entity main_v2;
 ----------------------------------------------------------------------------------------
 architecture behavioral of main_v2 is 
 
-constant FIFO_MODE : STRING := "XILINX"; -- "XILINX" "DEFAULT"
+constant FIFO_MODE : STRING := "DEFAULT"; -- "XILINX" "DEFAULT"
 
 signal o_m_i_f_inf, i_r_o_f_inf, i_m_o_f_inf: info_bus;
 signal o_m_i_f_dat, i_r_o_f_dat, i_m_o_f_dat: data_bus;

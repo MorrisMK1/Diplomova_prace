@@ -150,11 +150,11 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Config manager
 ----------------------------------------------------------------------------------------
-p_cfg_manager : process (clk_en)
+p_cfg_manager : process (clk)
 variable register_selection : natural range 0 to 3;
 begin
 register_selection := to_integer(unsigned(inf_reg(reg_op)));
-if rising_edge(clk_en) then 
+if rising_edge(clk) and (i_en = '1') then 
   -- internal reset from registr should not reset registers
   if (i_rst_n = '0' or en_rst = '1') then
     for i in 1 to 3 loop
@@ -199,10 +199,10 @@ end process p_cfg_manager;
 --#ANCHOR - Interrupt handler
 ----------------------------------------------------------------------------------------
 
-p_interrupt : process (clk_en)
+p_interrupt : process (clk)
   variable latch : std_logic;
 begin
-  if (rising_edge(clk_en)) then
+  if (rising_edge(clk) and (i_en = '1')) then
     interrupt_flg <= '0';
     if (rst_n = '0') then
       latch := '0';
@@ -221,12 +221,12 @@ end process;
 --#ANCHOR - Controller
 ----------------------------------------------------------------------------------------
 
-p_flow_ctrl : process(clk_en)
+p_flow_ctrl : process(clk)
   variable last_busy  : std_logic;
   variable data_cnt_next : natural range 0 to 255;
 begin
   data_cnt_next := data_cnt + 1;
-  if rising_edge(clk_en) then
+  if rising_edge(clk) and (i_en = '1') then
     if (rst_n = '0') then
       st_flow_ctrl <= st_flow_IDLE;
       reg_op_rdy_strb <= '0';
@@ -416,11 +416,11 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - SCL block detection
 ----------------------------------------------------------------------------------------
-p_scl_block_detect : process (clk_en)
+p_scl_block_detect : process (clk)
   variable ticks_held_low : natural range (65536*4-1) downto 0;
   variable max_wait_ticks : STD_ULOGIC_VECTOR (MSG_W*2+1 downto 0);
 begin
-  if (rising_edge(clk_en)) then
+  if (rising_edge(clk) and (i_en = '1')) then
     max_wait_ticks := (clk_div & "00");
     blocked_flg  <= '0';
     if (rst_n = '0') then
