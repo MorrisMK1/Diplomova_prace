@@ -40,7 +40,9 @@ entity uart_ctrl2 is
     rx                      : in std_logic := '1';
 
     tx_ready                : in std_logic := '1';
-    rx_ready                : out std_logic
+    rx_ready                : out std_logic;
+
+    o_busy                  : out std_logic
   );
 end uart_ctrl2;
 
@@ -102,6 +104,7 @@ architecture behavioral of uart_ctrl2 is
   signal timeout_s      : std_logic;
 
   signal rts_in, rts_out, cts_in, cts_out : std_logic;
+  signal busy_down, busy_up : std_logic;
 
   alias clk_div_sel     : std_logic_vector(2 downto 0) is r_registers(1)(2 downto 0);
   alias word_len        : std_logic_vector(1 downto 0) is r_registers(1)(4 downto 3);
@@ -136,6 +139,7 @@ cts_in <= tx_ready  when ready_dir = '1' else '1';
 rx_ready <= '0'     when ready_en = '0' else
             cts_out when ready_dir = '0' else
             rts_out;
+o_busy <= (busy_down or busy_up) and i_en;
 --tx <= not internal_tx when (polarity = '1') else internal_tx ;
 --internal_rx <= not rx when (polarity = '1') else rx ;
 ----------------------------------------------------------------------------------------
@@ -252,6 +256,7 @@ p_downstream  : process (clk_en)
   variable data_cnt : natural range 0 to 255  := 0;
 begin
   if rising_edge(clk_en) then
+    busy_down <= '0' when st_downstr = st_downstr_IDLE else '1';
     if (rst_n = '0')then
       st_downstr := st_downstr_IDLE;
       reg_op <= (others => '0');
@@ -321,6 +326,7 @@ p_upstream  : process (clk_en)
   variable rx_ready_last  : std_logic;
 begin
   if rising_edge(clk_en) then
+    busy_up <= '0' when st_upstr = st_upstr_IDLE else '1';
     flag_rst <= '0';
     if rst_n = '0' then
       st_upstr := st_upstr_IDLE;

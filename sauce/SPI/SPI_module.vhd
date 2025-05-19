@@ -35,7 +35,9 @@ entity SPI_module is
     MISO            : in std_logic;
     MOSI            : out std_logic;
     SCLK            : out std_logic;
-    o_CS            : out std_logic_vector(MSG_W - 1 downto 0)
+    o_CS            : out std_logic_vector(MSG_W - 1 downto 0);
+
+    o_busy          : out std_logic
 
   );
 end entity SPI_module;
@@ -158,7 +160,8 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     MISO => MISO,
     MOSI => MOSI,
     SCLK => SCLK,
-    o_CS => o_CS
+    o_CS => o_CS,
+    o_busy => o_busy
   );
 
 

@@ -167,7 +167,7 @@ signal s_o_o_info_fifo_next : in_pulse;
 
 signal i2c_3_inter_inner    : std_logic;
 
-
+signal slave_busy   : std_logic_vector(6 downto 0);
 
 begin
 
@@ -197,6 +197,8 @@ begin
   s_i_i_info_fifo_empty_6 <= HIGH_BIT;
   s_i_i_info_fifo_empty_7 <= HIGH_BIT;
   s_i_i_info_fifo_empty_X <= HIGH_BIT;
+
+  slave_busy(6 downto 5) <= "00";
 
 
 ----------------------------------------------------------------------------------------
@@ -437,6 +439,7 @@ module_fifo_DATA_FtoM : entity work.FIFO_wrapper
   port map (
     clk => i_clk_100MHz,
     rst_n => i_rst_n,
+    i_slaves_busy => slave_busy,
     i_i_data_fifo_data =>  r_o_o_data_fifo_data,
     i_i_data_fifo_write => r_o_o_data_fifo_next_0,
     o_i_data_fifo_blck =>  r_i_o_data_fifo_full_0,
@@ -481,7 +484,8 @@ module_fifo_DATA_FtoM : entity work.FIFO_wrapper
     tx_scl => slv1_tx,
     rx_sda => slv1_rx,
     i_interrupt_tx_rdy => slv1_sup_in,
-    o_interrupt_rx_rdy => slv1_sup_out
+    o_interrupt_rx_rdy => slv1_sup_out,
+    o_busy => slave_busy(0)
   );
 
 
@@ -512,7 +516,8 @@ uart_i2c_module_slv2 : entity work.uart_i2c_module
     tx_scl => slv2_tx,
     rx_sda => slv2_rx,
     i_interrupt_tx_rdy => slv2_sup_in,
-    o_interrupt_rx_rdy => slv2_sup_out
+    o_interrupt_rx_rdy => slv2_sup_out,
+    o_busy => slave_busy(1)
   );
 
 ----------------------------------------------------------------------------------------
@@ -542,7 +547,8 @@ uart_i2c_module_slv3 : entity work.uart_i2c_module
     tx_scl => slv3_tx,
     rx_sda => slv3_rx,
     i_interrupt_tx_rdy => slv3_sup_in,
-    o_interrupt_rx_rdy => slv3_sup_out
+    o_interrupt_rx_rdy => slv3_sup_out,
+    o_busy => slave_busy(2)
   );
 
 
@@ -573,7 +579,8 @@ port map (
   MISO => MISO_4,
   MOSI => MOSI_4,
   SCLK => SCLK_4,
-  o_CS => o_CS_4
+  o_CS => o_CS_4,
+  o_busy => slave_busy(3)
 );
 
 ----------------------------------------------------------------------------------------
@@ -603,7 +610,8 @@ port map (
   MISO => MISO_5,
   MOSI => MOSI_5,
   SCLK => SCLK_5,
-  o_CS => o_CS_5
+  o_CS => o_CS_5,
+  o_busy => slave_busy(4)
 );
 
 

@@ -39,7 +39,9 @@ entity UART_I2C is
 		tx_scl                  : inout std_logic := 'Z';
 		rx_sda                  : inout std_logic := 'Z';
 		i_interrupt_tx_rdy      : in  std_logic;
-		o_interrupt_rx_rdy      : out std_logic
+		o_interrupt_rx_rdy      : out std_logic;
+
+    o_busy          : out std_logic
 		
 	);
 end entity;
@@ -59,10 +61,13 @@ architecture rtl of UART_I2C is
   signal o_i_info_fifo_next_i2c, o_i_info_fifo_next_uart : std_logic;
   signal o_o_info_fifo_data_i2c, o_o_info_fifo_data_uart : info_bus;
   signal o_o_info_fifo_next_i2c, o_o_info_fifo_next_uart : std_logic;
+
+  signal uart_busy, i2c_busy : std_logic;
 begin
 
   en_i2c  <= '1' when (i_en = "01") else '0';
   en_uart <= '1' when (i_en = "10") else '0';
+  o_busy <= (i2c_busy) or (uart_busy);
 
   o_i_data_fifo_next <= o_i_data_fifo_next_i2c  when (i_en = "01") else
                         o_i_data_fifo_next_uart when (i_en = "10") else
@@ -158,7 +163,8 @@ begin
     o_scl => o_scl,
     o_sda => o_sda,
     i_interrupt => i_interrupt,
-    o_interrupt => o_interrupt
+    o_interrupt => o_interrupt,
+    o_busy => i2c_busy
   );
 
 ----------------------------------------------------------------------------------------
@@ -189,7 +195,8 @@ begin
     tx => tx,
     rx => rx,
     tx_ready => tx_ready,
-    rx_ready => rx_ready
+    rx_ready => rx_ready,
+    o_busy => uart_busy
   );
 
 

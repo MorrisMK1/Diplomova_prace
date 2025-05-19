@@ -39,7 +39,9 @@ entity SPI_ctrl is
     MISO                    : in  std_logic;
     MOSI                    : out std_logic;
     SCLK                    : out std_logic;
-    o_CS                    : out std_logic_vector(7 downto 0)
+    o_CS                    : out std_logic_vector(7 downto 0);
+
+    o_busy                  : out std_logic
   );
 end entity SPI_ctrl;
 
@@ -54,7 +56,7 @@ architecture rtl of SPI_ctrl is
   signal i_data_recieve : std_logic;
   signal o_data : std_logic_vector(MSG_W - 1 downto 0);
   signal o_data_vld : std_logic;
-  signal o_busy : std_logic;
+  signal drv_busy : std_logic;
 
   type t_flow_ctrl_state is (
     st_flow_IDLE,
@@ -123,6 +125,7 @@ begin
   MOSI <= MOSI_in ;--when (CPOL = '0') else not MOSI_in;
   SCLK <= SCLK_in when (CPOL = '0') else not SCLK_in;
   MISO_in <= MISO ;--when (CPOL = '0') else not MISO;
+  o_busy <= '0' when (st_flow = st_flow_IDLE) else i_en;
 
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Auto reset after enable
@@ -307,7 +310,7 @@ end process p_cfg_manager;
             
           when st_flow_MS_TRANSFER_CHCK =>
             --i_hold_active <= reg_op(MSG_W * 2 + 5);
-            if (o_busy = '0') then
+            if (drv_busy = '0') then
               if (reg_op(MSG_W * 2 + 5) = '1') then
                 st_flow <= st_flow_MS_HOLD;
               else
@@ -349,7 +352,7 @@ end process p_cfg_manager;
             
           when st_flow_MS_TERMINATE =>
             i_hold_active <= '0';
-            if (o_busy = '0') then
+            if (drv_busy = '0') then
               st_flow <= st_flow_IDLE;
             end if;
             
@@ -411,7 +414,7 @@ end process;
     i_data_recieve => i_data_recieve,
     o_data => o_data,
     o_data_vld => o_data_vld,
-    o_busy => o_busy,
+    o_busy => drv_busy,
     o_noise_flg => noise_flg,
     MISO => MISO_in,
     MOSI => MOSI_in,

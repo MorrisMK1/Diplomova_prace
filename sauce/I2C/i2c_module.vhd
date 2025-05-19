@@ -35,7 +35,9 @@ entity i2c_module is
     scl             : inout std_logic := 'Z';
     sda             : inout std_logic := 'Z';
     i_interrupt     : in  std_logic;
-    o_interrupt     : out std_logic
+    o_interrupt     : out std_logic;
+
+    o_busy          : out std_logic
 
   );
 end entity i2c_module;
@@ -157,7 +159,8 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     scl                => scl,
     sda                => sda,
     i_interrupt        => i_interrupt,
-    o_interrupt        => o_interrupt
+    o_interrupt        => o_interrupt,
+    o_busy             => o_busy
   );
 
 

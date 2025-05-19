@@ -92,7 +92,7 @@ begin
       uart_tx_message(rx_ms,(1.085 us),"00010000" & i_settings(2) & x"00",message);
       info("Uart test - main config 2");
       wait for CLK_PERIOD*1;
-      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"D5" & x"00",message);
+      uart_tx_message(rx_ms,(1.085 us),"00011000" & x"DA" & x"00",message);
       info("Uart test - main config 3");
       for i in 1 to 2 loop
         info("Starting loop " & to_string(i));

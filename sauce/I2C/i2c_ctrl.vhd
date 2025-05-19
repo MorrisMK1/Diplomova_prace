@@ -38,7 +38,9 @@ library work;
       o_scl                   : out   std_logic;
       o_sda                   : out   std_logic;
       i_interrupt             : in  std_logic;
-      o_interrupt             : out std_logic
+      o_interrupt             : out std_logic;
+
+      o_busy                  : out std_logic
     );
   end entity i2c_ctrl;
   
@@ -51,7 +53,7 @@ library work;
     signal i_ignore : std_logic;
     signal o_no_ack : std_logic;
     signal clk_div : std_logic_vector(MSG_W * 2 - 1 downto 0);
-    signal o_busy : std_logic;
+    signal drv_busy : std_logic;
     signal o_running : std_logic;
     signal i_sda    : std_logic;
 
@@ -118,6 +120,7 @@ library work;
     rst_n <= i_rst_n and not rst_r and not en_rst;
     clk_en <= clk and i_en;
     no_ack_flg <= o_no_ack;
+    o_busy <= '0' when (st_flow_ctrl = st_flow_IDLE) else i_en;
 
     i_sda <= '0' when (sda = '0')   else '1'; -- force it to synthetize
     g_tristate : if (INTERNAL_I2C = false) generate
@@ -296,7 +299,7 @@ begin
             end if;
             i_data <= i_i_data_fifo_data;
             if (o_running = '1') then
-              if(o_busy = '0') then
+              if(drv_busy = '0') then
                 if (i_i_data_fifo_data(0) /= '0') then
                   o_i_data_fifo_next <= '1';
                   st_flow_ctrl <= st_flow_MS_REC;
@@ -308,7 +311,7 @@ begin
           end if;
 
         when st_flow_MS_REC =>
-          i_recieve <= '0' when ((data_cnt_next = to_integer(unsigned(reg_op(MSG_W - 1 downto 0)))) and (o_busy = '1')) else '1';
+          i_recieve <= '0' when ((data_cnt_next = to_integer(unsigned(reg_op(MSG_W - 1 downto 0)))) and (drv_busy = '1')) else '1';
           o_o_data_fifo_data <= o_data;
           o_o_data_fifo_next <= o_data_vld;
           data_cnt <= data_cnt_next when (o_data_vld = '1') else data_cnt;
@@ -324,7 +327,7 @@ begin
         when st_flow_MS_SND =>
           i_data_vld <= '1';
           i_data <= i_i_data_fifo_data;
-          if (last_busy = '0' and o_busy = '1') then
+          if (last_busy = '0' and drv_busy = '1') then
             data_cnt <= data_cnt_next;
             o_i_data_fifo_next <= '1';
           end if;
@@ -378,7 +381,7 @@ begin
         when others =>
           st_flow_ctrl <= st_flow_IDLE;
       end case;
-      last_busy := o_busy;
+      last_busy := drv_busy;
 
     end if;
   end if;
@@ -459,7 +462,7 @@ end process;
     clk_div => clk_div,
     i_slv_addr  => address,
     i_en_slave => slave_mode,
-    o_busy => o_busy,
+    o_busy => drv_busy,
     o_running => o_running
   );
 

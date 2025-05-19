@@ -35,7 +35,9 @@ entity uart_i2c_module is
     tx_scl             : inout std_logic := 'Z';
     rx_sda             : inout std_logic := 'Z';
     i_interrupt_tx_rdy     : in  std_logic;
-    o_interrupt_rx_rdy     : out std_logic
+    o_interrupt_rx_rdy     : out std_logic;
+
+    o_busy          : out std_logic
 
   );
 end entity uart_i2c_module;
@@ -160,7 +162,9 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     tx_scl                => tx_scl,
     rx_sda                => rx_sda,
     i_interrupt_tx_rdy    => i_interrupt_tx_rdy,
-    o_interrupt_rx_rdy    => o_interrupt_rx_rdy
+    o_interrupt_rx_rdy    => o_interrupt_rx_rdy,
+
+    o_busy              => o_busy
   );
 
 

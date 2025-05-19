@@ -2,6 +2,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use ieee.std_logic_unsigned.all;
+  use ieee.std_logic_misc.all;
 
 library work;
   use work.my_common.all;
@@ -13,6 +14,8 @@ entity design_config is
   port (
     clk   : in std_logic;
     rst_n : in std_logic;
+
+    i_slaves_busy   : in std_logic_vector(6 downto 0);
 
     i_i_data_fifo_data      : in  data_bus;
     i_i_data_fifo_write     : in  out_ready;
@@ -44,6 +47,9 @@ architecture rtl of design_config is
   
   signal r_registers    : std_logic_array (1 to 3) (MSG_W-1 downto 0);
 
+  signal info_fifo_blck : std_logic;
+  signal last_blck : std_logic;
+
   
   attribute MARK_DEBUG : string;
 
@@ -57,6 +63,9 @@ begin
   o_o_data_fifo_data <= (others => '0') ;
   o_enable_interfaces <= r_registers(3);
   o_settings_main <= r_registers (1 to 2);
+
+  o_i_info_fifo_blck <= info_fifo_blck or (or_reduce(i_slaves_busy)) or last_blck;
+  last_blck <= (or_reduce(i_slaves_busy));
 
   
 ----------------------------------------------------------------------------------------
@@ -73,13 +82,13 @@ if rising_edge(clk) then
     end loop;
     o_o_info_fifo_data <= (others => '0');
     o_o_info_fifo_blck <= '1';
-    o_i_info_fifo_blck <= '0';
+    info_fifo_blck <= '0';
   elsif (o_o_info_fifo_blck = '1') then
     if i_i_info_fifo_write = '1' then
       if inf_ret(i_i_info_fifo_data) = '1' then -- this is reading do not write
         o_o_info_fifo_data <= inf_id(i_i_info_fifo_data) & "0" & inf_reg(i_i_info_fifo_data) & "000" & r_registers(register_selection) & x"00";
         o_o_info_fifo_blck <= '0';
-        o_i_info_fifo_blck <= '1';
+        info_fifo_blck <= '1';
       else
         r_registers(register_selection) <= inf_size(i_i_info_fifo_data);
       end if;
@@ -87,7 +96,7 @@ if rising_edge(clk) then
   else
     if (i_o_info_fifo_read = '1') then
       o_o_info_fifo_blck <= '1';
-      o_i_info_fifo_blck <= '0';
+      info_fifo_blck <= '0';
     end if;
   end if;
 end if;

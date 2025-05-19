@@ -36,7 +36,9 @@ entity uart_module is
     slv_rx          : in  std_logic;
 
     slv_tx_rdy      : in  std_logic := '1';
-    slv_rx_rdy      : out std_logic
+    slv_rx_rdy      : out std_logic;
+
+    o_busy          : out std_logic
 
   );
 end entity uart_module;
@@ -158,7 +160,8 @@ module_fifo_DATA_SLV1_o : entity work.FIFO_wrapper
     tx => slv_tx,
     rx => slv_rx,
     tx_ready => slv_tx_rdy,
-    rx_ready => slv_rx_rdy
+    rx_ready => slv_rx_rdy,
+    o_busy => o_busy
   );
 
 
