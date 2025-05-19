@@ -171,29 +171,23 @@ signal slave_busy   : std_logic_vector(6 downto 0);
 
 begin
 
-  r_i_o_data_fifo_full_5 <= ZERO_BIT;
   r_i_o_data_fifo_full_6 <= ZERO_BIT;
   r_i_o_data_fifo_full_7 <= ZERO_BIT;
   r_i_o_data_fifo_full_X <= ZERO_BIT;
-  r_i_o_info_fifo_full_5 <= ZERO_BIT;
   r_i_o_info_fifo_full_6 <= ZERO_BIT;
   r_i_o_info_fifo_full_7 <= ZERO_BIT;
   r_i_o_info_fifo_full_X <= ZERO_BIT;
 
   s_i_i_data_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_data_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_data_fifo_data_7 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_X <= (others => ZERO_BIT); 
-  s_i_i_info_fifo_data_5 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_6 <= (others => ZERO_BIT); 
   s_i_i_info_fifo_data_7 <= (others => ZERO_BIT); 
 
-  s_i_i_data_fifo_empty_5 <= HIGH_BIT;
   s_i_i_data_fifo_empty_6 <= HIGH_BIT;
   s_i_i_data_fifo_empty_7 <= HIGH_BIT;
   s_i_i_data_fifo_empty_X <= HIGH_BIT;
-  s_i_i_info_fifo_empty_5 <= HIGH_BIT;
   s_i_i_info_fifo_empty_6 <= HIGH_BIT;
   s_i_i_info_fifo_empty_7 <= HIGH_BIT;
   s_i_i_info_fifo_empty_X <= HIGH_BIT;

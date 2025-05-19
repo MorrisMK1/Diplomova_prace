@@ -164,11 +164,11 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Config manager
 ----------------------------------------------------------------------------------------
-p_cfg_manager : process (clk_en)
+p_cfg_manager : process (i_clk)
   variable register_selection : natural range 0 to 3;
 begin
   register_selection := to_integer(unsigned(inf_reg(reg_op)));
-  if rising_edge(clk_en) then 
+  if rising_edge(i_clk) and (i_en = '1') then 
     -- internal reset from registr should not reset registers
     if (i_rst_n = '0' or en_rst = '1') then
       for i in 1 to 3 loop
@@ -212,13 +212,15 @@ end process p_cfg_manager;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - Timeout counter
 ----------------------------------------------------------------------------------------
-p_timeout : process (clk_en)
+p_timeout : process (i_clk)
   variable step : natural range 0 to (10*32*10);
+  variable step_inter : natural range 0 to (10*32);
+  variable step_max : natural range 0 to (10*32*10);
   variable divider : natural range 0 to 65535;
   variable actual_msg_len : natural range 0 to 9;
 begin
   -- timeout is counted from last recieved byte (if no bytes yet recieved it is timed by last send byte)
-  if rising_edge (clk_en) then
+  if rising_edge(i_clk) and (i_en = '1') then
     if (rst_n = '0') then
       step := 0;
       timeout_s <= '0';
@@ -229,9 +231,9 @@ begin
         actual_msg_len := 5;
       end if;
       actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
-      if (step >= (to_integer(unsigned(timeout_val))+1)*10*(actual_msg_len)) then -- 
+      if (step >= step_max) then -- 
         timeout_s <= '1';
-      elsif (divider >= to_integer(unsigned(clk_div))) then
+      elsif (to_unsigned(divider,16) >= unsigned(clk_div)) then
         step := step + 1;
         divider := 0;
       else
@@ -242,6 +244,8 @@ begin
       step := 0;
       timeout_s <= '0';
     end if;
+    step_max := (step_inter)*(actual_msg_len);
+    step_inter := (to_integer(unsigned(timeout_val))+1)*(10);
   end if;
 end process;
 ----------------------------------------------------------------------------------------
@@ -251,11 +255,11 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - DOWNSTREAM (from fifo)
 ----------------------------------------------------------------------------------------
-p_downstream  : process (clk_en)
+p_downstream  : process (i_clk)
   variable st_downstr:  t_downstr_state := st_downstr_IDLE;
   variable data_cnt : natural range 0 to 255  := 0;
 begin
-  if rising_edge(clk_en) then
+  if rising_edge(i_clk) and (i_en = '1') then
     busy_down <= '0' when st_downstr = st_downstr_IDLE else '1';
     if (rst_n = '0')then
       st_downstr := st_downstr_IDLE;
@@ -319,13 +323,13 @@ end process;
 ----------------------------------------------------------------------------------------
 --#ANCHOR - UPSTREAM (to fifo)
 ----------------------------------------------------------------------------------------
-p_upstream  : process (clk_en)
+p_upstream  : process (i_clk)
   variable st_upstr:  t_upstr_state := st_upstr_IDLE;
   variable data_cnt : natural range 0 to 255  := 0;
   variable cur_ID : natural range 0 to 3  := 0;
   variable rx_ready_last  : std_logic;
 begin
-  if rising_edge(clk_en) then
+  if rising_edge(i_clk) and (i_en = '1') then
     busy_up <= '0' when st_upstr = st_upstr_IDLE else '1';
     flag_rst <= '0';
     if rst_n = '0' then
