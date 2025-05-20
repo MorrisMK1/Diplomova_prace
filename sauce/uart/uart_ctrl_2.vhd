@@ -225,12 +225,6 @@ begin
       step := 0;
       timeout_s <= '0';
     elsif (rx_busy = '0') then
-      if (parity_en = '1') then
-        actual_msg_len := 6;
-      else
-        actual_msg_len := 5;
-      end if;
-      actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
       if (step >= step_max) then -- 
         timeout_s <= '1';
       elsif (to_unsigned(divider,16) >= unsigned(clk_div)) then
@@ -246,6 +240,12 @@ begin
     end if;
     step_max := (step_inter)*(actual_msg_len);
     step_inter := (to_integer(unsigned(timeout_val))+1)*(10);
+    if (parity_en = '1') then
+      actual_msg_len := 6;
+    else
+      actual_msg_len := 5;
+    end if;
+    actual_msg_len := actual_msg_len + to_integer(unsigned(word_len));
   end if;
 end process;
 ----------------------------------------------------------------------------------------
