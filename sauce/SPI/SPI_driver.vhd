@@ -17,6 +17,7 @@ entity SPI_driver is
   port (
     clk_100MHz    : in  std_logic;
     rst_n         : in  std_logic;
+    i_en          : in  std_logic := '1';
 
     i_clk_div     : in  std_logic_vector((MSG_W * 2) - 1 downto 0);  -- divider for baud_gen
     i_hold_active : in  std_logic;   -- if no data given and no data requested the communication will not be terminated but put on hold
@@ -61,7 +62,7 @@ o_busy <= sclk_run;
     variable MISO_1_cnt   : natural range MISO_DEB_BUFF_SIZE downto 0;
     variable MISO_most_cnt: natural range MISO_DEB_BUFF_SIZE downto 0;
   begin
-    if rising_edge(clk_100MHZ) then
+    if (rising_edge(clk_100MHZ) and (i_en = '1')) then
       if (rst_n = '0') then
         MISO_buffer := (others => '1');
       else
@@ -96,7 +97,7 @@ o_busy <= sclk_run;
   p_sclk_gen : process(clk_100MHz)
     variable sclk_cnt : natural range 0 to 65535;
   begin
-    if rising_edge(clk_100MHz) then
+    if (rising_edge(clk_100MHZ) and (i_en = '1')) then
       if (rst_n = '0') then
         sclk_cnt := 0;
         SCLK <= '1';
@@ -134,7 +135,7 @@ o_busy <= sclk_run;
     variable data_to_snd  : std_logic_vector(MSG_W-1 downto 0);
     variable last_sclk    : std_logic;
   begin
-    if rising_edge(clk_100MHz) then
+    if (rising_edge(clk_100MHZ) and (i_en = '1')) then
       if (rst_n = '0') then
         bits_to_snd := 0;
         data_to_snd := (others => '0');
@@ -185,7 +186,7 @@ p_flow_ctrl_MISO : process(clk_100MHz)    --TODO - finish this
   variable data_to_rec  : std_logic_vector(MSG_W-1 downto 0);
   variable last_sclk    : std_logic;
 begin
-  if rising_edge(clk_100MHz) then
+  if (rising_edge(clk_100MHZ) and (i_en = '1')) then
     if (rst_n = '0') then
       bits_to_rec := 0;
       data_to_rec := (others => '0');

@@ -19,6 +19,7 @@ entity uart_rx is
   port(
     i_clk         : in  std_logic;                -- clk pin (100MHz)
     i_rst_n       : in  std_logic;                -- negative reset pin
+    i_en          : in  std_logic := '1';         -- enable pin
     i_rx          : in  std_logic;                -- reciever pin
 
     i_start_pol   : in  std_logic := '0';         -- polarity of start bit (negative of end bit)
@@ -84,7 +85,7 @@ begin
 p_sampler :process (i_clk)
   variable active : natural range 0 to SMPL_W;
 begin
-  if rising_edge(i_clk) then
+  if (rising_edge(i_clk) and (i_en = '1')) then
     if i_rst_n = '0' then
       rx_sample <= (others => '0');
     else
@@ -115,7 +116,7 @@ p_clk_div : process (i_clk) is
   variable div10: natural range 0 to 10;
   variable run  : BOOLEAN;
 begin
-  if rising_edge(i_clk) then
+  if (rising_edge(i_clk) and (i_en = '1')) then
     if (i_rst_n = '0') then
       cnt := (others => '0');
       counter_done <= '0';
@@ -158,7 +159,7 @@ p_main  : process (i_clk)
   variable parity_chck: std_logic;
   variable parity_res : boolean;
 begin
-  if rising_edge(i_clk) then
+  if (rising_edge(i_clk) and (i_en = '1')) then
     o_msg_vld_strb <= '0';
     o_err_noise_strb <= '0';
     o_err_frame_strb <= '0';

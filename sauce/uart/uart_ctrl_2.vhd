@@ -438,8 +438,9 @@ end process;
       SMPL_W => SMPL_W
     )
     port map (
-      i_clk => clk_en,
+      i_clk => i_clk,
       i_rst_n => rst_n,
+      i_en => i_en,
       i_rx => rx,
       i_start_pol => polarity,
       i_par_en => parity_en,
@@ -459,8 +460,9 @@ end process;
       SMPL_W => SMPL_W
     )
     port map (
-      i_clk => clk_en,
+      i_clk => i_clk,
       i_rst_n => rst_n,
+      i_en => i_en,
       i_msg => msg_i_dat,
       i_msg_vld  => msg_i_vld,
       i_start_pol => polarity,

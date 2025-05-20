@@ -13,6 +13,7 @@ entity i2c_driver is
     port (
         clk         : in std_logic;
         rst_n       : in std_logic;
+        i_en        : in std_logic := '1';
 
         scl         : in  std_logic;
         sda         : in  std_logic;
@@ -107,7 +108,7 @@ begin
     variable measure  : natural range 0 to 65536;
     variable inner_scl  : std_logic;
   begin
-    if (rising_edge(clk)) then
+    if (rising_edge(clk) and (i_en = '1')) then
       if (rst_n = '0'or scl_timer_en = '0') then
         measure := 0;
         scl_timer <= '1';
@@ -141,7 +142,7 @@ p_sda_deb : process (clk)
   variable SDA_buf    : std_logic_vector (2 downto 0);
   variable sda_1_cnt  : natural range 3 downto 0;
 begin
-  if rising_edge(clk) then
+  if (rising_edge(clk) and (i_en = '1')) then
     if (rst_n = '0') then
       SDA_buf := (others => '1') ;
     else
@@ -178,7 +179,7 @@ end process;
   p_main : process (clk) 
     variable msg : std_logic_vector(MSG_W-1 downto 0);
   begin
-    if rising_edge(clk) then
+    if (rising_edge(clk) and (i_en = '1')) then
       if (rst_n = '0') then   
         data_cnt <= 0;
         st_driver <= st_driver_IDLE;

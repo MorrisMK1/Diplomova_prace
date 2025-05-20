@@ -19,6 +19,7 @@ entity uart_tx is
   port(
     i_clk         : in  std_logic;                -- clk pin (100MHz)
     i_rst_n       : in  std_logic;                -- negative reset pin
+    i_en          : in  std_logic := '1';         -- enable pin
     i_msg         : in  std_logic_vector(MSG_W-1 downto 0); -- data input
     i_msg_vld     : in std_logic;                 -- message in valid strobe signal
 
@@ -69,7 +70,7 @@ p_clk_div : process (i_clk) is
     variable div10: natural range 0 to 10;
     variable run  : BOOLEAN;
   begin
-    if rising_edge(i_clk) then
+    if (rising_edge(i_clk) and (i_en = '1')) then
       if (i_rst_n = '0') then
         cnt := (others => '0');
         counter_done <= '0';
@@ -110,7 +111,7 @@ p_main  : process (i_clk)
   variable parity_chck: std_logic;
   variable msg_buff   : STD_LOGIC_VECTOR(MSG_W-1 downto 0);
 begin
-  if rising_edge(i_clk) then
+  if (rising_edge(i_clk) and (i_en = '1')) then
     if (i_rst_n = '0') then
       o_tx <= not i_start_pol;
       bit_cnt <= 0;

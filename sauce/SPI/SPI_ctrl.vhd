@@ -402,8 +402,9 @@ end process;
     MISO_DEB_BUFF_SIZE => MISO_DEB_BUFF_SIZE
   )
   port map (
-    clk_100MHz => clk_en,
+    clk_100MHz => clk_100MHz,
     rst_n => rst_n,
+    i_en => i_en,
     i_clk_div => clk_div,
     i_hold_active => i_hold_active,
     i_data_dir => not data_dir,

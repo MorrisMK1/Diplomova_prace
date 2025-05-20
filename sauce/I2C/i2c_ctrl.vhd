@@ -446,8 +446,9 @@ end process;
 ----------------------------------------------------------------------------------------
     i2c_driver_inst : entity work.i2c_driver
   port map (
-    clk => clk_en,
+    clk => clk,
     rst_n => rst_n,
+    i_en => i_en,
     scl => scl,
     sda => i_sda,
     o_scl => o_scl,
