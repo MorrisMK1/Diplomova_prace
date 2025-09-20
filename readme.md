@@ -9,9 +9,18 @@ Vytvoření designu kontroleru ovládajícího přenos dat z hlavní sběrnice n
 Komunikační protokol je popsán [ZDE](comm_protocol.md).  
 Vnitřní funkčnost je popsána [ZDE](inner_protocol.md).
 
+Tento systém umožňuje jinému zařízení připojení a ovládání více sběrnic pomocí rozhraní UART.
+Umožňuje samostatné nastavení ovládaných(podřízených) sběrnic i hlavní sběrnice.
+Obsahuje vnitřní buffer umožňující bufferování zpráv a jednoduché přenosy mezi různě rychlými sběrnicemi.
+
+## Description
 Designing a controller to manage data transfer from the master bus to one of several slave buses and back.  
 The communication protocol is described [HERE](comm_protocol_en.md).  
 The internal functionality is described [HERE](inner_protocol_en.md).
+
+This system allows another device to connect and control multiple buses via the UART interface.
+It enables independent configuration of both the controlled (slave) buses and the master bus.
+It includes an internal buffer for message buffering and simple transfers between buses with different speeds.
 
 ## Technologie
 
@@ -20,43 +29,3 @@ The internal functionality is described [HERE](inner_protocol_en.md).
 
 - Language: VHDL/Verilog
 - Testing software: Modelsim
-
-## Úkoly
-
-- [ ] Univerzální vnitřní rozhraní sběrnic
-  - [x] navržení registrů a logiky
-  - [ ] otestovnání funkčnosti
-- [x] Uart
-  - [x] vytvoření komunikační logiky sběrnice
-  - [x] otestovnání funkčnosti
-  - [x] propojení s univerzálním rozhraním
-- [ ] I2C
-  - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] otestovnání funkčnosti
-  - [ ] propojení s univerzálním rozhraním
-- [?] SPI
-  - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] otestovnání funkčnosti
-  - [ ] propojení s univerzálním rozhraním
-- [?] 1-wire
-  - [ ] vytvoření komunikační logiky sběrnice
-  - [ ] otestovnání funkčnosti
-  - [ ] propojení s univerzálním rozhraním
-- [ ] Vyrovnávací paměť
-  - [ ] vytvořit fifo obvod
-  - [ ] test funkčnosti
-  - [ ] zapojení pro data, ID a velikostní paměti
-  - [ ] test zapojení s univerzálním rozhraním
-- [ ] Kontroler komunikace
-  - [ ] Hlavní sběrnice
-    - [ ] dekódování zprávy
-    - [ ] routování zprávy
-    - [ ] otestování zpracování zprávy 
-  - [ ] Vedlejší sběrnice
-    - [ ] zakódování zprávy
-    - [ ] routování zprávy
-    - [ ] otestování zpracování zprávy
-- [ ] Konfigurace logiky
-  - [ ] vytvoření konfiguračních registrů a logiky
-  - [ ] otestování nastavení designu
-

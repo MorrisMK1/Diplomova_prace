@@ -1,60 +1,27 @@
 # Komunikační protokol
 
-## Formát příchozí/ovládací zprávy
+## Tvar zprávy mezi ovládacím zařízením a systémem.
 
-### První bajt
+V tabulce níže je "/" použito k oddělení možných obsahů a `()` k obsahu při odpovědi. Zprávy jsou posílány po hlavní sběrnici a na vedlejší sběrnice se dostává pouze payload.
 
-| Bity | Popis                | Význam                                                                                      |
-|------|----------------------|---------------------------------------------------------------------------------------------|
-| 7-6  | ID                   | Zprávy vygenerované na dané sběrnici budou obsahovat ID poslední odeslané/provedené zprávy  |
-| 5    | Očekává odpověď      | Pokud je tento bit 1, je očekávána odpověď ze sběrnice (čtení)                              |
-| 4-3  | Adresa registru      | Určuje registr sběrnice pro zápis/čtení                                                     |
-| 2-0  | Adresa sběrnice      | Určuje sběrnici, pro kterou je zpráva určena                                                |
+### Tvar zprávy hlavní sběrnice
 
-Adresa sběrnice 0 je rezervovaná pro celkové nastavení designu.
+| Hlavička  | Hlavička | Hlavička | Data |
+|--------------------|---------|---------|--------------------|
+|  1. bajt | 2. bajt | 3. bajt | 0–255 bajtů |
+| 7–6: ID            | velikost dat k odeslání / konf. | velikost dat k přijetí (příznaky) | payload |
+| 5: Special         |   -\|\|-  |  -\|\|-   |  -\|\|-          |
+| 4–3: Register      |   -\|\|-  |  -\|\|-   |  -\|\|-          |
+| 2–0: Bus           |   -\|\|-  |  -\|\|-   |  -\|\|-          |
 
-Adresa registru 0 je rezervovaná pro data určená k odeslání po dané sběrnici. Tyto registry budou dále označeny jako datové.  
-Na adrese 0 registr obsahuje stav, který určuje, které sběrnice jsou zapnuté nebo vypnuté.
-
-Adresa registru 3 (stavový registr) je rezervovaná pro stavové bity sběrnice/designu a nelze do ní zapisovat.
-
-Při čtení konfiguračních a stavových registrů (všechny kromě registru 0 u adresy sběrnice > 0) je celá zpráva tvořena pouze tímto bajtem. V jiných případech jsou očekávány další informace.
-
-### Druhý bajt
-
-| Bity | Popis                | Význam                                                                                      |
-|------|----------------------|---------------------------------------------------------------------------------------------|
-| 7-0  | Data                 | Při zápisu do konfiguračního registru obsahuje tento bajt data a ukončuje zprávu            |
-| 7-0  | Velikost dat         | Obsahuje informaci o množství dat, která mají být přenesena (zápis do registru 0)           |
-
-### Třetí bajt
-
-| Bity | Popis                | Význam                                                                                      |
-|------|----------------------|---------------------------------------------------------------------------------------------|
-| 7-0  | Data                 | Pokud se neočekává odpověď na sběrnici, tento bajt obsahuje první bajt dat k přenesení      |
-| 7-0  | Velikost dat         | Obsahuje informaci o množství dat, která mají být přijata na sběrnici (čtení z registru 0)  |
-
-Následující bajty jsou datové a jejich počet je určen druhým bajtem.
-
-## Formát odchozí zprávy/odpovědi
-
-### První bajt
-
-| Bity | Popis                | Význam                                                                                      |
-|------|----------------------|---------------------------------------------------------------------------------------------|
-| 7-6  | ID                   | ID zprávy, která vygenerovala tuto odpověď                                                  |
-| 5    | Chybová zpráva       | Pokud je tento bit 1, byla tato zpráva automaticky vygenerována ze stavového registru       |
-| 4-3  | Adresa registru      | Určuje registr sběrnice, ze kterého zpráva pochází                                          |
-| 2-0  | Adresa sběrnice      | Určuje sběrnici, ze které zpráva pochází                                                    |
-
-### Druhý bajt
-
-| Bity | Popis                | Význam                                                                                      |
-|------|----------------------|---------------------------------------------------------------------------------------------|
-| 7-0  | Data                 | Při čtení z konfiguračního/stavového registru je tento bajt datový a ukončuje zprávu        |
-| 7-0  | Velikost dat         | Obsahuje informaci o množství dat, která mají být přenesena (čtení z registru 0)            |
-
-Následující bajty jsou datové a jejich počet je určen druhým bajtem.
+**Popis polí:**
+- **ID (bity 7–6):** Pomocná informace pro uživatele k identifikaci zprávy.
+- **Special (bit 5):** V závislosti na typu cílové sběrnice aktivuje určitou funkci.
+- **Register (bity 4–3):** Určuje, zda se jedná o konfigurační nebo datovou zprávu a cíl konfigurace.
+- **Bus (bity 2–0):** Určuje cílovou sběrnici pro zprávu.
+- **2. bajt:** Obsahuje velikost dat v bajtech k odeslání nebo konfigurační data (podle pole *Register*).
+- **3. bajt:** Obsahuje velikost dat v bajtech k přijetí. Při odpovědi obsahuje chybové příznaky.
+- **Data:** Pokud jsou odesílána data, bude zde uloženo až 255 bajtů.
 
 
 ## Příklady komunikace
@@ -66,10 +33,10 @@ Všechny ID (bity 7-6 prvního bajtu) odpovídají sloupci komunikace (0-3)
 | Bajt | Aktivace sběrnice 1 | Čtení registru 2 sběrnice 1 | Odeslání 2B dat přes sběrnici 1 | Pouze čtení 5B přes sběrnici 1 |
 |------|---------------------|-----------------------------|---------------------------------|--------------------------------|
 |  0   |      00000000       |           01110001          |           10000001              |            11100001            |
-|  1   |      00000001       |                             |           00000010              |            00000000            |
-|  2   |                     |                             |           databits              |            00000101            |
+|  1   |      00000001       |           00000000          |           00000010              |            00000000            |
+|  2   |      00000000       |           00000000          |           00000000              |            00000101            |
 |  3   |                     |                             |           databits              |                                |
-
+|  4   |                     |                             |           databits              |                                |
 
 ### Odpovědi
 
@@ -79,8 +46,11 @@ Odpovědi na příkladové ovládací zprávy
 |------|---------------------|-----------------------------|---------------------------------|--------------------------------|
 |  0   |    bez odpovědi     |           01010001          |           bez odpovědi          |            11000001            |
 |  1   |                     |           databits          |                                 |            00000101            |
-|  2   |                     |                             |                                 |            databits            |
+|  2   |                     |           flag_reg          |                                 |            flag_reg            |
 |  3   |                     |                             |                                 |            databits            |
 |  4   |                     |                             |                                 |            databits            |
 |  5   |                     |                             |                                 |            databits            |
 |  6   |                     |                             |                                 |            databits            |
+|  7   |                     |                             |                                 |            databits            |
+
+# Vnitřní funkčnost je popsána [ZDE](inner_protocol.md).
